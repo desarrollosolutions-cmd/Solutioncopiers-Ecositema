@@ -4798,13 +4798,22 @@ class PanelTurnoView(View):
             status__in=("open", "in_progress", "waiting_parts")
         ).select_related("lead").order_by("priority", "created_at")[:20]
 
+        from apps.dashboard.models import DeliveryTask
+        delivery_tasks = (
+            DeliveryTask.objects
+            .filter(field_user=field_user)
+            .exclude(status="cancelled")
+            .order_by("status", "order", "created_at")[:30]
+        )
+
         ctx = _panel_base_ctx(request)
         ctx.update({
-            "field_user": field_user,
-            "location":   loc,
-            "tasks":      tasks,
-            "tickets":    tickets,
-            "today":      today,
+            "field_user":     field_user,
+            "location":       loc,
+            "tasks":          tasks,
+            "tickets":        tickets,
+            "delivery_tasks": delivery_tasks,
+            "today":          today,
         })
         return render(request, self.template_name, ctx)
 

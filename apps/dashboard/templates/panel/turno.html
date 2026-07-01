@@ -81,12 +81,44 @@
   <div class="pn-card-header">
     Mi Ruta
     <span style="font-size:.72rem;font-weight:600;color:var(--color-text-muted);">
-      {% with total=tickets|length|add:tasks|length %}{{ total }} asignaci{{ total|pluralize:"ón,ones" }}{% endwith %}
+      {% with total=delivery_tasks|length|add:tickets|length|add:tasks|length %}{{ total }} asignaci{{ total|pluralize:"ón,ones" }}{% endwith %}
     </span>
   </div>
 
-  {% if tickets %}
+  {# — Entregas de mensajero — #}
+  {% if delivery_tasks %}
   <div style="padding:.375rem 1.25rem .25rem;">
+    <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-muted);padding:.5rem 0 .25rem;">Entregas asignadas</div>
+  </div>
+  {% for dt in delivery_tasks %}
+  <div id="pn-dtask-{{ dt.pk }}" style="display:flex;align-items:flex-start;gap:.875rem;padding:.75rem 1.25rem;border-top:1px solid color-mix(in srgb,var(--color-border) 55%,transparent);{% if dt.status == 'done' %}opacity:.55;{% endif %}">
+    <div style="width:2rem;height:2rem;border-radius:.5rem;background:color-mix(in srgb,{% if dt.status == 'done' %}#10B981{% else %}#F59E0B{% endif %} 12%,transparent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      {% if dt.status == 'done' %}
+      <svg fill="none" stroke="#10B981" viewBox="0 0 24 24" stroke-width="2.5" style="width:.9rem;height:.9rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      {% else %}
+      <svg fill="none" stroke="#D97706" viewBox="0 0 24 24" stroke-width="2" style="width:.9rem;height:.9rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      {% endif %}
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">{{ dt.title }}</div>
+      {% if dt.address %}<div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.1rem;">📍 {{ dt.address }}</div>{% endif %}
+      {% if dt.due_date %}<div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.1rem;">📅 {{ dt.due_date|date:"d/m/Y" }}</div>{% endif %}
+      {% if dt.status == 'done' %}
+      <div style="font-size:.68rem;color:#10B981;margin-top:.25rem;font-weight:600;">✓ Completada{% if dt.completed_at %} · {{ dt.completed_at|time:"H:i" }}{% endif %}{% if dt.completion_invoice %} · Fact: {{ dt.completion_invoice }}{% endif %}</div>
+      {% else %}
+      <button onclick="openDeliveryModal({{ dt.pk }}, '{{ dt.title|escapejs }}')"
+        style="margin-top:.5rem;font-size:.72rem;font-weight:600;padding:.3rem .75rem;border-radius:.4rem;border:1.5px solid var(--color-primary);background:transparent;color:var(--color-primary);cursor:pointer;transition:background .15s;"
+        onmouseover="this.style.background='color-mix(in srgb,var(--color-primary) 8%,transparent)'" onmouseout="this.style.background='transparent'">
+        Marcar entregado
+      </button>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if tickets %}
+  <div style="padding:.375rem 1.25rem .25rem;{% if delivery_tasks %}border-top:2px solid var(--color-border);margin-top:.25rem;{% endif %}">
     <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-muted);padding:.5rem 0 .25rem;">Tickets de servicio</div>
   </div>
   {% for ticket in tickets %}
@@ -104,7 +136,7 @@
   {% endif %}
 
   {% if tasks %}
-  <div style="padding:.375rem 1.25rem .25rem;{% if tickets %}border-top:2px solid var(--color-border);margin-top:.25rem;{% endif %}">
+  <div style="padding:.375rem 1.25rem .25rem;{% if delivery_tasks or tickets %}border-top:2px solid var(--color-border);margin-top:.25rem;{% endif %}">
     <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-muted);padding:.5rem 0 .25rem;">Tareas asignadas hoy</div>
   </div>
   {% for task in tasks %}
@@ -120,7 +152,7 @@
   {% endfor %}
   {% endif %}
 
-  {% if not tickets and not tasks %}
+  {% if not delivery_tasks and not tickets and not tasks %}
   <div style="text-align:center;padding:2.5rem 1rem;color:var(--color-text-muted);">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="width:2.25rem;height:2.25rem;margin:0 auto .625rem;display:block;opacity:.35;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
     <div style="font-size:.875rem;font-weight:600;color:var(--color-text-secondary);">Sin asignaciones pendientes</div>
@@ -129,7 +161,92 @@
   {% endif %}
 </div>
 
+{# ── Modal completar entrega ── #}
+<div id="pn-delivery-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeDModal()">
+  <div style="background:var(--color-surface);border-radius:1.25rem 1.25rem 0 0;padding:1.5rem;width:100%;max-width:480px;box-shadow:0 -4px 24px rgba(0,0,0,.15);">
+    <div style="font-size:.9375rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1.25rem;" id="pn-dmodal-title">Confirmar entrega</div>
+    <form id="pn-delivery-form" onsubmit="submitDelivery(event)" enctype="multipart/form-data">
+      <input type="hidden" id="pn-dtask-id" name="task_id">
+      <div style="margin-bottom:.875rem;">
+        <label style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.04em;">Notas de entrega</label>
+        <textarea name="notes" id="pn-dnotes" rows="2" placeholder="¿Qué se entregó? Observaciones…"
+          style="width:100%;padding:.65rem .875rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.625rem;font-size:.875rem;color:var(--color-text-primary);resize:none;font-family:inherit;outline:none;"
+          onfocus="this.style.borderColor='var(--color-primary)'" onblur="this.style.borderColor='var(--color-border)'"></textarea>
+      </div>
+      <div style="margin-bottom:.875rem;">
+        <label style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.04em;"># Factura / Remisión (opcional)</label>
+        <input type="text" name="invoice" id="pn-dinvoice" placeholder="FAC-001, REM-2345"
+          style="width:100%;padding:.65rem .875rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.625rem;font-size:.875rem;color:var(--color-text-primary);font-family:inherit;outline:none;"
+          onfocus="this.style.borderColor='var(--color-primary)'" onblur="this.style.borderColor='var(--color-border)'">
+      </div>
+      <div style="margin-bottom:1.25rem;">
+        <label style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.04em;">Foto comprobante (opcional)</label>
+        <input type="file" name="photo" id="pn-dphoto" accept="image/*" capture="environment"
+          style="width:100%;padding:.5rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.625rem;font-size:.8rem;font-family:inherit;">
+      </div>
+      <button type="submit" id="pn-dsubmit"
+        style="width:100%;padding:.875rem;border-radius:.75rem;background:var(--color-primary);color:#fff;font-weight:700;font-size:.9375rem;border:none;cursor:pointer;margin-bottom:.5rem;">
+        <span id="pn-dsubmit-txt">Confirmar entrega</span>
+      </button>
+      <button type="button" onclick="closeDModal()"
+        style="width:100%;padding:.75rem;border-radius:.75rem;background:transparent;color:var(--color-text-muted);font-size:.875rem;border:1px solid var(--color-border);cursor:pointer;">
+        Cancelar
+      </button>
+    </form>
+  </div>
+</div>
+
 <script>
+// ── Modal de entrega ──
+const CSRF_PN = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+
+function openDeliveryModal(id, title) {
+  document.getElementById('pn-dtask-id').value = id;
+  document.getElementById('pn-dmodal-title').textContent = title;
+  document.getElementById('pn-dnotes').value = '';
+  document.getElementById('pn-dinvoice').value = '';
+  document.getElementById('pn-dphoto').value = '';
+  document.getElementById('pn-dsubmit-txt').textContent = 'Confirmar entrega';
+  document.getElementById('pn-dsubmit').disabled = false;
+  const m = document.getElementById('pn-delivery-modal');
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDModal() {
+  document.getElementById('pn-delivery-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function submitDelivery(e) {
+  e.preventDefault();
+  const taskId = document.getElementById('pn-dtask-id').value;
+  const fd = new FormData(e.target);
+  fd.append('csrfmiddlewaretoken', CSRF_PN);
+  document.getElementById('pn-dsubmit-txt').textContent = 'Enviando…';
+  document.getElementById('pn-dsubmit').disabled = true;
+  fetch('/campo/tareas/' + taskId + '/completar/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        closeDModal();
+        const card = document.getElementById('pn-dtask-' + taskId);
+        if (card) {
+          card.style.opacity = '.55';
+          const btn = card.querySelector('button');
+          if (btn) { const ok = document.createElement('div'); ok.style.cssText = 'margin-top:.5rem;font-size:.68rem;color:#10B981;font-weight:600;'; ok.textContent = '✓ Completada'; btn.replaceWith(ok); }
+        }
+      } else {
+        document.getElementById('pn-dsubmit-txt').textContent = 'Confirmar entrega';
+        document.getElementById('pn-dsubmit').disabled = false;
+      }
+    })
+    .catch(() => {
+      document.getElementById('pn-dsubmit-txt').textContent = 'Confirmar entrega';
+      document.getElementById('pn-dsubmit').disabled = false;
+    });
+}
+
 // GPS automático cuando el turno está activo
 {% if location and location.is_on_shift %}
 function sendLocation() {
