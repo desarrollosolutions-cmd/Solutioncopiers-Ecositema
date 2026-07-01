@@ -123,7 +123,7 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
   {# ── Tareas de entrega ── #}
   {% if delivery_tasks %}
   <div class="section-title">
-    <span>Entregas de hoy</span>
+    <span>Entregas asignadas</span>
     <span style="font-weight:400;color:#3E6E8A;">
       {{ delivery_tasks|length }} tarea{{ delivery_tasks|length|pluralize:"s" }}
     </span>

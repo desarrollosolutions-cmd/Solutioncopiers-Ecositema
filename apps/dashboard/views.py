@@ -4421,12 +4421,10 @@ class CampoTurnoView(View):
         ).select_related("lead").order_by("priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
-        from django.db.models import Q
         delivery_tasks = (
             DeliveryTask.objects
             .filter(field_user=field_user)
             .exclude(status="cancelled")
-            .filter(Q(due_date__lte=today) | Q(due_date__isnull=True))
             .order_by("status", "order", "created_at")[:30]
         )
 
@@ -4584,11 +4582,13 @@ class CampoUserDetailView(View):
     template_name = "dashboard/campo/user_form.html"
 
     def get(self, request, pk):
-        from apps.dashboard.models import FieldUser
+        from apps.dashboard.models import FieldUser, DeliveryTask
         fu = get_object_or_404(FieldUser, pk=pk)
+        tasks = DeliveryTask.objects.filter(field_user=fu).order_by("status", "due_date", "order")[:50]
         return render(request, self.template_name, {
             "field_user": fu,
             "role_choices": FieldUser.Role.choices,
+            "assigned_tasks": tasks,
         })
 
     def post(self, request, pk):

@@ -110,4 +110,47 @@
 
   </div>
 </div>
+
+{% if field_user and assigned_tasks is not None %}
+<div style="max-width:540px;margin-top:1.5rem;">
+  <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
+    <div style="padding:.875rem 1.25rem;border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:.8125rem;font-weight:700;color:var(--color-text-primary);">Tareas / Rutas asignadas</div>
+      <a href="{% url 'dashboard:campo_tasks' %}?user={{ field_user.pk }}" class="da-btn da-btn-secondary" style="font-size:.72rem;padding:.3rem .75rem;">Ver todas</a>
+    </div>
+    {% if assigned_tasks %}
+    <table style="width:100%;border-collapse:collapse;">
+      <tbody>
+        {% for t in assigned_tasks %}
+        <tr style="border-bottom:1px solid var(--color-border);">
+          <td style="padding:.75rem 1.25rem;">
+            <div style="font-size:.8rem;font-weight:600;color:var(--color-text-primary);">{{ t.title }}</div>
+            {% if t.address %}<div style="font-size:.68rem;color:var(--color-text-muted);">📍 {{ t.address }}</div>{% endif %}
+          </td>
+          <td style="padding:.75rem 1rem;white-space:nowrap;font-size:.72rem;color:var(--color-text-muted);">{{ t.due_date|date:"d/m/Y"|default:"Sin fecha" }}</td>
+          <td style="padding:.75rem 1rem;white-space:nowrap;">
+            {% if t.status == 'pending' %}
+            <span style="font-size:.68rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.2);">Pendiente</span>
+            {% elif t.status == 'done' %}
+            <span style="font-size:.68rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);">✓ Lista</span>
+            {% else %}
+            <span style="font-size:.68rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(107,114,128,.1);color:#6B7280;border:1px solid rgba(107,114,128,.15);">Cancelada</span>
+            {% endif %}
+          </td>
+          <td style="padding:.75rem 1rem;">
+            <a href="{% url 'dashboard:campo_task_detail' t.pk %}" style="font-size:.68rem;color:var(--color-primary);">Ver</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:1.5rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">
+      Sin tareas asignadas.
+      <a href="{% url 'dashboard:campo_tasks' %}" style="color:var(--color-primary);">Asignar ahora</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
 {% endblock %}
