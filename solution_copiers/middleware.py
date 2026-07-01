@@ -31,8 +31,7 @@ class SecurityHeadersMiddleware:
         if self.permissions:
             response["Permissions-Policy"] = self.permissions
 
-        response["Cross-Origin-Opener-Policy"]   = "same-origin"
-        response["Cross-Origin-Resource-Policy"]  = "same-origin"
-        response["Cross-Origin-Embedder-Policy"]  = "require-corp"
+        response["Cross-Origin-Opener-Policy"]  = "same-origin-allow-popups"
+        response["Cross-Origin-Resource-Policy"] = "same-origin"
 
         return response

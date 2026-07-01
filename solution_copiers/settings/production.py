@@ -50,7 +50,7 @@ CONTENT_SECURITY_POLICY = (
     "default-src 'self'; "
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com "
         "https://checkout.wompi.co https://www.googletagmanager.com https://www.google-analytics.com; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
     "font-src 'self' https://fonts.gstatic.com data:; "
     "img-src 'self' data: https: blob:; "
     "connect-src 'self' https://api.groq.com https://api.anthropic.com "
