@@ -72,6 +72,42 @@ window.darkMode = darkMode;
 // === ALPINE.JS ===
 window.Alpine = Alpine;
 window.quoteWizard = quoteWizard;
+
+window.publicSearch = function publicSearch() {
+  return {
+    open: false,
+    query: '',
+    loading: false,
+    results: { consumables: [], copiers: [] },
+    close() {
+      this.open = false;
+      this.query = '';
+      this.results = { consumables: [], copiers: [] };
+      this.loading = false;
+    },
+    goToResults() {
+      if (this.query.trim().length >= 2) {
+        window.location.href = '/consumibles-toner-ricoh/?q=' + encodeURIComponent(this.query.trim());
+        this.close();
+      }
+    },
+    search() {
+      if (this.query.length < 2) {
+        this.results = { consumables: [], copiers: [] };
+        this.loading = false;
+        return;
+      }
+      this.loading = true;
+      const url = document.getElementById('search-url').dataset.url;
+      fetch(url + '?q=' + encodeURIComponent(this.query))
+        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(d => { this.results = d; })
+        .catch(() => { this.results = { consumables: [], copiers: [] }; })
+        .finally(() => { this.loading = false; });
+    },
+  };
+};
+
 Alpine.start();
 
 // === BOOT ===
