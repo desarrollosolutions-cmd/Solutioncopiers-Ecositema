@@ -4,7 +4,7 @@
 set -o errexit  # detiene el build ante el primer error
 
 echo "==> Instalando dependencias Python..."
-pip install -r requirements/production.txt
+python -m pip install -r requirements/production.txt
 
 echo "==> Instalando dependencias Node..."
 npm install
