@@ -32,10 +32,8 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
-# Build de frontend
-static/dist/
-*.css.map
-*.js.map
+# Build de frontend (incluido en repo para deploy sin Node.js)
+# static/dist/
 
 # Tests
 .coverage
