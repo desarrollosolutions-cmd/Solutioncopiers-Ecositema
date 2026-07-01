@@ -132,6 +132,11 @@ DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True  # noqa: F405
 # --- WhiteNoise ---
 WHITENOISE_MAX_AGE = 31536000
 
+# Media servida vía WhiteNoise (build.sh copia media/ → staticfiles/media/)
+# Usar R2 cuando esté configurado (ya se activa arriba con las vars R2_*)
+if not (R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME):
+    MEDIA_URL = "/static/media/"
+
 # --- Sentry ---
 SENTRY_DSN = env("SENTRY_DSN", default="")  # noqa: F405
 if SENTRY_DSN:

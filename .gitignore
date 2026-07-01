@@ -11,7 +11,8 @@ db.sqlite3
 *.log
 local_settings.py
 staticfiles/
-media/
+# media/ — commiteado para deploy en Railway (sin R2 configurado)
+# media/
 
 # Entorno (NUNCA commitear)
 .env
