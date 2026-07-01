@@ -1,0 +1,132 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Tarea #{{ task.pk }}{% endblock %}
+{% block nav_campo %}active{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">{{ task.title }}</h1>
+    <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">
+      Tarea #{{ task.pk }} · {{ task.field_user.user.get_full_name|default:task.field_user.user.username }}
+    </p>
+  </div>
+  <div style="display:flex;gap:.75rem;">
+    <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">← Tareas</a>
+    {% if task.status == 'pending' %}
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" name="action" value="cancel"
+        class="da-btn da-btn-secondary" style="color:#EF4444;border-color:rgba(239,68,68,.3);"
+        onclick="return confirm('¿Cancelar esta tarea?')">Cancelar tarea</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 360px;gap:1.25rem;">
+
+  {# Columna principal #}
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+
+    {# Datos de la tarea #}
+    <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.5rem;">
+      <div style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1.25rem;">Información de la tarea</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Asignado a</div>
+          <div style="font-size:.875rem;font-weight:600;color:var(--color-text-primary);">{{ task.field_user.user.get_full_name|default:task.field_user.user.username }}</div>
+          <div style="font-size:.72rem;color:var(--color-text-muted);">{{ task.field_user.get_role_display }}</div>
+        </div>
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Fecha asignada</div>
+          <div style="font-size:.875rem;color:var(--color-text-primary);">{{ task.due_date|date:"d/m/Y"|default:"Sin fecha" }}</div>
+        </div>
+        {% if task.address %}
+        <div style="grid-column:1/-1;">
+          <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Dirección</div>
+          <div style="font-size:.875rem;color:var(--color-text-primary);">{{ task.address }}</div>
+        </div>
+        {% endif %}
+        {% if task.description %}
+        <div style="grid-column:1/-1;">
+          <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Descripción</div>
+          <div style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.6;">{{ task.description }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Completación #}
+    {% if task.status == 'done' %}
+    <div style="background:var(--color-surface);border:1px solid rgba(16,185,129,.25);border-radius:1rem;padding:1.5rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1.25rem;">
+        <div style="width:1.5rem;height:1.5rem;border-radius:9999px;background:rgba(16,185,129,.15);color:#10B981;display:flex;align-items:center;justify-content:center;font-size:.75rem;">✓</div>
+        <div style="font-size:.8rem;font-weight:700;color:#10B981;">Tarea completada — {{ task.completed_at|date:"d/m/Y H:i" }}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:{% if task.completion_photo %}1.25rem{% else %}0{% endif %};">
+        {% if task.completion_invoice %}
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;"># Factura / Remisión</div>
+          <div style="font-size:.9rem;font-weight:700;color:var(--color-text-primary);">{{ task.completion_invoice }}</div>
+        </div>
+        {% endif %}
+        {% if task.completion_notes %}
+        <div {% if not task.completion_invoice %}style="grid-column:1/-1;"{% endif %}>
+          <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Notas de entrega</div>
+          <div style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.6;">{{ task.completion_notes }}</div>
+        </div>
+        {% endif %}
+      </div>
+      {% if task.completion_photo %}
+      <div>
+        <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.625rem;">Foto del comprobante</div>
+        <a href="{{ task.completion_photo.url }}" target="_blank">
+          <img src="{{ task.completion_photo.url }}" alt="Comprobante"
+            style="max-width:100%;max-height:420px;border-radius:.875rem;border:1px solid var(--color-border);object-fit:contain;display:block;">
+        </a>
+        <p style="font-size:.7rem;color:var(--color-text-muted);margin-top:.375rem;">Toca la imagen para ver en tamaño completo</p>
+      </div>
+      {% endif %}
+    </div>
+    {% elif task.status == 'cancelled' %}
+    <div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:1rem;padding:1.25rem;font-size:.875rem;color:#EF4444;">
+      Esta tarea fue cancelada.
+    </div>
+    {% else %}
+    <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:1rem;padding:1.25rem;font-size:.875rem;color:#D97706;">
+      Pendiente — el mensajero la completará desde su portal <strong>/campo/</strong>.
+    </div>
+    {% endif %}
+
+  </div>
+
+  {# Columna lateral #}
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.25rem;">
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:1rem;">Estado</div>
+      {% if task.status == 'pending' %}
+      <span style="font-size:.8rem;font-weight:700;padding:.35rem .875rem;border-radius:9999px;background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.2);">Pendiente</span>
+      {% elif task.status == 'done' %}
+      <span style="font-size:.8rem;font-weight:700;padding:.35rem .875rem;border-radius:9999px;background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);">Completada</span>
+      {% else %}
+      <span style="font-size:.8rem;font-weight:700;padding:.35rem .875rem;border-radius:9999px;background:rgba(107,114,128,.1);color:#6B7280;border:1px solid rgba(107,114,128,.15);">Cancelada</span>
+      {% endif %}
+      <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.5rem;font-size:.78rem;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Creada</span>
+          <span>{{ task.created_at|date:"d/m/Y H:i" }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Creada por</span>
+          <span>{{ task.created_by.get_full_name|default:task.created_by.username|default:"—" }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Orden</span>
+          <span>#{{ task.order }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

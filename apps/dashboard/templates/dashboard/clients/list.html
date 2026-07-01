@@ -1,0 +1,299 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Clientes{% endblock %}
+{% block nav_clients %}active{% endblock %}
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">Clientes</span>
+{% endblock %}
+
+{% block content %}
+{# ── Stats rápidos ── #}
+<div class="da-stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:1.5rem;">
+  <div class="da-stat">
+    <div class="da-stat-icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </div>
+    <div class="da-stat-val">{{ total_clients }}</div>
+    <div class="da-stat-lbl">Total clientes</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,var(--color-success) 12%,transparent);color:var(--color-success);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:var(--color-success);">{{ new_this_month }}</div>
+    <div class="da-stat-lbl">Nuevos este mes</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,#3B82F6 12%,transparent);color:#2563EB;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:#2563EB;">{{ paginator.count }}</div>
+    <div class="da-stat-lbl">Resultados filtro</div>
+    <div class="da-stat-bar"></div>
+  </div>
+</div>
+
+{# ── Filtros ── #}
+<div class="da-page-header">
+  <h1 class="da-page-title">Clientes</h1>
+</div>
+
+<form method="get" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-bottom:1.25rem;">
+
+  {# ── Buscador con autocompletado ── #}
+  <div x-data="clientSearch()" style="position:relative;">
+    <div class="da-search-wrap">
+      <div class="da-search-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+      <input
+        type="text"
+        name="q"
+        x-model="query"
+        x-ref="input"
+        @input.debounce.300ms="search()"
+        @keydown.escape="close()"
+        @keydown.arrow-down.prevent="moveDown()"
+        @keydown.arrow-up.prevent="moveUp()"
+        @keydown.enter.prevent="selectActive()"
+        @focus="query.length >= 2 && search()"
+        @click.outside="close()"
+        value="{{ current_q }}"
+        placeholder="Buscar nombre, empresa, NIT, email…"
+        class="da-input da-input-search"
+        style="width:300px;"
+        autocomplete="off"
+      >
+    </div>
+
+    {# Dropdown de sugerencias #}
+    <div
+      x-show="open"
+      x-transition:enter="transition ease-out duration-100"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      style="position:absolute;top:calc(100% + 4px);left:0;width:380px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:.75rem;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;"
+    >
+      {# Estado: cargando #}
+      <div x-show="loading" style="display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;font-size:.8rem;color:var(--color-text-muted);">
+        <svg style="width:1rem;height:1rem;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        Buscando...
+      </div>
+
+      {# Resultados #}
+      <template x-for="(item, index) in results" :key="item.id">
+        <a
+          :href="item.url"
+          @mouseenter="activeIndex = index"
+          :class="activeIndex === index ? 'ac-item ac-item-active' : 'ac-item'"
+          style="display:flex;align-items:center;gap:.75rem;padding:.625rem 1rem;text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--color-border) 50%,transparent);"
+        >
+          <div style="width:2rem;height:2rem;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:flex;align-items:center;justify-content:center;color:white;font-size:.75rem;font-weight:700;flex-shrink:0;" x-text="item.initial"></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="item.full_name"></div>
+            <div style="font-size:.72rem;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="[item.company_name, item.email, item.phone].filter(Boolean).join(' · ')"></div>
+          </div>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;color:var(--color-text-muted);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </template>
+
+      {# Sin resultados #}
+      <div x-show="!loading && results.length === 0" style="padding:.75rem 1rem;font-size:.8rem;color:var(--color-text-muted);">
+        Sin resultados para "<span x-text="query"></span>"
+      </div>
+    </div>
+
+    <style>
+      .ac-item { background: transparent; transition: background .1s; }
+      .ac-item-active { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)) !important; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </div>
+
+  <select name="source" class="da-input" style="width:auto;padding:.5rem .875rem;">
+    <option value="">Todos los orígenes</option>
+    {% for val, lbl in source_choices %}
+    <option value="{{ val }}" {% if current_source == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <select name="score_min" class="da-input" style="width:auto;padding:.5rem .875rem;" title="Filtrar por score mínimo">
+    <option value="">Score: todos</option>
+    <option value="70" {% if current_score_min == "70" %}selected{% endif %}>Score 70+ (caliente)</option>
+    <option value="40" {% if current_score_min == "40" %}selected{% endif %}>Score 40+ (moderado)</option>
+    <option value="20" {% if current_score_min == "20" %}selected{% endif %}>Score 20+</option>
+  </select>
+  <select name="sort" class="da-input" style="width:auto;padding:.5rem .875rem;">
+    <option value="-created_at" {% if current_sort == "-created_at" %}selected{% endif %}>Más recientes</option>
+    <option value="-score"      {% if current_sort == "-score"      %}selected{% endif %}>Mayor score</option>
+    <option value="-activity"   {% if current_sort == "-activity"   %}selected{% endif %}>Última actividad</option>
+    <option value="name"        {% if current_sort == "name"        %}selected{% endif %}>Nombre A-Z</option>
+  </select>
+  <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
+  {% if current_q or current_source or current_score_min %}
+  <a href="{% url 'dashboard:clients' %}" class="da-btn da-btn-secondary">Limpiar</a>
+  {% endif %}
+</form>
+
+<script>
+function clientSearch() {
+  return {
+    query:       '{{ current_q|escapejs }}',
+    results:     [],
+    open:        false,
+    loading:     false,
+    activeIndex: -1,
+
+    async search() {
+      if (this.query.length < 2) { this.close(); return; }
+      this.loading = true;
+      this.open    = true;
+      this.results = [];
+      try {
+        const res = await fetch(
+          '{% url "dashboard:client_autocomplete" %}?q=' + encodeURIComponent(this.query),
+          { headers: { 'X-Requested-With': 'XMLHttpRequest' } }
+        );
+        if (!res.ok) { this.close(); return; }
+        const data   = await res.json();
+        this.results = data.results || [];
+        this.activeIndex = -1;
+      } catch (e) {
+        this.results = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    close()       { this.open = false; this.results = []; this.activeIndex = -1; },
+    moveDown()    { if (this.activeIndex < this.results.length - 1) this.activeIndex++; },
+    moveUp()      { if (this.activeIndex > 0) this.activeIndex--; },
+    selectActive() {
+      if (this.activeIndex >= 0 && this.results[this.activeIndex]) {
+        window.location.href = this.results[this.activeIndex].url;
+      } else {
+        this.$refs.input.closest('form').submit();
+      }
+    },
+  };
+}
+</script>
+
+{# ── Tabla ── #}
+<div class="da-table-wrap">
+  <div class="da-table-header">
+    <span class="da-table-title">{{ paginator.count }} cliente{{ paginator.count|pluralize:"s" }}</span>
+  </div>
+  <table class="da-table">
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Empresa</th>
+        <th>Contacto</th>
+        <th>Ciudad</th>
+        <th>Origen</th>
+        <th>Score</th>
+        <th>Último contacto</th>
+        <th>Cotizaciones</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for lead in clients %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:.625rem;">
+            <div style="width:2rem;height:2rem;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:flex;align-items:center;justify-content:center;color:white;font-size:.75rem;font-weight:700;flex-shrink:0;">
+              {{ lead.full_name|first|upper }}
+            </div>
+            <div>
+              <div class="da-name">{{ lead.full_name }}</div>
+              <div style="font-size:.72rem;color:var(--color-text-muted);">{{ lead.email }}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          {% if lead.company_name %}
+          <div style="font-size:.8125rem;color:var(--color-text-secondary);">{{ lead.company_name }}</div>
+          {% if lead.job_title %}<div style="font-size:.72rem;color:var(--color-text-muted);">{{ lead.job_title }}</div>{% endif %}
+          {% else %}
+          <span style="color:var(--color-text-muted);">Particular</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="font-size:.8125rem;">
+            <a href="tel:{{ lead.phone }}" style="color:var(--color-text-secondary);text-decoration:none;">{{ lead.phone }}</a>
+          </div>
+        </td>
+        <td style="font-size:.8125rem;">{{ lead.city|default:"—" }}</td>
+        <td>
+          <span class="da-badge
+            {% if lead.source == 'wizard' %}da-badge-sent
+            {% elif lead.source == 'whatsapp' %}da-badge-won
+            {% else %}da-badge-draft{% endif %}">
+            {{ lead.get_source_display }}
+          </span>
+        </td>
+        <td>
+          {% with s=lead.score %}
+          <div style="display:flex;align-items:center;gap:.5rem;">
+            <div style="width:2.5rem;height:.375rem;background:var(--color-border);border-radius:9999px;overflow:hidden;flex-shrink:0;">
+              <div style="height:100%;border-radius:9999px;width:{{ s }}%;background:{% if s >= 70 %}#10B981{% elif s >= 40 %}#F59E0B{% else %}var(--color-primary){% endif %};transition:width .4s;"></div>
+            </div>
+            <span style="font-size:.75rem;font-weight:700;color:{% if s >= 70 %}#10B981{% elif s >= 40 %}#F59E0B{% else %}var(--color-text-muted){% endif %};">{{ s }}</span>
+          </div>
+          {% endwith %}
+        </td>
+        <td>
+          {% if lead.last_activity %}
+            {% now "U" as now_ts %}
+            <div style="display:flex;align-items:center;gap:.375rem;">
+              <div style="width:.5rem;height:.5rem;border-radius:50%;background:
+                {% with days=lead.last_activity|timesince %}
+                  {% if "día" in days and days|slice:":1" == "1" %}#F59E0B
+                  {% elif "día" in days %}#EF4444
+                  {% elif "semana" in days or "mes" in days %}#EF4444
+                  {% else %}#10B981
+                  {% endif %}
+                {% endwith %};flex-shrink:0;"></div>
+              <span style="font-size:.75rem;color:var(--color-text-muted);">{{ lead.last_activity|timesince }}</span>
+            </div>
+          {% else %}
+            <span style="font-size:.72rem;color:var(--color-text-muted);">Nunca</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if lead.quotes_count > 0 %}
+          <span style="font-weight:700;color:var(--color-text-primary);">{{ lead.quotes_count }}</span>
+          {% else %}
+          <span style="color:var(--color-text-muted);">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'dashboard:client_detail' lead.pk %}" class="da-btn da-btn-secondary da-btn-sm">Ver</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="10" style="text-align:center;padding:3rem;color:var(--color-text-muted);">
+          No se encontraron clientes
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if is_paginated %}
+  <div class="da-pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if current_q %}&q={{ current_q }}{% endif %}{% if current_source %}&source={{ current_source }}{% endif %}" class="da-page-btn">← Anterior</a>
+    {% endif %}
+    <span class="da-page-btn active">{{ page_obj.number }} / {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if current_q %}&q={{ current_q }}{% endif %}{% if current_source %}&source={{ current_source }}{% endif %}" class="da-page-btn">Siguiente →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

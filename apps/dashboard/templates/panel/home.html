@@ -1,0 +1,272 @@
+{% extends "panel/_base.html" %}
+{% block title %}Mi día{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+{# ── Hero bienvenida ── #}
+<div style="background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary) 14%,var(--color-surface)) 0%,var(--color-surface) 60%);border:1px solid color-mix(in srgb,var(--color-primary) 18%,var(--color-border));border-radius:1.25rem;padding:1.375rem 1.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--color-primary) 14%,transparent) 0%,transparent 70%);pointer-events:none;"></div>
+  <div style="position:relative;">
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-primary);opacity:.8;margin-bottom:.2rem;">Panel operativo</div>
+    <h1 style="font-size:1.5rem;font-weight:900;color:var(--color-text-primary);letter-spacing:-.04em;line-height:1.1;margin:0 0 .25rem;">Hola, {{ request.user.get_full_name|default:request.user.username }} 👋</h1>
+    <p style="font-size:.8125rem;color:var(--color-text-muted);margin:0;">
+      {% now "l j \d\e F" %} ·
+      {% if tasks_overdue %}<span style="color:#EF4444;font-weight:600;">{{ tasks_overdue|length }} tarea{{ tasks_overdue|length|pluralize:"s" }} vencida{{ tasks_overdue|length|pluralize:"s" }}</span> ·{% endif %}
+      {% if quotes_new > 0 %}<span style="color:var(--color-warning);font-weight:600;">{{ quotes_new }} cotización{{ quotes_new|pluralize:"es" }} sin atender</span>
+      {% else %}<span style="color:var(--color-success);font-weight:600;">Al día con cotizaciones</span>{% endif %}
+    </p>
+  </div>
+</div>
+
+{# ── KPIs ── #}
+<div class="pn-stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem;">
+  <div class="pn-stat">
+    <div class="pn-stat-bar"></div>
+    <div class="pn-stat-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+    <div class="pn-stat-val" style="color:var(--color-warning);">{{ quotes_new }}</div>
+    <div class="pn-stat-lbl">Nuevas sin atender</div>
+  </div>
+  <div class="pn-stat">
+    <div class="pn-stat-bar" style="background:#3B82F6;"></div>
+    <div class="pn-stat-icon" style="background:color-mix(in srgb,#3B82F6 12%,transparent);color:#2563EB;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
+    <div class="pn-stat-val" style="color:#2563EB;">{{ tasks_today|length }}</div>
+    <div class="pn-stat-lbl">Tareas para hoy</div>
+  </div>
+  <div class="pn-stat">
+    <div class="pn-stat-bar" style="background:#10B981;"></div>
+    <div class="pn-stat-icon" style="background:color-mix(in srgb,#10B981 12%,transparent);color:#10B981;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+    <div class="pn-stat-val" style="color:#10B981;">{{ quotes_won }}</div>
+    <div class="pn-stat-lbl">Ganadas (mes)</div>
+  </div>
+  <div class="pn-stat">
+    <div class="pn-stat-bar" style="background:#EF4444;"></div>
+    <div class="pn-stat-icon" style="background:color-mix(in srgb,#EF4444 12%,transparent);color:#EF4444;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+    <div class="pn-stat-val" style="color:#EF4444;">{{ tasks_overdue|length }}</div>
+    <div class="pn-stat-lbl">Tareas vencidas</div>
+  </div>
+</div>
+
+{# ── Alerta: contratos críticos ── #}
+{% if contracts_critical %}
+<div style="background:color-mix(in srgb,#EF4444 8%,transparent);border:1px solid color-mix(in srgb,#EF4444 25%,transparent);border-radius:1rem;padding:.875rem 1.125rem;margin-bottom:1.125rem;display:flex;align-items:center;gap:.75rem;">
+  <div style="width:2rem;height:2rem;border-radius:.5rem;background:color-mix(in srgb,#EF4444 15%,transparent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <svg fill="none" stroke="#EF4444" viewBox="0 0 24 24" stroke-width="2" style="width:1.1rem;height:1.1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+  </div>
+  <div style="flex:1;">
+    <div style="font-size:.8rem;font-weight:700;color:#EF4444;">{{ contracts_critical|length }} contrato{{ contracts_critical|length|pluralize:"s" }} vence{{ contracts_critical|length|pluralize:"n" }} en ≤ 15 días</div>
+    <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.2rem;">
+      {% for c in contracts_critical %}{{ c.lead.full_name }} ({{ c.days_until_expiry }}d){% if not forloop.last %} · {% endif %}{% endfor %}
+    </div>
+  </div>
+  <a href="{% url 'panel:contracts' %}" style="font-size:.72rem;font-weight:600;color:#EF4444;white-space:nowrap;">Ver contratos →</a>
+</div>
+{% endif %}
+
+{# ── Tareas de hoy / vencidas ── #}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.125rem;">
+
+  <div class="pn-card" style="overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--color-border);">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <div style="width:.3rem;height:1rem;border-radius:9999px;background:#3B82F6;"></div>
+        <span style="font-size:.78rem;font-weight:700;">Mis tareas de hoy</span>
+        {% if tasks_today %}<span style="font-size:.65rem;font-weight:700;background:rgba(59,130,246,.12);color:#3B82F6;border-radius:9999px;padding:.1rem .4rem;">{{ tasks_today|length }}</span>{% endif %}
+      </div>
+      {% if tasks_tomorrow %}<span style="font-size:.65rem;color:var(--color-text-muted);">Mañana: {{ tasks_tomorrow|length }}</span>{% endif %}
+    </div>
+    <div>
+      {% for t in tasks_today %}
+      <div style="display:flex;align-items:flex-start;gap:.5rem;padding:.5rem .875rem;border-bottom:1px solid var(--color-border);">
+        <form method="post" action="{% url 'panel:task_toggle' t.pk %}" style="margin:0;flex-shrink:0;">
+          {% csrf_token %}
+          <button type="submit" title="Marcar como completada" style="width:.9rem;height:.9rem;border-radius:.2rem;border:1.5px solid var(--color-border);background:none;cursor:pointer;margin-top:.2rem;"></button>
+        </form>
+        <div style="flex:1;min-width:0;">
+          <a href="{% url 'panel:client_detail' t.lead.pk %}" style="font-size:.75rem;font-weight:600;color:var(--color-text-primary);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.description|truncatechars:50 }}</a>
+          <div style="font-size:.65rem;color:var(--color-text-muted);">{{ t.lead.full_name }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="padding:1.25rem;text-align:center;font-size:.78rem;color:var(--color-success);">✓ Sin tareas pendientes para hoy</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="pn-card" style="overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;border-bottom:1px solid var(--color-border);">
+      <div style="width:.3rem;height:1rem;border-radius:9999px;background:#EF4444;"></div>
+      <span style="font-size:.78rem;font-weight:700;">Tareas vencidas</span>
+      {% if tasks_overdue %}<span style="font-size:.65rem;font-weight:700;background:rgba(239,68,68,.12);color:#EF4444;border-radius:9999px;padding:.1rem .4rem;">{{ tasks_overdue|length }}</span>{% endif %}
+    </div>
+    <div>
+      {% for t in tasks_overdue %}
+      <div style="display:flex;align-items:flex-start;gap:.5rem;padding:.5rem .875rem;border-bottom:1px solid var(--color-border);">
+        <form method="post" action="{% url 'panel:task_toggle' t.pk %}" style="margin:0;flex-shrink:0;">
+          {% csrf_token %}
+          <button type="submit" title="Completar" style="width:.3rem;min-width:.3rem;height:100%;border:none;border-radius:9999px;background:#EF4444;cursor:pointer;align-self:stretch;padding:0;"></button>
+        </form>
+        <div style="flex:1;min-width:0;">
+          <a href="{% url 'panel:client_detail' t.lead.pk %}" style="font-size:.75rem;font-weight:600;color:var(--color-text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;">{{ t.description|truncatechars:50 }}</a>
+          <div style="font-size:.65rem;color:#EF4444;">{{ t.lead.full_name }} · venció el {{ t.due_date|date:"d/m" }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="padding:1.25rem;text-align:center;font-size:.78rem;color:var(--color-success);">✓ Sin tareas vencidas</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+{# ── Leads fríos ── #}
+{% if leads_cold %}
+<div class="pn-card" style="margin-bottom:1.125rem;overflow:hidden;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--color-border);">
+    <div style="display:flex;align-items:center;gap:.5rem;">
+      <div style="width:.3rem;height:1rem;border-radius:9999px;background:#8B5CF6;"></div>
+      <span style="font-size:.78rem;font-weight:700;">Leads fríos — sin actividad en +3 días</span>
+      <span style="font-size:.65rem;font-weight:700;background:rgba(139,92,246,.12);color:#7C3AED;border-radius:9999px;padding:.1rem .4rem;">{{ leads_cold_count }}</span>
+    </div>
+    <a href="{% url 'panel:clients' %}" style="font-size:.7rem;color:var(--color-primary);">Ver todos →</a>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.5rem;padding:.75rem;">
+    {% for lead in leads_cold %}
+    <a href="{% url 'panel:client_detail' lead.pk %}" style="display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;border-radius:.625rem;background:var(--color-bg-alt);border:1px solid var(--color-border);text-decoration:none;transition:border-color .15s;" onmouseover="this.style.borderColor='#8B5CF6'" onmouseout="this.style.borderColor='var(--color-border)'">
+      <div style="width:1.75rem;height:1.75rem;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#6D28D9);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.65rem;font-weight:800;flex-shrink:0;">{{ lead.full_name|first|upper }}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.75rem;font-weight:600;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ lead.full_name }}</div>
+        <div style="font-size:.65rem;color:var(--color-text-muted);">{{ lead.company_name|default:"Particular" }}</div>
+      </div>
+      <svg fill="none" stroke="#8B5CF6" viewBox="0 0 24 24" stroke-width="2" style="width:.85rem;height:.85rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ── Layout 2 columnas ── #}
+<div style="display:grid;grid-template-columns:1fr 300px;gap:1.125rem;">
+
+  {# Cotizaciones recientes #}
+  <div class="pn-table-wrap">
+    <div class="pn-table-header">
+      <span class="pn-table-title">Cotizaciones recientes</span>
+      <a href="{% url 'panel:quotes' %}" class="pn-btn pn-btn-secondary pn-btn-sm">Ver todas</a>
+    </div>
+    <table class="pn-table">
+      <thead><tr><th>Cliente</th><th>Servicio</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+      <tbody>
+        {% for q in recent_quotes %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <div style="width:1.75rem;height:1.75rem;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:.65rem;font-weight:800;flex-shrink:0;">{{ q.lead.full_name|first|upper }}</div>
+              <div>
+                <div class="pn-name">{{ q.lead.full_name }}</div>
+                <div style="font-size:.68rem;color:var(--color-text-muted);">{{ q.lead.company_name|default:"Particular" }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-size:.75rem;">{{ q.get_interest_area_display }}</td>
+          <td><span class="pn-badge pn-badge-{{ q.status }}">{{ q.get_status_display }}</span></td>
+          <td style="font-size:.72rem;color:var(--color-text-muted);white-space:nowrap;">{{ q.created_at|date:"d/m · H:i" }}</td>
+          <td><a href="{% url 'panel:quote_detail' q.pk %}">Ver →</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:var(--color-text-muted);padding:2rem;">Sin cotizaciones</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# Panel derecho #}
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+
+    {# Tickets abiertos #}
+    <div class="pn-card">
+      <div class="pn-card-header">
+        Mis tickets ({{ my_open_tickets }})
+        <a href="{% url 'panel:ticket_create' %}" class="pn-btn pn-btn-primary pn-btn-sm">+ Nuevo</a>
+      </div>
+      <div class="pn-card-body" style="padding:.75rem;">
+        {% for t in tickets_open %}
+        <a href="{% url 'panel:ticket_detail' t.pk %}" style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .625rem;border-radius:.5rem;margin-bottom:.375rem;background:var(--color-bg-alt);border:1px solid var(--color-border);text-decoration:none;">
+          <div>
+            <div style="font-size:.75rem;font-weight:600;color:var(--color-text-primary);font-family:monospace;">{{ t.ticket_number }}</div>
+            <div style="font-size:.68rem;color:var(--color-text-muted);">{{ t.lead.full_name }}</div>
+          </div>
+          <span class="pn-badge pn-badge-{{ t.priority }}" style="{% if t.priority == 'urgent' %}background:color-mix(in srgb,#EF4444 12%,transparent);color:#EF4444;{% elif t.priority == 'high' %}background:color-mix(in srgb,#F59E0B 12%,transparent);color:#D97706;{% else %}background:var(--color-bg);{% endif %}font-size:.6rem;">{{ t.get_priority_display }}</span>
+        </a>
+        {% empty %}
+        <div style="text-align:center;padding:1.25rem;color:var(--color-text-muted);font-size:.78rem;">Sin tickets abiertos</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Renovaciones de contratos — 3 niveles #}
+    {% if contracts_critical or contracts_warning or contracts_upcoming %}
+    <div class="pn-card">
+      <div class="pn-card-header" style="color:var(--color-warning);">
+        Renovaciones próximas
+        <a href="{% url 'panel:contracts' %}" style="font-size:.65rem;color:var(--color-primary);">Ver todos</a>
+      </div>
+      <div class="pn-card-body" style="padding:.625rem .75rem;">
+
+        {% for c in contracts_critical %}
+        <a href="{% url 'panel:contracts' %}" style="display:flex;align-items:center;justify-content:space-between;padding:.45rem .5rem;border-radius:.5rem;margin-bottom:.3rem;background:color-mix(in srgb,#EF4444 6%,transparent);border:1px solid color-mix(in srgb,#EF4444 20%,transparent);text-decoration:none;">
+          <div>
+            <div style="font-size:.73rem;font-weight:600;color:var(--color-text-primary);">{{ c.lead.full_name|truncatechars:22 }}</div>
+            <div style="font-size:.63rem;font-family:monospace;color:var(--color-text-muted);">{{ c.contract_number }}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:.7rem;font-weight:800;color:#EF4444;">{{ c.days_until_expiry }}d</div>
+            <div style="font-size:.58rem;color:#EF4444;">CRÍTICO</div>
+          </div>
+        </a>
+        {% endfor %}
+
+        {% for c in contracts_warning %}
+        <a href="{% url 'panel:contracts' %}" style="display:flex;align-items:center;justify-content:space-between;padding:.45rem .5rem;border-radius:.5rem;margin-bottom:.3rem;background:color-mix(in srgb,#F59E0B 6%,transparent);border:1px solid color-mix(in srgb,#F59E0B 20%,transparent);text-decoration:none;">
+          <div>
+            <div style="font-size:.73rem;font-weight:600;color:var(--color-text-primary);">{{ c.lead.full_name|truncatechars:22 }}</div>
+            <div style="font-size:.63rem;font-family:monospace;color:var(--color-text-muted);">{{ c.contract_number }}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:.7rem;font-weight:800;color:#D97706;">{{ c.days_until_expiry }}d</div>
+            <div style="font-size:.58rem;color:#D97706;">PRÓXIMO</div>
+          </div>
+        </a>
+        {% endfor %}
+
+        {% for c in contracts_upcoming %}
+        <a href="{% url 'panel:contracts' %}" style="display:flex;align-items:center;justify-content:space-between;padding:.45rem .5rem;border-radius:.5rem;margin-bottom:.3rem;background:var(--color-bg-alt);border:1px solid var(--color-border);text-decoration:none;">
+          <div>
+            <div style="font-size:.73rem;font-weight:600;color:var(--color-text-primary);">{{ c.lead.full_name|truncatechars:22 }}</div>
+            <div style="font-size:.63rem;font-family:monospace;color:var(--color-text-muted);">{{ c.contract_number }}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:.7rem;font-weight:700;color:var(--color-text-secondary);">{{ c.days_until_expiry }}d</div>
+            <div style="font-size:.58rem;color:var(--color-text-muted);">60 DÍAS</div>
+          </div>
+        </a>
+        {% endfor %}
+
+      </div>
+    </div>
+    {% endif %}
+
+    {# Acciones rápidas #}
+    <div class="pn-card">
+      <div class="pn-card-header">Acciones rápidas</div>
+      <div class="pn-card-body" style="padding:.75rem;display:flex;flex-direction:column;gap:.5rem;">
+        <a href="{% url 'panel:quotes' %}?status=new" class="pn-btn pn-btn-secondary" style="justify-content:center;">
+          Ver cotizaciones nuevas {% if quotes_new %}<span style="margin-left:.35rem;background:var(--color-warning);color:#fff;border-radius:9999px;padding:0 .4rem;font-size:.65rem;font-weight:700;">{{ quotes_new }}</span>{% endif %}
+        </a>
+        <a href="{% url 'panel:clients' %}" class="pn-btn pn-btn-secondary" style="justify-content:center;">Buscar cliente</a>
+        <a href="{% url 'panel:ticket_create' %}" class="pn-btn pn-btn-primary" style="justify-content:center;">+ Crear ticket de servicio</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

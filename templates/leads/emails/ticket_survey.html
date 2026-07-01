@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Cómo fue tu experiencia? — Solution Copiers</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f6f8; color: #1a202c; }
+    .wrapper { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+    .header { background: #1a56db; padding: 36px 40px; text-align: center; }
+    .header h1 { margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+    .header p { margin: 8px 0 0; color: rgba(255,255,255,.75); font-size: 14px; }
+    .body { padding: 36px 40px; }
+    .greeting { font-size: 17px; font-weight: 600; margin-bottom: 12px; }
+    .text { font-size: 15px; line-height: 1.65; color: #4a5568; margin-bottom: 20px; }
+    .ticket-box { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 20px; margin-bottom: 28px; }
+    .ticket-box p { margin: 4px 0; font-size: 13px; color: #718096; }
+    .ticket-box strong { color: #2d3748; }
+    .cta-btn { display: block; width: fit-content; margin: 0 auto 32px; background: #1a56db; color: #ffffff !important; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-weight: 700; font-size: 16px; text-align: center; }
+    .stars { text-align: center; font-size: 28px; letter-spacing: 4px; margin-bottom: 28px; }
+    .footer { border-top: 1px solid #e2e8f0; padding: 24px 40px; text-align: center; }
+    .footer p { font-size: 12px; color: #a0aec0; margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <div class="header">
+      <h1>Solution Copiers</h1>
+      <p>Servicio técnico · Alquiler · Software</p>
+    </div>
+
+    <div class="body">
+      <p class="greeting">Hola, {{ ticket.lead.full_name }}.</p>
+
+      <p class="text">
+        Queremos saber cómo fue tu experiencia con nuestro servicio técnico.
+        Tu opinión nos ayuda a seguir mejorando la atención que brindamos
+        a todas las empresas que confían en nosotros.
+      </p>
+
+      <div class="ticket-box">
+        <p><strong>Ticket:</strong> {{ ticket.ticket_number }}</p>
+        <p><strong>Servicio:</strong> {{ ticket.get_issue_type_display }}</p>
+        {% if ticket.equipment_description %}
+        <p><strong>Equipo:</strong> {{ ticket.equipment_description }}</p>
+        {% endif %}
+        {% if ticket.assigned_to %}
+        <p><strong>Técnico:</strong> {{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.username }}</p>
+        {% endif %}
+      </div>
+
+      <p class="text">
+        La encuesta toma menos de 2 minutos y es completamente anónima.
+      </p>
+
+      <div class="stars">⭐⭐⭐⭐⭐</div>
+
+      <a href="{{ survey_url }}" class="cta-btn">Calificar mi experiencia</a>
+
+      <p class="text" style="font-size:13px; text-align:center;">
+        Si tienes algún inconveniente pendiente, responde este correo o
+        comunícate con nosotros. Estamos para ayudarte.
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>Solution Copiers · Medellín, Colombia</p>
+      <p>Este correo se generó automáticamente al cerrar el ticket {{ ticket.ticket_number }}.</p>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{% if jsonld_script %}
+<script type="application/ld+json">{{ jsonld_script|safe }}</script>
+{% endif %}
+{% if breadcrumb_jsonld %}
+<script type="application/ld+json">{{ breadcrumb_jsonld|safe }}</script>
+{% endif %}

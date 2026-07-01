@@ -1,0 +1,55 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Configuración{% endblock %}
+{% block nav_settings %}active{% endblock %}
+{% block breadcrumb %}<span class="da-breadcrumb-sep">/</span><span class="da-breadcrumb-current">Configuración</span>{% endblock %}
+{% block content %}
+<div class="da-page-header"><h1 class="da-page-title">Configuración del sitio</h1></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+  <div class="da-card">
+    <div class="da-card-header">Información de la empresa</div>
+    <div class="da-card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div style="display:flex;flex-direction:column;gap:.875rem;">
+          <div class="da-field"><label>Nombre del sitio</label>{{ form.site_name }}</div>
+          <div class="da-field"><label>Eslogan</label>{{ form.tagline }}</div>
+          <div class="da-field"><label>Dirección</label>{{ form.address }}</div>
+          <div class="da-field"><label>Ciudad</label>{{ form.city }}</div>
+          <div class="da-field"><label>Teléfono principal</label>{{ form.phone_primary }}</div>
+          <div class="da-field"><label>WhatsApp (con código país, ej: +573001234567)</label>{{ form.phone_whatsapp }}</div>
+          <div class="da-field"><label>Email de contacto</label>{{ form.email_contact }}</div>
+          <div class="da-field"><label>Instagram URL</label>{{ form.instagram_url }}</div>
+          <div class="da-field"><label>Facebook URL</label>{{ form.facebook_url }}</div>
+        </div>
+        <button type="submit" class="da-btn da-btn-primary" style="margin-top:1.25rem;width:100%;padding:.75rem;justify-content:center;">Guardar configuración</button>
+      </form>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+    {% if tokens %}
+    <div class="da-card">
+      <div class="da-card-header">Paleta de colores actual</div>
+      <div class="da-card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;font-size:.8125rem;">
+          <div style="display:flex;align-items:center;gap:.5rem;"><span style="width:1.25rem;height:1.25rem;border-radius:.25rem;background:{{ tokens.color_primary }};display:inline-block;"></span><span style="color:var(--color-text-muted);">Primary</span><span style="margin-left:auto;font-family:var(--font-mono);color:var(--color-text-primary);">{{ tokens.color_primary }}</span></div>
+          <div style="display:flex;align-items:center;gap:.5rem;"><span style="width:1.25rem;height:1.25rem;border-radius:.25rem;background:{{ tokens.color_accent }};display:inline-block;"></span><span style="color:var(--color-text-muted);">Accent</span><span style="margin-left:auto;font-family:var(--font-mono);color:var(--color-text-primary);">{{ tokens.color_accent }}</span></div>
+          <div style="display:flex;align-items:center;gap:.5rem;"><span style="width:1.25rem;height:1.25rem;border-radius:.25rem;background:{{ tokens.color_bg }};border:1px solid var(--color-border);display:inline-block;"></span><span style="color:var(--color-text-muted);">Background</span><span style="margin-left:auto;font-family:var(--font-mono);color:var(--color-text-primary);">{{ tokens.color_bg }}</span></div>
+          <div style="display:flex;align-items:center;gap:.5rem;"><span style="width:1.25rem;height:1.25rem;border-radius:.25rem;background:{{ tokens.color_surface }};border:1px solid var(--color-border);display:inline-block;"></span><span style="color:var(--color-text-muted);">Surface</span><span style="margin-left:auto;font-family:var(--font-mono);color:var(--color-text-primary);">{{ tokens.color_surface }}</span></div>
+        </div>
+        <div style="margin-top:1rem;padding:.75rem;border-radius:.5rem;background:var(--color-bg-alt);border:1px solid var(--color-border);font-size:.78rem;color:var(--color-text-muted);">
+          Para cambiar colores globales, usa el panel Django Admin en <a href="/panel-admin-sc/seo/designtokens/" style="color:var(--color-primary);">/panel-admin-sc/seo/designtokens/</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    <div class="da-card">
+      <div class="da-card-header">Accesos rápidos</div>
+      <div class="da-card-body" style="display:flex;flex-direction:column;gap:.5rem;">
+        <a href="/panel-admin-sc/" target="_blank" class="da-btn da-btn-secondary" style="justify-content:center;">Django Admin (avanzado)</a>
+        <a href="/encuesta/panel/" target="_blank" class="da-btn da-btn-secondary" style="justify-content:center;">Panel de encuestas</a>
+        <a href="/" target="_blank" class="da-btn da-btn-secondary" style="justify-content:center;">Ver sitio web</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

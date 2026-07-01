@@ -1,0 +1,143 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Tareas de entrega{% endblock %}
+{% block nav_campo %}active{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Tareas de entrega</h1>
+    <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">Asigna rutas y entregas al equipo de campo</p>
+  </div>
+  <div style="display:flex;gap:.75rem;">
+    <a href="{% url 'dashboard:campo_map' %}" class="da-btn da-btn-secondary">Ver mapa</a>
+  </div>
+</div>
+
+{% if messages %}
+  {% for msg in messages %}
+  <div style="padding:.75rem 1rem;border-radius:.625rem;margin-bottom:1rem;background:rgba(239,68,68,.1);color:#EF4444;border:1px solid rgba(239,68,68,.2);font-size:.8125rem;">{{ msg }}</div>
+  {% endfor %}
+{% endif %}
+
+{# ── Crear tarea rápida ── #}
+<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.25rem;margin-bottom:1.5rem;">
+  <div style="font-size:.8125rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1rem;">Nueva tarea de entrega</div>
+  <form method="post" action="{% url 'dashboard:campo_tasks' %}">
+    {% csrf_token %}
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:.75rem;align-items:end;flex-wrap:wrap;">
+      <div>
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Mensajero / Técnico</label>
+        <select name="field_user_id" required class="da-input" style="width:100%;">
+          <option value="">— Seleccionar —</option>
+          {% for fu in field_users %}
+          <option value="{{ fu.pk }}">{{ fu.user.get_full_name|default:fu.user.username }} ({{ fu.get_role_display }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Tarea / Descripción *</label>
+        <input type="text" name="title" required class="da-input" style="width:100%;" placeholder="Ej: Entregar insumos cliente X">
+      </div>
+      <div>
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Dirección</label>
+        <input type="text" name="address" class="da-input" style="width:100%;" placeholder="Calle / Barrio / Ciudad">
+      </div>
+      <div>
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Fecha</label>
+        <input type="date" name="due_date" class="da-input" style="width:100%;" value="{{ today }}">
+      </div>
+      <div>
+        <button type="submit" class="da-btn da-btn-primary" style="white-space:nowrap;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Asignar
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+{# ── Filtros ── #}
+<form method="get" style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:flex-end;">
+  <select name="user" class="da-input" style="width:200px;">
+    <option value="">Todos los mensajeros</option>
+    {% for fu in field_users %}
+    <option value="{{ fu.pk }}" {% if filter_user == fu.pk|stringformat:"s" %}selected{% endif %}>
+      {{ fu.user.get_full_name|default:fu.user.username }}
+    </option>
+    {% endfor %}
+  </select>
+  <select name="status" class="da-input" style="width:160px;">
+    <option value="">Todos los estados</option>
+    {% for val, label in status_choices %}
+    <option value="{{ val }}" {% if filter_status == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <input type="date" name="date" class="da-input" style="width:160px;" value="{{ filter_date }}">
+  <button type="submit" class="da-btn da-btn-primary">Filtrar</button>
+  {% if filter_user or filter_status or filter_date %}
+  <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Limpiar</a>
+  {% endif %}
+</form>
+
+{# ── Lista ── #}
+<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid var(--color-border);">
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Tarea</th>
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Asignado a</th>
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Fecha</th>
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Estado</th>
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Completada</th>
+        <th style="padding:.75rem 1.25rem;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr style="border-bottom:1px solid var(--color-border);transition:background .15s;"
+          onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='transparent'">
+        <td style="padding:.875rem 1.25rem;">
+          <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">{{ task.title }}</div>
+          {% if task.address %}
+          <div style="font-size:.7rem;color:var(--color-text-muted);margin-top:.15rem;">📍 {{ task.address }}</div>
+          {% endif %}
+        </td>
+        <td style="padding:.875rem 1.25rem;">
+          <div style="font-size:.8rem;color:var(--color-text-primary);">{{ task.field_user.user.get_full_name|default:task.field_user.user.username }}</div>
+          <div style="font-size:.68rem;color:var(--color-text-muted);">{{ task.field_user.get_role_display }}</div>
+        </td>
+        <td style="padding:.875rem 1.25rem;font-size:.78rem;color:var(--color-text-secondary);">
+          {{ task.due_date|date:"d/m/Y"|default:"Sin fecha" }}
+        </td>
+        <td style="padding:.875rem 1.25rem;">
+          {% if task.status == 'pending' %}
+          <span style="font-size:.72rem;font-weight:700;padding:.25rem .65rem;border-radius:9999px;background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.2);">Pendiente</span>
+          {% elif task.status == 'done' %}
+          <span style="font-size:.72rem;font-weight:700;padding:.25rem .65rem;border-radius:9999px;background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);">Completada</span>
+          {% else %}
+          <span style="font-size:.72rem;font-weight:700;padding:.25rem .65rem;border-radius:9999px;background:rgba(107,114,128,.1);color:#6B7280;border:1px solid rgba(107,114,128,.15);">Cancelada</span>
+          {% endif %}
+        </td>
+        <td style="padding:.875rem 1.25rem;font-size:.72rem;color:var(--color-text-muted);">
+          {% if task.status == 'done' %}
+            {{ task.completed_at|date:"d/m/Y H:i" }}
+            {% if task.completion_invoice %}<br><span style="color:var(--color-text-secondary);">Fact: {{ task.completion_invoice }}</span>{% endif %}
+            {% if task.completion_photo %}<br><span style="color:#10B981;">📷 Con foto</span>{% endif %}
+          {% else %}—{% endif %}
+        </td>
+        <td style="padding:.875rem 1.25rem;">
+          <a href="{% url 'dashboard:campo_task_detail' task.pk %}"
+            style="font-size:.72rem;font-weight:600;color:var(--color-primary);text-decoration:none;padding:.3rem .7rem;border:1px solid var(--color-primary);border-radius:.4rem;">Ver</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="padding:3rem;text-align:center;color:var(--color-text-muted);font-size:.875rem;">
+          No hay tareas con los filtros aplicados.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,541 @@
+# English translations for Solution Copiers
+# Copyright (C) 2026 Solution Copiers
+msgid ""
+msgstr ""
+"Project-Id-Version: solution-copiers\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-01 00:00+0000\n"
+"PO-Revision-Date: 2026-07-01 00:00+0000\n"
+"Last-Translator: Solution Copiers\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# ── NAVBAR ──────────────────────────────────────────────
+msgid "Buscar tóneres, equipos, repuestos…"
+msgstr "Search toners, equipment, spare parts…"
+
+msgid "Buscando…"
+msgstr "Searching…"
+
+msgid "Sin resultados para"
+msgstr "No results for"
+
+msgid "Equipos"
+msgstr "Equipment"
+
+msgid "Consumibles e insumos"
+msgstr "Consumables & supplies"
+
+msgid "Ver todos los resultados para"
+msgstr "See all results for"
+
+msgid "Búsquedas frecuentes"
+msgstr "Frequent searches"
+
+msgid "Alquiler"
+msgstr "Rental"
+
+msgid "Venta"
+msgstr "Sales"
+
+msgid "Cableado"
+msgstr "Cabling"
+
+msgid "Software a la medida"
+msgstr "Custom Software"
+
+msgid "Sistemas y ERPs"
+msgstr "Systems & ERPs"
+
+msgid "Diseño web"
+msgstr "Web Design"
+
+msgid "Sitios y e-commerce"
+msgstr "Websites & e-commerce"
+
+msgid "Apps móviles"
+msgstr "Mobile Apps"
+
+msgid "iOS, Android, híbridas"
+msgstr "iOS, Android, hybrid"
+
+msgid "Bases de datos"
+msgstr "Databases"
+
+msgid "Diseño y migración cloud"
+msgstr "Design & cloud migration"
+
+msgid "Quiénes somos"
+msgstr "About Us"
+
+msgid "Encuesta"
+msgstr "Survey"
+
+msgid "Contacto"
+msgstr "Contact"
+
+msgid "Cotizar ahora"
+msgstr "Get a Quote"
+
+msgid "Buscar productos"
+msgstr "Search products"
+
+msgid "Cambiar a modo claro"
+msgstr "Switch to light mode"
+
+msgid "Cambiar a modo oscuro"
+msgstr "Switch to dark mode"
+
+msgid "Modo claro"
+msgstr "Light mode"
+
+msgid "Modo oscuro"
+msgstr "Dark mode"
+
+msgid "Alquiler de fotocopiadoras"
+msgstr "Photocopier Rental"
+
+msgid "Venta de fotocopiadoras"
+msgstr "Photocopier Sales"
+
+msgid "Cableado estructurado"
+msgstr "Structured Cabling"
+
+# ── FOOTER ──────────────────────────────────────────────
+msgid "Servicio técnico"
+msgstr "Technical Service"
+
+msgid "Consumibles Ricoh"
+msgstr "Ricoh Consumables"
+
+msgid "Diseño web"
+msgstr "Web Design"
+
+msgid "Apps móviles"
+msgstr "Mobile Apps"
+
+msgid "Todos los derechos reservados."
+msgstr "All rights reserved."
+
+msgid "Política de privacidad"
+msgstr "Privacy Policy"
+
+msgid "Términos y condiciones"
+msgstr "Terms & Conditions"
+
+# ── HOME — HERO ──────────────────────────────────────────
+msgid "Integrador Tecnológico B2B · Medellín, Colombia"
+msgstr "B2B Technology Integrator · Medellín, Colombia"
+
+msgid "Soluciones Tecnológicas"
+msgstr "Technology Solutions"
+
+msgid "Integrales"
+msgstr "All-in-One"
+
+msgid "para Empresas"
+msgstr "for Businesses"
+
+msgid ""
+"Software empresarial, cableado estructurado, impresión corporativa,\n"
+"        suministros tecnológicos y soporte especializado.\n"
+"        Todo en un solo aliado estratégico."
+msgstr ""
+"Enterprise software, structured cabling, corporate printing,\n"
+"        technology supplies and specialized support.\n"
+"        All in one strategic partner."
+
+msgid "Solicitar Cotización"
+msgstr "Request a Quote"
+
+msgid "Hablar con un Asesor"
+msgstr "Talk to an Advisor"
+
+msgid "Distribuidor Autorizado Ricoh"
+msgstr "Authorized Ricoh Distributor"
+
+msgid "+3.600 empresas atendidas"
+msgstr "+3,600 companies served"
+
+msgid "Soporte técnico 24h"
+msgstr "24h Technical Support"
+
+msgid "Cobertura Antioquia"
+msgstr "Antioquia Coverage"
+
+msgid "Empresas atendidas"
+msgstr "Companies served"
+
+msgid "Años de experiencia"
+msgstr "Years of experience"
+
+msgid "Satisfacción"
+msgstr "Satisfaction"
+
+msgid "Atención técnica"
+msgstr "Technical support"
+
+# ── HOME — LOGOS STRIP ───────────────────────────────────
+msgid "Empresas de todos los sectores confían en nosotros"
+msgstr "Companies from all sectors trust us"
+
+# ── HOME — SERVICES ──────────────────────────────────────
+msgid "Nuestros servicios"
+msgstr "Our services"
+
+msgid "Todo lo que tu empresa necesita,"
+msgstr "Everything your business needs,"
+
+msgid "en un solo lugar"
+msgstr "in one place"
+
+msgid ""
+"Desde impresoras corporativas hasta software empresarial a la medida. "
+"Somos el integrador tecnológico que tu empresa necesita para crecer con "
+"tecnología confiable."
+msgstr ""
+"From corporate printers to custom enterprise software. We are the "
+"technology integrator your company needs to grow with reliable technology."
+
+msgid "Impresión Corporativa"
+msgstr "Corporate Printing"
+
+msgid "Alquiler y venta de equipos Ricoh multifuncionales con mantenimiento preventivo y suministros incluidos."
+msgstr "Rental and sale of Ricoh multifunction equipment with preventive maintenance and supplies included."
+
+msgid "Alquiler de fotocopiadoras Ricoh"
+msgstr "Ricoh photocopier rental"
+
+msgid "Venta de equipos nuevos y certificados"
+msgstr "New and certified equipment sales"
+
+msgid "Tóner y consumibles originales"
+msgstr "Original toner and consumables"
+
+msgid "Mantenimiento preventivo incluido"
+msgstr "Preventive maintenance included"
+
+msgid "Ver equipos"
+msgstr "View equipment"
+
+msgid "Software Empresarial"
+msgstr "Enterprise Software"
+
+msgid "Sistemas a la medida que digitalizan y automatizan los procesos de tu empresa con tecnología moderna."
+msgstr "Custom systems that digitize and automate your company's processes with modern technology."
+
+msgid "ERPs y CRMs personalizados"
+msgstr "Custom ERPs and CRMs"
+
+msgid "Aplicaciones web y móviles"
+msgstr "Web and mobile applications"
+
+msgid "Automatización de procesos"
+msgstr "Process automation"
+
+msgid "Integraciones empresariales"
+msgstr "Enterprise integrations"
+
+msgid "Conocer soluciones"
+msgstr "Explore solutions"
+
+msgid "Cableado Estructurado"
+msgstr "Structured Cabling"
+
+msgid "Instalación y certificación de redes de datos de alto rendimiento. La infraestructura que garantiza que todo funcione."
+msgstr "Installation and certification of high-performance data networks. The infrastructure that guarantees everything works."
+
+msgid "Redes Cat 6A certificadas"
+msgstr "Certified Cat 6A networks"
+
+msgid "Fibra óptica y voz/datos"
+msgstr "Fiber optic and voice/data"
+
+msgid "Centros de cableado (racks)"
+msgstr "Cabling centers (racks)"
+
+msgid "Certificación de canales"
+msgstr "Channel certification"
+
+msgid "Ver proyectos"
+msgstr "View projects"
+
+msgid "Soporte Tecnológico"
+msgstr "Technology Support"
+
+msgid "Servicio técnico especializado y suministros tecnológicos. Mantenemos tu infraestructura en óptimas condiciones."
+msgstr "Specialized technical service and technology supplies. We keep your infrastructure in optimal condition."
+
+msgid "Servicio técnico en sitio"
+msgstr "On-site technical service"
+
+msgid "Tóner y repuestos originales"
+msgstr "Original toner and spare parts"
+
+msgid "Mantenimiento preventivo"
+msgstr "Preventive maintenance"
+
+msgid "Respuesta en 24 horas"
+msgstr "24-hour response"
+
+msgid "Solicitar soporte"
+msgstr "Request support"
+
+# ── HOME — STATS BAND ────────────────────────────────────
+msgid "Resultados que hablan por sí solos"
+msgstr "Results that speak for themselves"
+
+msgid "Números que generan confianza"
+msgstr "Numbers that build trust"
+
+msgid "En Medellín y toda Colombia"
+msgstr "In Medellín and all of Colombia"
+
+msgid "Desde 2009 en el mercado"
+msgstr "In the market since 2009"
+
+msgid "Clientes satisfechos"
+msgstr "Satisfied clients"
+
+msgid "Según encuesta de satisfacción"
+msgstr "According to satisfaction survey"
+
+msgid "Tiempo de respuesta"
+msgstr "Response time"
+
+msgid "Soporte técnico garantizado"
+msgstr "Guaranteed technical support"
+
+msgid "Modelos Ricoh"
+msgstr "Ricoh models"
+
+msgid "Equipos en stock disponibles"
+msgstr "Equipment available in stock"
+
+msgid "Cobertura garantizada"
+msgstr "Guaranteed coverage"
+
+msgid "Medellín y Antioquia"
+msgstr "Medellín and Antioquia"
+
+# ── HOME — FEATURED COPIERS ──────────────────────────────
+msgid "Catálogo destacado"
+msgstr "Featured catalog"
+
+msgid "Equipos Ricoh listos para tu oficina"
+msgstr "Ricoh equipment ready for your office"
+
+msgid "Impresoras multifuncionales de alto rendimiento. Desde compactas hasta industriales."
+msgstr "High-performance multifunction printers. From compact to industrial."
+
+msgid "Ver catálogo completo"
+msgstr "View full catalog"
+
+# ── HOME — CONSUMABLES ───────────────────────────────────
+msgid "Consumibles & Repuestos"
+msgstr "Consumables & Spare Parts"
+
+msgid "Tóner, tintas y repuestos"
+msgstr "Toner, inks and spare parts"
+
+msgid "originales y genéricos"
+msgstr "original and generic"
+
+msgid "Más de 700 referencias disponibles. Ricoh, HP, Epson, Kyocera, Samsung, Brother y más."
+msgstr "Over 700 references available. Ricoh, HP, Epson, Kyocera, Samsung, Brother and more."
+
+msgid "Precios según volumen y tipo de cliente."
+msgstr "Prices based on volume and client type."
+
+msgid "Tóner"
+msgstr "Toner"
+
+msgid "B/N y color. Originales, americanos y genéricos para Ricoh, HP, Kyocera, Samsung y más."
+msgstr "B&W and color. Original, American and generic for Ricoh, HP, Kyocera, Samsung and more."
+
+msgid "Tóner Ricoh MP / MPC"
+msgstr "Ricoh MP / MPC Toner"
+
+msgid "Tóner HP, Samsung, Epson"
+msgstr "HP, Samsung, Epson Toner"
+
+msgid "Recarga de 200g a 1.000g"
+msgstr "Refill from 200g to 1,000g"
+
+msgid "Ver tóneres"
+msgstr "View toners"
+
+msgid "Tintas & Cartuchos"
+msgstr "Inks & Cartridges"
+
+msgid "Tintas en botella y cartuchos para impresoras Epson, HP, Canon, Brother y otras marcas."
+msgstr "Bottled inks and cartridges for Epson, HP, Canon, Brother and other brands."
+
+msgid "Tintas universales x litro"
+msgstr "Universal inks per liter"
+
+msgid "CMYK y colores especiales"
+msgstr "CMYK and special colors"
+
+msgid "Ver tintas"
+msgstr "View inks"
+
+msgid "Repuestos & Kits"
+msgstr "Spare Parts & Kits"
+
+msgid "Rodillos, cilindros, cuchillas, bandas, chips y kits de mantenimiento para todas las marcas."
+msgstr "Rollers, drums, blades, belts, chips and maintenance kits for all brands."
+
+msgid "Rodillos, cilindros y cuchillas"
+msgstr "Rollers, drums and blades"
+
+msgid "Bandas fusoras y acetatos"
+msgstr "Fuser belts and acetates"
+
+msgid "Chips y reveladores"
+msgstr "Chips and developers"
+
+msgid "Kits de mantenimiento"
+msgstr "Maintenance kits"
+
+msgid "Ver repuestos"
+msgstr "View spare parts"
+
+msgid "En stock"
+msgstr "In stock"
+
+msgid "Desde"
+msgstr "From"
+
+msgid "Consultar precio"
+msgstr "Ask for price"
+
+msgid "Manejamos más de 700 referencias. Los precios varían según volumen y tipo de cliente."
+msgstr "We carry over 700 references. Prices vary by volume and client type."
+
+msgid "Solicitar cotización de insumos"
+msgstr "Request consumables quote"
+
+# ── HOME — PROCESS ───────────────────────────────────────
+msgid "Nuestro proceso"
+msgstr "Our process"
+
+msgid "Así trabajamos contigo,"
+msgstr "This is how we work with you,"
+
+msgid "sin complicaciones"
+msgstr "without complications"
+
+msgid "Desde el primer contacto hasta el soporte post-implementación, acompañamos cada etapa con profesionalismo y transparencia."
+msgstr "From the first contact to post-implementation support, we accompany every stage with professionalism and transparency."
+
+msgid "Diagnóstico"
+msgstr "Diagnosis"
+
+msgid "Analizamos las necesidades de tu empresa sin costo. Evaluamos equipos, procesos y requerimientos tecnológicos."
+msgstr "We analyze your company's needs at no cost. We evaluate equipment, processes and technology requirements."
+
+msgid "Propuesta"
+msgstr "Proposal"
+
+msgid "Diseñamos un plan personalizado con costos claros, tiempos definidos y condiciones adaptadas a tu presupuesto."
+msgstr "We design a personalized plan with clear costs, defined timelines and conditions adapted to your budget."
+
+msgid "Implementación"
+msgstr "Implementation"
+
+msgid "Ejecutamos el proyecto con mínima interrupción. Instalación profesional y capacitación incluida."
+msgstr "We execute the project with minimal interruption. Professional installation and training included."
+
+msgid "Soporte continuo"
+msgstr "Ongoing support"
+
+msgid "Atención técnica permanente, mantenimientos preventivos programados y soporte en 24 horas garantizado."
+msgstr "Permanent technical support, scheduled preventive maintenance and 24-hour support guaranteed."
+
+# ── HOME — PORTFOLIO ─────────────────────────────────────
+msgid "Portafolio de desarrollo"
+msgstr "Development portfolio"
+
+msgid "Proyectos"
+msgstr "Projects"
+
+msgid "desarrollados"
+msgstr "custom-built"
+
+msgid "a medida"
+msgstr "to order"
+
+msgid "Soluciones de software construidas con tecnologías modernas para distintas industrias y necesidades."
+msgstr "Software solutions built with modern technologies for different industries and needs."
+
+msgid "Completado"
+msgstr "Completed"
+
+msgid "En desarrollo"
+msgstr "In development"
+
+# ── HOME — TESTIMONIALS ──────────────────────────────────
+msgid "Testimonios"
+msgstr "Testimonials"
+
+msgid "Lo que dicen nuestros"
+msgstr "What our"
+
+msgid "clientes"
+msgstr "clients say"
+
+msgid "Más de 3,600 empresas ya experimentaron la diferencia. Estas son sus palabras."
+msgstr "Over 3,600 companies have already experienced the difference. These are their words."
+
+# ── HOME — BLOG ──────────────────────────────────────────
+msgid "Blog corporativo"
+msgstr "Corporate blog"
+
+msgid "Novedades tecnológicas para tu empresa"
+msgstr "Technology news for your business"
+
+msgid "Ver todos los artículos"
+msgstr "See all articles"
+
+# ── HOME — FAQ ───────────────────────────────────────────
+msgid "Preguntas frecuentes"
+msgstr "Frequently asked questions"
+
+msgid "Todo lo que necesitas"
+msgstr "Everything you need"
+
+msgid "saber"
+msgstr "to know"
+
+msgid "Resolvemos las dudas más frecuentes antes de que las tengas."
+msgstr "We answer the most common questions before you ask."
+
+# ── HOME — CTA FINAL ─────────────────────────────────────
+msgid "¿Listo para dar el siguiente paso?"
+msgstr "Ready to take the next step?"
+
+msgid "Transforma tu empresa con tecnología que funciona"
+msgstr "Transform your business with technology that works"
+
+msgid "Más de 3,600 empresas en Medellín y Antioquia ya confían en nosotros. Agenda una asesoría gratuita hoy."
+msgstr "Over 3,600 companies in Medellín and Antioquia already trust us. Schedule a free consultation today."
+
+msgid "Solicitar Cotización Gratis"
+msgstr "Request Free Quote"
+
+msgid "Sin compromiso"
+msgstr "No commitment"
+
+msgid "Respuesta en menos de 2 horas"
+msgstr "Response in less than 2 hours"
+
+msgid "Cotización sin costo"
+msgstr "Free quote"
+
+msgid "+3,600 empresas satisfechas"
+msgstr "+3,600 satisfied companies"

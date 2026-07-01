@@ -1,0 +1,53 @@
+{% load static i18n %}
+{% get_current_language as CURRENT_LANGUAGE %}
+<!DOCTYPE html>
+<html lang="{{ CURRENT_LANGUAGE }}"
+      data-animations-enabled="{{ design_tokens.animations_enabled|yesno:'true,false' }}"
+      data-parallax-enabled="{{ design_tokens.parallax_enabled|yesno:'true,false' }}"
+      data-smooth-scroll="{{ design_tokens.smooth_scroll_enabled|yesno:'true,false' }}">
+<head>
+    <script>
+      (function(){
+        var t = localStorage.getItem('theme') ||
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
+    {% include "partials/_head.html" %}
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+    <!-- Page Loader -->
+    <div id="page-loader" aria-hidden="true">
+        <div class="loader-logo">
+            <img src="{% static 'images/logo.webp' %}" alt="Solution Copiers" style="height:36px;width:auto;object-fit:contain;">
+        </div>
+        <div class="loader-bar-track">
+            <div class="loader-bar"></div>
+        </div>
+    </div>
+
+    {% include "partials/_navbar.html" %}
+
+    {% block breadcrumbs %}
+        {% if breadcrumbs %}
+            {% include "partials/_breadcrumbs.html" %}
+        {% endif %}
+    {% endblock %}
+
+    <main id="main" class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include "partials/_footer.html" %}
+    {% include "partials/_whatsapp_button.html" %}
+
+    {% include "partials/_jsonld.html" %}
+
+    <script src="{% static 'dist/js/main.js' %}" defer></script>
+
+    {% block extra_js %}{% endblock %}
+
+    {% include "partials/_public_assistant.html" %}
+</body>
+</html>

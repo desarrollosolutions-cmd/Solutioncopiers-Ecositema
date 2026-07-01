@@ -1,0 +1,97 @@
+{% extends "panel/_base.html" %}
+{% block title %}Mis Facturas{% endblock %}
+{% block nav_invoices %}active{% endblock %}
+
+{% block breadcrumb %}
+<span class="pn-breadcrumb-sep">›</span>
+<span class="pn-breadcrumb-current">Facturas</span>
+{% endblock %}
+
+{% block content %}
+<div class="pn-page-header">
+  <h1 class="pn-page-title">Mis Facturas</h1>
+  <a href="{% url 'panel:invoice_create' %}" class="pn-btn pn-btn-primary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+    Nueva Factura
+  </a>
+</div>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="pn-alert pn-alert-{{ msg.tags|default:'info' }}">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  {{ msg }}
+</div>
+{% endfor %}
+{% endif %}
+
+{# Filtros #}
+<form method="get" style="display:flex;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+  <div class="pn-search-wrap" style="flex:1;min-width:180px;">
+    <span class="pn-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></span>
+    <input type="text" name="q" value="{{ q }}" placeholder="Cliente o número…" class="pn-input pn-input-search">
+  </div>
+  <select name="estado" class="pn-input" style="max-width:160px;">
+    <option value="">Todos los estados</option>
+    {% for val, label in status_choices %}
+    <option value="{{ val }}" {% if estado_actual == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="pn-btn pn-btn-secondary">Filtrar</button>
+  {% if q or estado_actual %}<a href="{% url 'panel:invoices' %}" class="pn-btn pn-btn-secondary">Limpiar</a>{% endif %}
+</form>
+
+<div class="pn-table-wrap">
+  <div class="pn-table-header">
+    <span class="pn-table-title">{{ total }} factura{{ total|pluralize:"s" }}</span>
+  </div>
+  {% if invoices %}
+  <table class="pn-table">
+    <thead>
+      <tr>
+        <th>Número</th>
+        <th>Cliente</th>
+        <th>Fecha</th>
+        <th>Vence</th>
+        <th>Total</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for inv in invoices %}
+    <tr>
+      <td><span class="pn-name">{{ inv.invoice_number }}</span></td>
+      <td>{{ inv.client_name }}{% if inv.client_nit %}<br><span style="font-size:.68rem;color:var(--color-text-muted);">NIT {{ inv.client_nit }}</span>{% endif %}</td>
+      <td>{{ inv.issue_date|date:"d/m/Y"|default:"—" }}</td>
+      <td>
+        {% if inv.due_date %}
+          {% if inv.is_overdue %}
+            <span style="color:var(--color-danger);font-weight:600;">{{ inv.due_date|date:"d/m/Y" }}</span>
+          {% else %}
+            {{ inv.due_date|date:"d/m/Y" }}
+          {% endif %}
+        {% else %}—{% endif %}
+      </td>
+      <td style="font-weight:700;color:var(--color-text-primary);">
+        ${{ inv.total|floatformat:0 }}
+      </td>
+      <td>
+        <span class="pn-badge pn-badge-{{ inv.status }}">{{ inv.get_status_display }}</span>
+      </td>
+      <td>
+        <a href="{% url 'panel:invoice_detail' pk=inv.pk %}" class="pn-btn pn-btn-secondary pn-btn-sm">Ver</a>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="padding:2.5rem;text-align:center;color:var(--color-text-muted);">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="width:2.5rem;height:2.5rem;margin:0 auto .75rem;display:block;opacity:.4;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+    <p style="font-size:.875rem;">No hay facturas{% if q or estado_actual %} con ese criterio{% endif %}.</p>
+    <a href="{% url 'panel:invoice_create' %}" class="pn-btn pn-btn-primary" style="margin-top:.75rem;">Crear primera factura</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

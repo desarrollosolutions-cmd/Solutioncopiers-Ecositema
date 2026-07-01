@@ -1,0 +1,18 @@
+{% extends "panel/_base.html" %}
+{% block title %}Acceso restringido{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
+  <div style="text-align:center;max-width:380px;">
+    <div style="width:5rem;height:5rem;border-radius:50%;background:rgba(239,68,68,.1);border:2px solid rgba(239,68,68,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+      <svg fill="none" stroke="#EF4444" viewBox="0 0 24 24" stroke-width="1.5" style="width:2.25rem;height:2.25rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+    </div>
+    <h2 style="font-size:1.25rem;font-weight:800;color:var(--color-text-primary);letter-spacing:-.03em;margin:0 0 .5rem;">Sin acceso a esta sección</h2>
+    <p style="font-size:.875rem;color:var(--color-text-muted);line-height:1.6;margin:0 0 1.75rem;">
+      No tienes permiso para ver <strong style="color:var(--color-text-secondary);">{{ perm_label }}</strong>.<br>
+      Solicita acceso a tu administrador.
+    </p>
+    <a href="{% url 'panel:home' %}" class="pn-btn pn-btn-primary" style="display:inline-flex;justify-content:center;">Volver al inicio</a>
+  </div>
+</div>
+{% endblock %}

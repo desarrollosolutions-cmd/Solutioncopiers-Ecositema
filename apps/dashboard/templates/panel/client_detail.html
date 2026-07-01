@@ -1,0 +1,227 @@
+{% extends "panel/_base.html" %}
+{% block title %}{{ lead.full_name }}{% endblock %}
+{% block nav_clients %}active{% endblock %}
+{% block breadcrumb %}
+<span class="pn-breadcrumb-sep">/</span>
+<a href="{% url 'panel:clients' %}" style="color:var(--color-text-muted);text-decoration:none;">Clientes</a>
+<span class="pn-breadcrumb-sep">/</span>
+<span class="pn-breadcrumb-current">{{ lead.full_name }}</span>
+{% endblock %}
+
+{% block content %}
+
+{# Header cliente #}
+<div style="background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary) 12%,var(--color-surface)) 0%,var(--color-surface) 60%);border:1px solid color-mix(in srgb,var(--color-primary) 18%,var(--color-border));border-radius:1.25rem;padding:1.25rem 1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;">
+  <div style="width:3rem;height:3rem;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem;font-weight:800;flex-shrink:0;">{{ lead.full_name|first|upper }}</div>
+  <div style="flex:1;">
+    <h1 style="font-size:1.25rem;font-weight:800;color:var(--color-text-primary);letter-spacing:-.03em;margin:0 0 .125rem;">{{ lead.full_name }}</h1>
+    <div style="font-size:.8125rem;color:var(--color-text-muted);">
+      {% if lead.company_name %}{{ lead.company_name }} · {% endif %}
+      <a href="tel:{{ lead.phone }}" style="color:var(--color-primary);">{{ lead.phone }}</a>
+      {% if lead.email %} · <a href="mailto:{{ lead.email }}" style="color:var(--color-primary);">{{ lead.email }}</a>{% endif %}
+    </div>
+  </div>
+  <div style="display:flex;gap:.5rem;">
+    <a href="tel:{{ lead.phone }}" class="pn-btn pn-btn-secondary pn-btn-sm">Llamar</a>
+    <a href="https://wa.me/{{ lead.phone }}" target="_blank" class="pn-btn pn-btn-secondary pn-btn-sm">WhatsApp</a>
+    <a href="{% url 'panel:ticket_create' %}" class="pn-btn pn-btn-primary pn-btn-sm">+ Ticket</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+
+  {# Cotizaciones #}
+  <div class="pn-table-wrap">
+    <div class="pn-table-header">
+      <span class="pn-table-title">Cotizaciones</span>
+      <span style="font-size:.72rem;color:var(--color-text-muted);">{{ quotes.count }} total</span>
+    </div>
+    <table class="pn-table">
+      <thead><tr><th>Servicio</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+      <tbody>
+        {% for q in quotes %}
+        <tr>
+          <td style="font-size:.78rem;">{{ q.get_interest_area_display }}</td>
+          <td><span class="pn-badge pn-badge-{{ q.status }}">{{ q.get_status_display }}</span></td>
+          <td style="font-size:.72rem;color:var(--color-text-muted);">{{ q.created_at|date:"d/m/Y" }}</td>
+          <td><a href="{% url 'panel:quote_detail' q.pk %}">Ver →</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;color:var(--color-text-muted);padding:1.25rem;font-size:.8rem;">Sin cotizaciones</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# Tickets #}
+  <div class="pn-table-wrap">
+    <div class="pn-table-header">
+      <span class="pn-table-title">Tickets de servicio</span>
+      <span style="font-size:.72rem;color:var(--color-text-muted);">{{ tickets.count }} total</span>
+    </div>
+    <table class="pn-table">
+      <thead><tr><th>N°</th><th>Estado</th><th>Prioridad</th><th></th></tr></thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr>
+          <td style="font-family:monospace;font-size:.72rem;">{{ t.ticket_number }}</td>
+          <td><span class="pn-badge pn-badge-{{ t.status }}">{{ t.get_status_display }}</span></td>
+          <td><span class="pn-badge {% if t.priority == 'urgent' %}pn-badge-urgent{% elif t.priority == 'high' %}pn-badge-high{% else %}pn-badge-medium{% endif %}">{{ t.get_priority_display }}</span></td>
+          <td><a href="{% url 'panel:ticket_detail' t.pk %}">Ver →</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;color:var(--color-text-muted);padding:1.25rem;font-size:.8rem;">Sin tickets</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# Contratos #}
+{% if contracts %}
+<div class="pn-table-wrap">
+  <div class="pn-table-header"><span class="pn-table-title">Contratos de alquiler</span></div>
+  <table class="pn-table">
+    <thead><tr><th>Número</th><th>Equipos</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th></tr></thead>
+    <tbody>
+      {% for c in contracts %}
+      <tr>
+        <td style="font-family:monospace;font-size:.78rem;">{{ c.contract_number }}</td>
+        <td style="font-size:.78rem;">{{ c.copiers_count }} equipo{{ c.copiers_count|pluralize:"s" }}</td>
+        <td><span class="pn-badge pn-badge-{{ c.status }}">{{ c.get_status_display }}</span></td>
+        <td style="font-size:.72rem;color:var(--color-text-muted);">{{ c.start_date|date:"d/m/Y" }}</td>
+        <td style="font-size:.72rem;{% if c.days_until_expiry <= 30 %}color:var(--color-warning);font-weight:600;{% else %}color:var(--color-text-muted);{% endif %}">
+          {{ c.end_date|date:"d/m/Y" }}{% if c.days_until_expiry > 0 and c.status == 'active' %} <span style="font-size:.68rem;">({{ c.days_until_expiry }}d)</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{# ── CRM: Actividades + Tareas ── #}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">
+
+  {# Actividades #}
+  <div class="pn-table-wrap">
+    <div class="pn-table-header">
+      <span class="pn-table-title">Actividades</span>
+      <button type="button" onclick="document.getElementById('pn-form-actividad').classList.toggle('hidden')" class="pn-btn pn-btn-secondary pn-btn-sm">+ Registrar</button>
+    </div>
+    <div id="pn-form-actividad" class="hidden" style="padding:.875rem;border-bottom:1px solid var(--color-border);">
+      <form method="post" action="{% url 'panel:client_activity_create' lead.pk %}">
+        {% csrf_token %}
+        <div style="display:flex;flex-direction:column;gap:.625rem;">
+          <div class="pn-field">
+            <label>Tipo</label>
+            <select name="activity_type" class="pn-input">
+              {% for val, lbl in activity_types %}<option value="{{ val }}">{{ lbl }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="pn-field">
+            <label>Notas</label>
+            <textarea name="notes" class="pn-input" rows="3" placeholder="Describe la actividad…"></textarea>
+          </div>
+          <div class="pn-field">
+            <label>Resultado</label>
+            <input type="text" name="outcome" class="pn-input" placeholder="Ej: Interesado, agendó demo…">
+          </div>
+          <button type="submit" class="pn-btn pn-btn-primary" style="width:100%;justify-content:center;">Guardar</button>
+        </div>
+      </form>
+    </div>
+    <div style="max-height:320px;overflow-y:auto;">
+      {% if activities %}
+        {% for act in activities %}
+        <div style="display:flex;gap:.75rem;padding:.75rem;border-bottom:1px solid color-mix(in srgb,var(--color-border) 50%,transparent);">
+          <div style="width:.5rem;height:.5rem;border-radius:50%;flex-shrink:0;margin-top:.3rem;background:{% if act.activity_type == 'call' %}var(--color-primary){% elif act.activity_type == 'email' %}#3B82F6{% elif act.activity_type == 'whatsapp' %}#25D366{% elif act.activity_type == 'meeting' %}#D97706{% elif act.activity_type == 'visit' %}#8B5CF6{% else %}var(--color-text-muted){% endif %};"></div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;">
+              <span style="font-size:.8rem;font-weight:600;">{{ act.get_activity_type_display }}</span>
+              <span style="font-size:.7rem;color:var(--color-text-muted);">{{ act.created_at|date:"d/m H:i" }}</span>
+            </div>
+            {% if act.notes %}<p style="font-size:.75rem;margin:.2rem 0 0;line-height:1.4;color:var(--color-text-secondary);">{{ act.notes }}</p>{% endif %}
+            {% if act.outcome %}<p style="font-size:.7rem;color:var(--color-text-muted);margin:.15rem 0 0;font-style:italic;">→ {{ act.outcome }}</p>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div style="text-align:center;padding:1.5rem;color:var(--color-text-muted);font-size:.78rem;">Sin actividades registradas</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Tareas de seguimiento #}
+  <div class="pn-table-wrap">
+    <div class="pn-table-header">
+      <span class="pn-table-title">Tareas de seguimiento</span>
+      <button type="button" onclick="document.getElementById('pn-form-tarea').classList.toggle('hidden')" class="pn-btn pn-btn-secondary pn-btn-sm">+ Nueva</button>
+    </div>
+    <div id="pn-form-tarea" class="hidden" style="padding:.875rem;border-bottom:1px solid var(--color-border);">
+      <form method="post" action="{% url 'panel:client_task_create' lead.pk %}">
+        {% csrf_token %}
+        <div style="display:flex;flex-direction:column;gap:.625rem;">
+          <div class="pn-field">
+            <label>Descripción</label>
+            <input type="text" name="description" class="pn-input" placeholder="Ej: Enviar propuesta, llamar el lunes…" required>
+          </div>
+          <div class="pn-field">
+            <label>Fecha límite</label>
+            <input type="date" name="due_date" class="pn-input" required>
+          </div>
+          <button type="submit" class="pn-btn pn-btn-primary" style="width:100%;justify-content:center;">Crear tarea</button>
+        </div>
+      </form>
+    </div>
+    <div style="max-height:320px;overflow-y:auto;">
+      {% if tasks %}
+        {% for task in tasks %}
+        <div style="display:flex;align-items:flex-start;gap:.625rem;padding:.75rem;border-bottom:1px solid color-mix(in srgb,var(--color-border) 50%,transparent);">
+          <form method="post" action="{% url 'panel:task_toggle' task.pk %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" style="width:1.1rem;height:1.1rem;border-radius:.2rem;border:2px solid {% if task.is_done %}var(--color-success){% else %}var(--color-border){% endif %};background:{% if task.is_done %}var(--color-success){% else %}transparent{% endif %};cursor:pointer;flex-shrink:0;margin-top:.125rem;display:flex;align-items:center;justify-content:center;padding:0;">
+              {% if task.is_done %}<svg fill="none" stroke="white" viewBox="0 0 12 12" stroke-width="2.5" style="width:.55rem;height:.55rem;"><polyline stroke-linecap="round" stroke-linejoin="round" points="2,6 5,9 10,3"/></svg>{% endif %}
+            </button>
+          </form>
+          <div style="flex:1;min-width:0;">
+            <p style="font-size:.8rem;margin:0;{% if task.is_done %}color:var(--color-text-muted);text-decoration:line-through;{% else %}color:var(--color-text-primary);{% endif %}">{{ task.description }}</p>
+            {% if task.due_date %}<p style="font-size:.72rem;margin:.125rem 0 0;color:var(--color-text-muted);">Vence: {{ task.due_date|date:"d/m/Y" }}</p>{% endif %}
+            {% if task.done_at %}<p style="font-size:.68rem;color:var(--color-success);margin:.1rem 0 0;">&#10003; {{ task.done_at|date:"d/m/Y H:i" }}</p>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div style="text-align:center;padding:1.5rem;color:var(--color-text-muted);font-size:.78rem;">Sin tareas pendientes</div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{# ── Emails enviados ── #}
+{% if email_logs %}
+<div class="pn-table-wrap" style="margin-top:1rem;">
+  <div class="pn-table-header">
+    <span class="pn-table-title">Emails enviados</span>
+    <span style="font-size:.72rem;color:var(--color-text-muted);">{{ email_logs|length }} registros</span>
+  </div>
+  <table class="pn-table">
+    <thead><tr><th>Asunto</th><th>Estado</th><th>Fecha</th></tr></thead>
+    <tbody>
+      {% for log in email_logs %}
+      <tr>
+        <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem;">{{ log.subject }}</td>
+        <td>
+          {% if log.status == 'sent' %}<span class="pn-badge pn-badge-won">Enviado</span>
+          {% else %}<span class="pn-badge pn-badge-lost">Error</span>{% endif %}
+        </td>
+        <td style="font-size:.72rem;color:var(--color-text-muted);white-space:nowrap;">{{ log.created_at|date:"d/m/Y H:i" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% endblock %}

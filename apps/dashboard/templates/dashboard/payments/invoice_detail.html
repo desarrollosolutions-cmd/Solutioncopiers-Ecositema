@@ -1,0 +1,188 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Factura {{ invoice.invoice_number }}{% endblock %}
+{% block nav_billing %}active{% endblock %}
+{% block breadcrumb %}
+<span class="da-breadcrumb-sep">/</span>
+<a href="{% url 'dashboard:ar_dashboard' %}" class="da-breadcrumb-link">Facturación</a>
+<span class="da-breadcrumb-sep">/</span>
+<a href="{% url 'dashboard:invoice_list' %}" class="da-breadcrumb-link">Facturas</a>
+<span class="da-breadcrumb-sep">/</span>
+<span class="da-breadcrumb-current">{{ invoice.invoice_number }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">{{ invoice.invoice_number }}</h1>
+    <div style="font-size:.82rem;color:var(--color-text-muted);margin-top:.25rem;">
+      {{ invoice.get_invoice_type_display }} — emitida el {{ invoice.issue_date }}
+    </div>
+  </div>
+  <div style="display:flex;gap:.75rem;align-items:center;">
+    <!-- Cambiar estado -->
+    <form method="post" action="{% url 'dashboard:invoice_status' pk=invoice.pk %}" style="display:flex;gap:.5rem;align-items:center;">
+      {% csrf_token %}
+      <select name="status" class="da-input" style="width:auto;padding:.4rem .875rem;font-size:.8rem;">
+        {% for val, lbl in invoice.Status.choices %}
+        <option value="{{ val }}" {% if invoice.status == val %}selected{% endif %}>{{ lbl }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="da-btn da-btn-secondary" style="font-size:.8rem;">Actualizar</button>
+    </form>
+  </div>
+</div>
+
+<div class="da-grid-2" style="gap:1.25rem;">
+
+  <!-- Panel izquierdo: detalle factura -->
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+    <!-- Estado y DIAN -->
+    <div class="da-card">
+      <div class="da-card-header">Estado</div>
+      <div class="da-card-body" style="display:flex;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <div style="font-size:.7rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem;">Estado actual</div>
+          {% if invoice.status == 'paid' %}
+          <span class="da-badge da-badge-stock" style="font-size:.82rem;padding:.3rem .75rem;">Pagada</span>
+          {% elif invoice.status == 'draft' %}
+          <span class="da-badge" style="font-size:.82rem;padding:.3rem .75rem;">Borrador</span>
+          {% elif invoice.status == 'voided' %}
+          <span class="da-badge da-badge-nostock" style="font-size:.82rem;padding:.3rem .75rem;">Anulada</span>
+          {% else %}
+          <span class="da-badge" style="background:color-mix(in srgb,var(--color-warning) 15%,transparent);color:var(--color-warning);font-size:.82rem;padding:.3rem .75rem;">{{ invoice.get_status_display }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <div style="font-size:.7rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem;">Método de pago</div>
+          <div style="color:var(--color-text-secondary);font-size:.85rem;">{{ invoice.get_payment_method_display }}</div>
+        </div>
+        {% if invoice.cufe %}
+        <div style="flex:1 1 100%;">
+          <div style="font-size:.7rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem;">CUFE DIAN</div>
+          <div style="font-family:var(--font-mono);font-size:.72rem;word-break:break-all;color:var(--color-text-secondary);">{{ invoice.cufe }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Datos del cliente -->
+    <div class="da-card">
+      <div class="da-card-header">Cliente receptor</div>
+      <div class="da-card-body">
+        <dl style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem 1rem;font-size:.83rem;">
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;margin-bottom:.15rem;">Nombre</dt><dd style="color:var(--color-text-primary);">{{ invoice.client_name }}</dd></div>
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;margin-bottom:.15rem;">NIT / Cédula</dt><dd style="color:var(--color-text-primary);">{{ invoice.client_nit|default:"—" }}</dd></div>
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;margin-bottom:.15rem;">Email</dt><dd><a href="mailto:{{ invoice.client_email }}" style="color:var(--color-primary);">{{ invoice.client_email|default:"—" }}</a></dd></div>
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;margin-bottom:.15rem;">Teléfono</dt><dd style="color:var(--color-text-primary);">{{ invoice.client_phone|default:"—" }}</dd></div>
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;margin-bottom:.15rem;">Ciudad</dt><dd style="color:var(--color-text-primary);">{{ invoice.client_city|default:"—" }}</dd></div>
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;margin-bottom:.15rem;">Dirección</dt><dd style="color:var(--color-text-primary);">{{ invoice.client_address|default:"—" }}</dd></div>
+        </dl>
+        {% if invoice.lead %}
+        <div style="margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--color-border);">
+          <a href="{% url 'dashboard:client_detail' pk=invoice.lead.pk %}" class="da-btn da-btn-secondary" style="font-size:.75rem;">Ver lead CRM → {{ invoice.lead.full_name }}</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Pagos recibidos -->
+    {% if payments %}
+    <div class="da-card">
+      <div class="da-card-header">Pagos registrados</div>
+      <div class="da-card-body" style="padding:0">
+        <table class="da-table">
+          <thead><tr><th>Referencia</th><th>Wompi ID</th><th>Método</th><th>Estado</th><th>Monto</th></tr></thead>
+          <tbody>
+            {% for pmt in payments %}
+            <tr>
+              <td style="font-family:var(--font-mono);font-size:.75rem;">{{ pmt.reference }}</td>
+              <td style="font-family:var(--font-mono);font-size:.72rem;color:var(--color-text-muted);">{{ pmt.wompi_id|default:"—" }}</td>
+              <td style="font-size:.78rem;">{{ pmt.payment_method_type|default:"—" }}</td>
+              <td>
+                {% if pmt.status == 'APPROVED' %}
+                <span class="da-badge da-badge-stock">Aprobado</span>
+                {% elif pmt.status == 'DECLINED' %}
+                <span class="da-badge da-badge-nostock">Rechazado</span>
+                {% else %}
+                <span class="da-badge">{{ pmt.status }}</span>
+                {% endif %}
+              </td>
+              <td style="font-weight:600;">${{ pmt.amount_cop|floatformat:0 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Panel derecho: líneas y totales -->
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+    <!-- Líneas de factura -->
+    <div class="da-card">
+      <div class="da-card-header">Líneas de factura</div>
+      <div class="da-card-body" style="padding:0">
+        <table class="da-table">
+          <thead><tr><th>Descripción</th><th class="text-center">Cant.</th><th>Precio unit.</th><th>Dcto.</th><th class="text-right">Total</th></tr></thead>
+          <tbody>
+            {% for item in invoice.items.all %}
+            <tr>
+              <td style="font-size:.83rem;">{{ item.description }}</td>
+              <td style="text-align:center;font-size:.83rem;">{{ item.quantity }} {{ item.unit }}</td>
+              <td style="font-size:.83rem;">${{ item.unit_price|floatformat:0 }}</td>
+              <td style="font-size:.8rem;color:var(--color-text-muted);">{{ item.discount_pct }}%</td>
+              <td style="text-align:right;font-weight:600;">${{ item.line_total|floatformat:0 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--color-text-muted);">Sin líneas</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Totales -->
+    <div class="da-card">
+      <div class="da-card-header">Resumen financiero</div>
+      <div class="da-card-body">
+        <dl style="font-size:.88rem;display:flex;flex-direction:column;gap:.6rem;">
+          <div style="display:flex;justify-content:space-between;"><dt style="color:var(--color-text-muted);">Subtotal</dt><dd style="color:var(--color-text-secondary);">${{ invoice.subtotal|floatformat:0 }}</dd></div>
+          {% if invoice.discount_amount %}
+          <div style="display:flex;justify-content:space-between;"><dt style="color:var(--color-text-muted);">Descuento</dt><dd style="color:var(--color-danger);">-${{ invoice.discount_amount|floatformat:0 }}</dd></div>
+          {% endif %}
+          <div style="display:flex;justify-content:space-between;"><dt style="color:var(--color-text-muted);">Base gravable</dt><dd style="color:var(--color-text-secondary);">${{ invoice.tax_base|floatformat:0 }}</dd></div>
+          <div style="display:flex;justify-content:space-between;"><dt style="color:var(--color-text-muted);">IVA (19%)</dt><dd style="color:var(--color-text-secondary);">${{ invoice.tax_amount|floatformat:0 }}</dd></div>
+          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--color-border);padding-top:.6rem;font-size:1rem;font-weight:700;">
+            <dt style="color:var(--color-text-primary);">TOTAL</dt>
+            <dd style="color:var(--color-primary);">${{ invoice.total|floatformat:0 }} COP</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    {% if invoice.notes %}
+    <div class="da-card">
+      <div class="da-card-header">Observaciones</div>
+      <div class="da-card-body" style="font-size:.85rem;color:var(--color-text-secondary);">{{ invoice.notes }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Pedido origen -->
+    {% if invoice.order %}
+    <div class="da-card">
+      <div class="da-card-header">Pedido online origen</div>
+      <div class="da-card-body">
+        <a href="{% url 'dashboard:order_detail' reference=invoice.order.reference %}" class="da-btn da-btn-secondary" style="font-size:.8rem;">
+          Ver pedido {{ invoice.order.reference }}
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+# === Framework principal ===
+Django==5.1.4
+
+# === Base de datos ===
+psycopg2-binary==2.9.10
+dj-database-url==2.3.0
+
+# === Variables de entorno ===
+python-dotenv==1.0.1
+django-environ==0.11.2
+
+# === Imágenes ===
+Pillow==11.0.0
+django-imagekit==5.0.0
+
+# === Formularios ===
+django-crispy-forms==2.3
+crispy-tailwind==1.0.3
+
+# === SEO ===
+django-meta==2.5.0
+
+# === Utilidades ===
+django-extensions==3.2.3
+django-cleanup==9.0.0
+Unidecode==1.3.8
+
+# === Estáticos en producción (WhiteNoise) ===
+whitenoise==6.8.2
+
+# === Seguridad — Hashing de contraseñas ===
+argon2-cffi==23.1.0
+
+# === IA — Asistente virtual ===
+# El asistente usa requests (ya incluido). anthropic es OPCIONAL (solo si usas Claude pago).
+# anthropic>=0.107.1

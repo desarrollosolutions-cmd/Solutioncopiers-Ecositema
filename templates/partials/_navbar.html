@@ -1,0 +1,419 @@
+{% load static i18n %}
+{% get_current_language as CURRENT_LANGUAGE %}
+<header class="navbar" data-navbar x-data="{ mobileOpen: false }">
+
+{# ── Modal de búsqueda global ── #}
+<div x-data="publicSearch()"
+     x-init="$watch('open', v => { if(v){ $nextTick(()=>$refs.input.focus()) } })"
+     @keydown.escape.window="close()"
+     @open-public-search.window="open=true">
+
+  {# Backdrop #}
+  <div x-show="open"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       x-cloak
+       @click="close()"
+       class="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"></div>
+
+  {# Panel #}
+  <div x-show="open"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+       x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100 scale-100"
+       x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+       x-cloak
+       class="fixed inset-x-4 top-6 z-[201] max-w-2xl mx-auto"
+       style="top: 5rem;">
+
+    <div class="rounded-2xl shadow-2xl overflow-hidden"
+         style="background:var(--color-surface);border:1px solid var(--color-border);">
+
+      {# Input #}
+      <div class="flex items-center gap-3 px-4 py-3 border-b" style="border-color:var(--color-border);">
+        <svg class="w-5 h-5 shrink-0" style="color:var(--color-text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input x-ref="input"
+               type="text"
+               x-model.debounce.300ms="query"
+               @input="search()"
+               @keydown.enter.prevent="goToResults()"
+               placeholder="{% trans "Buscar tóneres, equipos, repuestos…" %}"
+               class="flex-1 bg-transparent text-base outline-none"
+               style="color:var(--color-text-primary);">
+        <kbd @click="close()" class="hidden sm:flex items-center gap-1 px-2 py-1 rounded text-xs cursor-pointer"
+             style="background:var(--color-bg-alt);color:var(--color-text-muted);border:1px solid var(--color-border);">
+          ESC
+        </kbd>
+      </div>
+
+      {# Resultados #}
+      <div x-show="query.length >= 2" class="overflow-y-auto" style="max-height:420px;">
+
+        {# Cargando #}
+        <div x-show="loading" class="flex items-center justify-center py-8 gap-2"
+             style="color:var(--color-text-muted);">
+          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+          </svg>
+          <span class="text-sm">{% trans "Buscando…" %}</span>
+        </div>
+
+        {# Sin resultados #}
+        <div x-show="!loading && results.consumables.length === 0 && results.copiers.length === 0"
+             class="py-10 text-center text-sm" style="color:var(--color-text-muted);">
+          {% trans "Sin resultados para" %} "<span x-text="query"></span>"
+        </div>
+
+        {# Equipos #}
+        <template x-if="!loading && results.copiers.length > 0">
+          <div>
+            <div class="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wider"
+                 style="color:var(--color-text-muted);">{% trans "Equipos" %}</div>
+            <template x-for="item in results.copiers" :key="item.url">
+              <a :href="item.url" @click="close()"
+                 class="flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--color-bg-alt)] transition-colors">
+                <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 flex items-center justify-center"
+                     style="background:var(--color-bg-alt);">
+                  <template x-if="item.image">
+                    <img :src="item.image" :alt="item.name" class="w-full h-full object-contain p-0.5">
+                  </template>
+                  <template x-if="!item.image">
+                    <svg class="w-5 h-5" style="color:var(--color-border);" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25"/>
+                    </svg>
+                  </template>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium truncate" style="color:var(--color-text-primary);" x-text="item.name"></div>
+                  <div class="text-xs" style="color:var(--color-text-muted);" x-text="item.model"></div>
+                </div>
+              </a>
+            </template>
+          </div>
+        </template>
+
+        {# Consumibles #}
+        <template x-if="!loading && results.consumables.length > 0">
+          <div>
+            <div class="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wider"
+                 style="color:var(--color-text-muted);">{% trans "Consumibles e insumos" %}</div>
+            <template x-for="item in results.consumables" :key="item.url">
+              <a :href="item.url" @click="close()"
+                 class="flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--color-bg-alt)] transition-colors">
+                <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 flex items-center justify-center"
+                     style="background:var(--color-bg-alt);">
+                  <template x-if="item.image">
+                    <img :src="item.image" :alt="item.name" class="w-full h-full object-contain p-0.5">
+                  </template>
+                  <template x-if="!item.image">
+                    <svg class="w-5 h-5" style="color:var(--color-border);" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+                    </svg>
+                  </template>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium truncate" style="color:var(--color-text-primary);" x-text="item.name"></div>
+                  <div class="text-xs" style="color:var(--color-text-muted);">
+                    <span x-text="item.type"></span>
+                    <template x-if="item.ref"><span> · Ref: <span x-text="item.ref"></span></span></template>
+                  </div>
+                </div>
+                <template x-if="item.price">
+                  <div class="text-sm font-semibold shrink-0" style="color:var(--color-primary);">
+                    $<span x-text="Number(item.price).toLocaleString('es-CO')"></span>
+                  </div>
+                </template>
+              </a>
+            </template>
+          </div>
+        </template>
+
+        {# Ver todos #}
+        <div x-show="!loading && (results.consumables.length > 0 || results.copiers.length > 0)"
+             class="px-4 py-3 border-t" style="border-color:var(--color-border);">
+          <a :href="'/consumibles-toner-ricoh/?q=' + encodeURIComponent(query)"
+             @click="close()"
+             class="flex items-center justify-center gap-2 w-full py-2 rounded-xl text-sm font-semibold transition"
+             style="background:var(--color-bg-alt);color:var(--color-primary);">
+            {% trans "Ver todos los resultados para" %} "<span x-text="query"></span>" →
+          </a>
+        </div>
+      </div>
+
+      {# Sugerencias cuando vacío #}
+      <div x-show="query.length < 2" class="px-4 py-4">
+        <p class="text-xs mb-3" style="color:var(--color-text-muted);">{% trans "Búsquedas frecuentes" %}</p>
+        <div class="flex flex-wrap gap-2">
+          <template x-for="tag in ['Tóner MP305', 'Tambor Ricoh', 'Tóner HP', 'Fusor', 'Cuchilla']">
+            <button @click="query = tag; search()"
+                    class="px-3 py-1.5 rounded-full text-xs font-medium transition hover:opacity-80"
+                    style="background:var(--color-bg-alt);color:var(--color-text-secondary);border:1px solid var(--color-border);"
+                    x-text="tag"></button>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function publicSearch() {
+  return {
+    open: false,
+    query: '',
+    loading: false,
+    results: { consumables: [], copiers: [] },
+    _timer: null,
+    close() { this.open = false; this.query = ''; this.results = { consumables: [], copiers: [] }; },
+    goToResults() {
+      if (this.query.trim().length >= 2) {
+        window.location.href = '/consumibles-toner-ricoh/?q=' + encodeURIComponent(this.query.trim());
+        this.close();
+      }
+    },
+    search() {
+      if (this.query.length < 2) { this.results = { consumables: [], copiers: [] }; return; }
+      this.loading = true;
+      fetch('{% url "catalog:search" %}?q=' + encodeURIComponent(this.query))
+        .then(r => r.json())
+        .then(d => { this.results = d; })
+        .finally(() => { this.loading = false; });
+    },
+  }
+}
+</script>
+    <div class="container-custom">
+        <nav class="flex items-center py-3 gap-4">
+
+            {# ── Logo ── #}
+            <a href="{% url 'core:home' %}" class="shrink-0 flex items-center">
+                <img src="{% static 'images/logo.webp' %}"
+                     alt="Solution Copiers"
+                     class="h-11 w-auto object-contain"
+                     width="280" height="56">
+            </a>
+
+            {# ── Links centrados (desktop) ── #}
+            <div class="hidden lg:flex flex-1 items-center justify-center gap-2">
+
+                <a href="{% url 'catalog:rental_list' %}" class="navbar-link">{% trans "Alquiler" %}</a>
+                <a href="{% url 'catalog:sale_list' %}" class="navbar-link">{% trans "Venta" %}</a>
+                <a href="{% url 'catalog:structured_cabling' %}" class="navbar-link">{% trans "Cableado" %}</a>
+
+                {# Dropdown Software #}
+                <div class="relative" x-data="{ open: false }" @mouseleave="open = false">
+                    <button @mouseenter="open = true" @click="open = !open"
+                            class="navbar-link gap-1.5">
+                        Software
+                        <svg class="w-3.5 h-3.5 transition-transform duration-300 ease-out"
+                             :class="open ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                         x-cloak
+                         class="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-72 navbar-dropdown-panel">
+                        <a href="{% url 'services:software_development' %}" class="navbar-dropdown-item">
+                            <span class="navbar-dropdown-icon">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/></svg>
+                            </span>
+                            <span>
+                                <span class="navbar-dropdown-title">{% trans "Software a la medida" %}</span>
+                                <span class="navbar-dropdown-sub">{% trans "Sistemas y ERPs" %}</span>
+                            </span>
+                        </a>
+                        <a href="{% url 'services:web_design' %}" class="navbar-dropdown-item">
+                            <span class="navbar-dropdown-icon">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253M3 12a8.96 8.96 0 00.284 2.253"/></svg>
+                            </span>
+                            <span>
+                                <span class="navbar-dropdown-title">{% trans "Diseño web" %}</span>
+                                <span class="navbar-dropdown-sub">{% trans "Sitios y e-commerce" %}</span>
+                            </span>
+                        </a>
+                        <a href="{% url 'services:mobile_apps' %}" class="navbar-dropdown-item">
+                            <span class="navbar-dropdown-icon">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg>
+                            </span>
+                            <span>
+                                <span class="navbar-dropdown-title">{% trans "Apps móviles" %}</span>
+                                <span class="navbar-dropdown-sub">{% trans "iOS, Android, híbridas" %}</span>
+                            </span>
+                        </a>
+                        <a href="{% url 'services:database_services' %}" class="navbar-dropdown-item">
+                            <span class="navbar-dropdown-icon">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/></svg>
+                            </span>
+                            <span>
+                                <span class="navbar-dropdown-title">{% trans "Bases de datos" %}</span>
+                                <span class="navbar-dropdown-sub">{% trans "Diseño y migración cloud" %}</span>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+
+                <a href="{% url 'core:about' %}" class="navbar-link">{% trans "Quiénes somos" %}</a>
+                <a href="{% url 'blog:post_list' %}" class="navbar-link">Blog</a>
+                <a href="{% url 'encuestas:form' %}" class="navbar-link">{% trans "Encuesta" %}</a>
+                <a href="{% url 'core:contact' %}" class="navbar-link">{% trans "Contacto" %}</a>
+            </div>
+
+            {# ── Acciones derechas (desktop) ── #}
+            <div class="hidden lg:flex items-center gap-3 shrink-0">
+
+                {# Búsqueda #}
+                <button @click="$dispatch('open-public-search')"
+                        class="p-2 rounded-base hover:bg-bg-alt transition-colors"
+                        aria-label="{% trans "Buscar productos" %}">
+                    <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
+
+                {# Toggle modo claro/oscuro #}
+                <div x-data="darkMode()">
+                    <button @click="setTheme(theme === 'dark' ? 'light' : 'dark')"
+                            class="p-2 rounded-base hover:bg-bg-alt transition-colors"
+                            :title="theme === 'dark' ? '{% trans "Cambiar a modo claro" %}' : '{% trans "Cambiar a modo oscuro" %}'"
+                            :aria-label="theme === 'dark' ? '{% trans "Modo claro" %}' : '{% trans "Modo oscuro" %}'">
+                        <svg x-show="theme !== 'dark'" class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                        <svg x-show="theme === 'dark'" x-cloak class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                {# Selector de idioma — links directos, evita bug con i18n_patterns #}
+                <div class="flex items-center gap-0.5 ml-1">
+                    {% if CURRENT_LANGUAGE == 'en' %}
+                        <a href="{{ request.path|slice:'3:'|default:'/' }}"
+                           class="px-2 py-1 rounded text-xs font-semibold transition-colors text-text-muted hover:text-text-primary">
+                            ES
+                        </a>
+                        <span class="text-xs text-text-muted">|</span>
+                        <span class="px-2 py-1 rounded text-xs font-semibold text-text-primary bg-bg-alt">EN</span>
+                    {% else %}
+                        <span class="px-2 py-1 rounded text-xs font-semibold text-text-primary bg-bg-alt">ES</span>
+                        <span class="text-xs text-text-muted">|</span>
+                        <a href="/en{{ request.path }}"
+                           class="px-2 py-1 rounded text-xs font-semibold transition-colors text-text-muted hover:text-text-primary">
+                            EN
+                        </a>
+                    {% endif %}
+                </div>
+
+                <a href="{% url 'leads:wizard' %}" class="btn-primary">
+                    {% trans "Cotizar ahora" %}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                </a>
+            </div>
+
+            {# ── Mobile: toggle + hamburguesa ── #}
+            <div class="lg:hidden flex items-center gap-2 ml-auto">
+                {# Búsqueda mobile #}
+                <button @click="$dispatch('open-public-search')"
+                        class="p-2 rounded-base hover:bg-bg-alt transition-colors"
+                        aria-label="Buscar">
+                    <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
+                <div x-data="darkMode()">
+                    <button @click="setTheme(theme === 'dark' ? 'light' : 'dark')"
+                            class="p-2 rounded-base hover:bg-bg-alt transition-colors"
+                            :title="theme === 'dark' ? 'Modo claro' : 'Modo oscuro'">
+                        <svg x-show="theme !== 'dark'" class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                        <svg x-show="theme === 'dark'" x-cloak class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </button>
+                </div>
+                <button @click="mobileOpen = !mobileOpen"
+                        class="p-2 rounded-base hover:bg-bg-alt transition-colors"
+                        aria-label="Menú">
+                    <svg x-show="!mobileOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <svg x-show="mobileOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        {# ── Menú mobile expandido ── #}
+        <div x-show="mobileOpen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0 -translate-y-2"
+             x-cloak
+             class="lg:hidden pb-6 border-t border-border mt-1">
+            <div class="flex flex-col gap-0.5 pt-3">
+                <a href="{% url 'catalog:rental_list' %}" class="navbar-link">{% trans "Alquiler de fotocopiadoras" %}</a>
+                <a href="{% url 'catalog:sale_list' %}" class="navbar-link">{% trans "Venta de fotocopiadoras" %}</a>
+                <a href="{% url 'catalog:structured_cabling' %}" class="navbar-link">{% trans "Cableado estructurado" %}</a>
+                <div class="h-px my-1" style="background: var(--color-border);"></div>
+                <a href="{% url 'services:software_development' %}" class="navbar-link">{% trans "Software a la medida" %}</a>
+                <a href="{% url 'services:web_design' %}" class="navbar-link">{% trans "Diseño web" %}</a>
+                <a href="{% url 'services:mobile_apps' %}" class="navbar-link">{% trans "Apps móviles" %}</a>
+                <a href="{% url 'services:database_services' %}" class="navbar-link">{% trans "Bases de datos" %}</a>
+                <div class="h-px my-1" style="background: var(--color-border);"></div>
+                <a href="{% url 'core:about' %}" class="navbar-link">{% trans "Quiénes somos" %}</a>
+                <a href="{% url 'blog:post_list' %}" class="navbar-link">Blog</a>
+                <a href="{% url 'encuestas:form' %}" class="navbar-link">{% trans "Encuesta" %}</a>
+                <a href="{% url 'core:contact' %}" class="navbar-link">{% trans "Contacto" %}</a>
+                <div class="pt-3 flex flex-col gap-3">
+                    <a href="{% url 'leads:wizard' %}" class="btn-primary w-full justify-center">
+                        {% trans "Cotizar ahora" %}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
+                    </a>
+                    {# Selector de idioma mobile — links directos #}
+                    <div class="flex justify-center gap-2">
+                        {% if CURRENT_LANGUAGE == 'en' %}
+                            <a href="{{ request.path|slice:'3:'|default:'/' }}"
+                               class="px-3 py-1.5 rounded text-sm font-semibold transition-colors text-text-muted hover:text-text-primary">
+                                🇨🇴 ES
+                            </a>
+                            <span class="px-3 py-1.5 rounded text-sm font-semibold text-text-primary bg-bg-alt border border-border">
+                                🇺🇸 EN
+                            </span>
+                        {% else %}
+                            <span class="px-3 py-1.5 rounded text-sm font-semibold text-text-primary bg-bg-alt border border-border">
+                                🇨🇴 ES
+                            </span>
+                            <a href="/en{{ request.path }}"
+                               class="px-3 py-1.5 rounded text-sm font-semibold transition-colors text-text-muted hover:text-text-primary">
+                                🇺🇸 EN
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="h-[4.5rem]"></div>

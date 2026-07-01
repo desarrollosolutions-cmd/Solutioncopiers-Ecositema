@@ -1,0 +1,37 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Fotocopiadoras{% endblock %}
+{% block nav_copiers %}active{% endblock %}
+{% block breadcrumb %}<span class="da-breadcrumb-sep">/</span><span class="da-breadcrumb-current">Fotocopiadoras</span>{% endblock %}
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">Fotocopiadoras</h1>
+  <a href="{% url 'dashboard:copier_create' %}" class="da-btn da-btn-primary"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Agregar equipo</a>
+</div>
+<form method="get" style="display:flex;gap:.75rem;margin-bottom:1.25rem;">
+  <div class="da-search-wrap"><div class="da-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div><input type="text" name="q" value="{{ current_q }}" placeholder="Nombre o modelo…" class="da-input da-input-search"></div>
+  <button type="submit" class="da-btn da-btn-secondary">Buscar</button>
+  {% if current_q %}<a href="{% url 'dashboard:copiers' %}" class="da-btn da-btn-secondary">Limpiar</a>{% endif %}
+</form>
+<div class="da-table-wrap">
+  <div class="da-table-header"><span class="da-table-title">{{ paginator.count }} equipo{{ paginator.count|pluralize:"s" }}</span></div>
+  <table class="da-table">
+    <thead><tr><th>Nombre</th><th>Modelo</th><th>Categoría</th><th>Alquiler/mes</th><th>Venta</th><th>Tipo</th><th>Estado</th><th>Dest.</th><th></th></tr></thead>
+    <tbody>
+      {% for c in copiers %}
+      <tr>
+        <td><div class="da-name">{{ c.name|truncatechars:40 }}</div><div style="font-size:.72rem;color:var(--color-text-muted);">{{ c.brand }}</div></td>
+        <td style="font-family:var(--font-mono);font-size:.78rem;">{{ c.model_number }}</td>
+        <td>{{ c.category.name }}</td>
+        <td>{% if c.monthly_rental_price %}${{ c.monthly_rental_price|floatformat:0 }}{% else %}—{% endif %}</td>
+        <td>{% if c.sale_price %}${{ c.sale_price|floatformat:0 }}{% else %}—{% endif %}</td>
+        <td>{{ c.get_toner_type_display }}</td>
+        <td><span class="da-badge da-badge-{{ c.status }}">{{ c.get_status_display }}</span></td>
+        <td>{% if c.is_featured %}<span style="color:var(--color-primary);">★</span>{% else %}—{% endif %}</td>
+        <td><div style="display:flex;gap:.375rem;"><a href="{% url 'dashboard:copier_edit' c.pk %}" class="da-btn da-btn-secondary da-btn-sm">Editar</a><a href="{% url 'dashboard:copier_delete' c.pk %}" class="da-btn da-btn-danger da-btn-sm">Borrar</a></div></td>
+      </tr>
+      {% empty %}<tr><td colspan="9" style="text-align:center;padding:3rem;color:var(--color-text-muted);">Sin equipos</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  {% if is_paginated %}<div class="da-pagination">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="da-page-btn">← Anterior</a>{% endif %}<span class="da-page-btn active">{{ page_obj.number }}/{{ paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="da-page-btn">Siguiente →</a>{% endif %}</div>{% endif %}
+</div>
+{% endblock %}

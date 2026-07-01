@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+{% if slug == "oficina-llave-en-mano" %}
+
+{# =====================================================================
+   SOLUCIÓN: OFICINA LLAVE EN MANO
+   ===================================================================== #}
+
+{# HERO #}
+<section class="section relative overflow-hidden">
+    <div class="absolute inset-0 bg-grid-pattern opacity-30"></div>
+    <div class="container-custom relative max-w-5xl">
+        <div class="silo-label hardware mb-6">Solución Integral · Hardware + Software</div>
+        <h1 class="font-display text-display-xl mb-6 text-balance">
+            Oficina llave en mano: lista para operar desde el día uno.
+        </h1>
+        <p class="text-xl text-text-secondary max-w-2xl mb-10 text-pretty">
+            Diseñamos, instalamos y configuramos toda la infraestructura tecnológica de tu empresa:
+            red eléctrica, cableado estructurado, fotocopiadoras y software. Un solo proveedor, cero fricciones.
+        </p>
+        <div class="flex flex-wrap gap-4">
+            <a href="{% url 'leads:wizard' %}" class="btn-primary">Cotizar mi oficina</a>
+            <a href="{% url 'core:contact' %}" class="btn-outline">Hablar con un asesor</a>
+        </div>
+    </div>
+</section>
+
+{# ESPACIO IMAGEN HERO #}
+<section class="section-sm">
+    <div class="container-custom max-w-5xl">
+        <div class="w-full aspect-video rounded-2xl overflow-hidden">
+            <img src="{% static 'images/img-oficina-equipada.jpg' %}"
+                 alt="Oficina moderna completamente equipada con tecnología Ricoh"
+                 class="w-full h-full object-cover object-center"
+                 loading="lazy">
+        </div>
+    </div>
+</section>
+
+{# QUÉ INCLUYE #}
+<section class="section">
+    <div class="container-custom max-w-5xl">
+        <div class="mb-12">
+            <div class="silo-label hardware mb-4">Lo que incluye</div>
+            <h2 class="font-display text-display-md mb-4 text-balance">
+                Todo lo que necesitas, coordinado por nosotros.
+            </h2>
+            <p class="text-lg text-text-secondary max-w-2xl text-pretty">
+                Nos encargamos de cada frente para que tú te concentres en tu negocio.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div class="card-padded">
+                <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <h3 class="font-display text-lg mb-2">Red eléctrica regulada</h3>
+                <p class="text-sm text-text-secondary">Circuitos independientes con polo a tierra para equipos de cómputo. Protege tu inversión desde la base.</p>
+            </div>
+
+            <div class="card-padded">
+                <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                </div>
+                <h3 class="font-display text-lg mb-2">Cableado estructurado Cat 6A</h3>
+                <p class="text-sm text-text-secondary">Instalación y certificación punto por punto. Red preparada para 10 Gbps y los próximos 15 años de crecimiento.</p>
+            </div>
+
+            <div class="card-padded">
+                <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <h3 class="font-display text-lg mb-2">Fotocopiadoras Ricoh en alquiler</h3>
+                <p class="text-sm text-text-secondary">Equipos multifuncionales con mantenimiento, tóner y soporte técnico incluidos. Sin inversión inicial.</p>
+            </div>
+
+            <div class="card-padded">
+                <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <h3 class="font-display text-lg mb-2">WiFi empresarial segmentado</h3>
+                <p class="text-sm text-text-secondary">Red corporativa separada de la de visitantes. Configuración de firewall y control de acceso desde el inicio.</p>
+            </div>
+
+            <div class="card-padded">
+                <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/>
+                    </svg>
+                </div>
+                <h3 class="font-display text-lg mb-2">Software y herramientas digitales</h3>
+                <p class="text-sm text-text-secondary">Correo corporativo, herramientas de colaboración y, si lo necesitas, un sistema de gestión a la medida.</p>
+            </div>
+
+            <div class="card-padded">
+                <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </div>
+                <h3 class="font-display text-lg mb-2">Soporte técnico unificado</h3>
+                <p class="text-sm text-text-secondary">Un solo número para todo: red, equipos e impresoras. Atención en Medellín el mismo día.</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{# PROCESO #}
+<section class="section bg-bg-alt">
+    <div class="container-custom max-w-5xl">
+        <div class="mb-12 max-w-3xl">
+            <div class="silo-label hardware mb-4">Cómo lo hacemos</div>
+            <h2 class="font-display text-display-md text-balance">
+                De cero a operativo en 4-6 semanas.
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="flex flex-col gap-3">
+                <div class="font-display text-4xl text-accent/40">01</div>
+                <h3 class="font-display text-lg">Diagnóstico y diseño</h3>
+                <p class="text-sm text-text-secondary">Visitamos el espacio, medimos y diseñamos la red eléctrica, de datos y la distribución de equipos.</p>
+            </div>
+            <div class="flex flex-col gap-3">
+                <div class="font-display text-4xl text-accent/40">02</div>
+                <h3 class="font-display text-lg">Infraestructura física</h3>
+                <p class="text-sm text-text-secondary">Instalamos cableado, puntos eléctricos regulados, rack y equipos de red activos.</p>
+            </div>
+            <div class="flex flex-col gap-3">
+                <div class="font-display text-4xl text-accent/40">03</div>
+                <h3 class="font-display text-lg">Equipos y certificación</h3>
+                <p class="text-sm text-text-secondary">Instalamos las fotocopiadoras, certificamos la red con Fluke y entregamos informe técnico completo.</p>
+            </div>
+            <div class="flex flex-col gap-3">
+                <div class="font-display text-4xl text-accent/40">04</div>
+                <h3 class="font-display text-lg">Software y entrega</h3>
+                <p class="text-sm text-text-secondary">Configuramos herramientas digitales, capacitamos al equipo y dejamos todo documentado.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# PARA QUIÉN ES #}
+<section class="section">
+    <div class="container-custom max-w-5xl">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <div class="silo-label hardware mb-4">Empresas que más nos buscan</div>
+                <h2 class="font-display text-display-md mb-6 text-balance">
+                    Ideal para empresas que arrancan o se reubican.
+                </h2>
+                <ul class="space-y-4">
+                    <li class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-success mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-text-secondary">Empresas nuevas que quieren arrancar bien desde el día uno.</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-success mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-text-secondary">Empresas en reubicación o expansión a una nueva sede.</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-success mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-text-secondary">Franquicias o cadenas que necesitan replicar un estándar tecnológico.</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-success mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-text-secondary">Colegios, clínicas o consultorios que necesitan infraestructura certificada.</span>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                {# IMAGEN: Equipo de trabajo en oficina nueva o técnicos instalando — placeholder #}
+                <div class="w-full aspect-square rounded-2xl overflow-hidden">
+                    <img src="{% static 'images/img-infraestructura-it.jpg' %}"
+                         alt="Técnico instalando infraestructura de red y cableado estructurado"
+                         class="w-full h-full object-cover object-center"
+                         loading="lazy">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% elif slug == "transformacion-digital-pymes" %}
+
+{# =====================================================================
+   SOLUCIÓN: TRANSFORMACIÓN DIGITAL PYMES
+   ===================================================================== #}
+
+{# HERO #}
+<section class="section relative overflow-hidden">
+    <div class="absolute inset-0 bg-grid-pattern opacity-30"></div>
+    <div class="container-custom relative max-w-5xl">
+        <div class="silo-label software mb-6">Solución Digital · Pymes Colombianas</div>
+        <h1 class="font-display text-display-xl mb-6 text-balance">
+            Transformación digital para pymes: paso a paso, sin caos.
+        </h1>
+        <p class="text-xl text-text-secondary max-w-2xl mb-10 text-pretty">
+            Acompañamos a empresas medianas en el proceso de digitalizar su operación:
+            desde la automatización de procesos manuales hasta el desarrollo de software propio
+            y la presencia digital. Sin burocracia, con resultados medibles.
+        </p>
+        <div class="flex flex-wrap gap-4">
+            <a href="{% url 'leads:wizard' %}" class="btn-primary">Empezar mi diagnóstico</a>
+            <a href="{% url 'core:contact' %}" class="btn-outline">Hablar con un consultor</a>
+        </div>
+    </div>
+</section>
+
+{# ESPACIO IMAGEN HERO #}
+<section class="section-sm">
+    <div class="container-custom max-w-5xl">
+        <div class="w-full aspect-video rounded-2xl overflow-hidden">
+            <img src="{% static 'images/img-transformacion-digital.jpg' %}"
+                 alt="Equipo empresarial planificando transformación digital"
+                 class="w-full h-full object-cover object-center"
+                 loading="lazy">
+        </div>
+    </div>
+</section>
+
+{# EL PROBLEMA QUE RESOLVEMOS #}
+<section class="section">
+    <div class="container-custom max-w-5xl">
+        <div class="mb-12 max-w-3xl">
+            <div class="silo-label software mb-4">El diagnóstico más común</div>
+            <h2 class="font-display text-display-md mb-4 text-balance">
+                ¿Tu empresa todavía funciona con Excel y WhatsApp?
+            </h2>
+            <p class="text-lg text-text-secondary text-pretty">
+                No hay nada de malo con empezar así. Pero hay un punto en que esas herramientas
+                frenan el crecimiento. Lo vemos en el 80% de las pymes que nos contactan.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card-padded border-l-4 border-l-warning">
+                <h3 class="font-display text-lg mb-3 text-warning">Señales de que es momento de cambiar</h3>
+                <ul class="space-y-2 text-sm text-text-secondary">
+                    <li class="flex items-start gap-2"><span class="text-warning mt-1">•</span> Más de 5 hojas de Excel críticas conectadas manualmente.</li>
+                    <li class="flex items-start gap-2"><span class="text-warning mt-1">•</span> Procesos que dependen de una sola persona que "sabe cómo se hace".</li>
+                    <li class="flex items-start gap-2"><span class="text-warning mt-1">•</span> Reportes que tardan días en prepararse.</li>
+                    <li class="flex items-start gap-2"><span class="text-warning mt-1">•</span> Clientes que se pierden por falta de seguimiento estructurado.</li>
+                    <li class="flex items-start gap-2"><span class="text-warning mt-1">•</span> Software genérico que no encaja con tu industria.</li>
+                </ul>
+            </div>
+            <div class="card-padded border-l-4 border-l-success">
+                <h3 class="font-display text-lg mb-3 text-success">Qué logramos juntos</h3>
+                <ul class="space-y-2 text-sm text-text-secondary">
+                    <li class="flex items-start gap-2"><span class="text-success mt-1">✓</span> Automatización de entre el 60% y el 80% de las tareas repetitivas.</li>
+                    <li class="flex items-start gap-2"><span class="text-success mt-1">✓</span> Visibilidad en tiempo real de ventas, inventario y finanzas.</li>
+                    <li class="flex items-start gap-2"><span class="text-success mt-1">✓</span> Procesos documentados que no dependen de personas específicas.</li>
+                    <li class="flex items-start gap-2"><span class="text-success mt-1">✓</span> Presencia digital que genera clientes nuevos.</li>
+                    <li class="flex items-start gap-2"><span class="text-success mt-1">✓</span> Base tecnológica para escalar sin límites.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# FASES DEL PROCESO #}
+<section class="section bg-bg-alt">
+    <div class="container-custom max-w-5xl">
+        <div class="mb-12 max-w-3xl">
+            <div class="silo-label software mb-4">Nuestra metodología</div>
+            <h2 class="font-display text-display-md text-balance">
+                Tres fases. Resultados visibles en cada una.
+            </h2>
+        </div>
+
+        <div class="space-y-8">
+
+            <div class="card-padded">
+                <div class="flex items-start gap-6">
+                    <div class="font-display text-5xl text-accent/30 shrink-0 leading-none">01</div>
+                    <div>
+                        <h3 class="font-display text-xl mb-2">Diagnóstico y hoja de ruta (Semanas 1-2)</h3>
+                        <p class="text-text-secondary mb-4">Mapeamos tus procesos actuales, identificamos los cuellos de botella y priorizamos por impacto y esfuerzo. Entregamos una hoja de ruta concreta con estimados de ROI por cada iniciativa.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="badge">Entrevistas con el equipo</span>
+                            <span class="badge">Mapa de procesos AS-IS</span>
+                            <span class="badge">Priorización por impacto</span>
+                            <span class="badge">Hoja de ruta documentada</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-padded">
+                <div class="flex items-start gap-6">
+                    <div class="font-display text-5xl text-accent/30 shrink-0 leading-none">02</div>
+                    <div>
+                        <h3 class="font-display text-xl mb-2">Implementación gradual (Semanas 3-16+)</h3>
+                        <p class="text-text-secondary mb-4">Desarrollamos e implementamos por módulos: primero lo que más duele, luego lo que más potencia el crecimiento. Cada entrega es funcional y el equipo la adopta antes de pasar a la siguiente.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="badge">Software a la medida</span>
+                            <span class="badge">Sitio web corporativo</span>
+                            <span class="badge">App móvil si aplica</span>
+                            <span class="badge">Integraciones de APIs</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-padded">
+                <div class="flex items-start gap-6">
+                    <div class="font-display text-5xl text-accent/30 shrink-0 leading-none">03</div>
+                    <div>
+                        <h3 class="font-display text-xl mb-2">Estabilización y crecimiento (Mes 4+)</h3>
+                        <p class="text-text-secondary mb-4">Ajustamos con base en el uso real, capacitamos al equipo y establecemos el ciclo de mejora continua. Queda una base tecnológica que crece contigo.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="badge">Capacitación del equipo</span>
+                            <span class="badge">Documentación técnica</span>
+                            <span class="badge">Soporte post-lanzamiento</span>
+                            <span class="badge">Métricas de adopción</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{# SERVICIOS INCLUIDOS #}
+<section class="section">
+    <div class="container-custom max-w-5xl">
+        <div class="mb-12 max-w-3xl">
+            <div class="silo-label software mb-4">Capacidades del equipo</div>
+            <h2 class="font-display text-display-md text-balance">
+                Todo lo que necesitas, en una sola empresa.
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <a href="{% url 'services:software_development' %}" class="card-padded hover:border-primary transition group">
+                <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">Software a la medida</h3>
+                <p class="text-sm text-text-secondary">ERPs, CRMs, automatizaciones e integraciones construidas sobre tu proceso real.</p>
+            </a>
+            <a href="{% url 'services:web_design' %}" class="card-padded hover:border-primary transition group">
+                <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">Diseño y desarrollo web</h3>
+                <p class="text-sm text-text-secondary">Sitios corporativos y e-commerce que generan confianza y convierten visitantes en clientes.</p>
+            </a>
+            <a href="{% url 'services:mobile_apps' %}" class="card-padded hover:border-primary transition group">
+                <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">Aplicaciones móviles</h3>
+                <p class="text-sm text-text-secondary">Apps iOS y Android con Flutter para tu equipo interno o tus clientes finales.</p>
+            </a>
+            <a href="{% url 'services:database_services' %}" class="card-padded hover:border-primary transition group">
+                <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">Bases de datos</h3>
+                <p class="text-sm text-text-secondary">Diseño, migración a cloud y optimización de bases de datos para escalar sin límites.</p>
+            </a>
+            <a href="{% url 'catalog:structured_cabling' %}" class="card-padded hover:border-primary transition group">
+                <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">Infraestructura de red</h3>
+                <p class="text-sm text-text-secondary">Cableado estructurado certificado para soportar el crecimiento digital con base sólida.</p>
+            </a>
+            <a href="{% url 'catalog:rental_list' %}" class="card-padded hover:border-primary transition group">
+                <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">Equipos de impresión</h3>
+                <p class="text-sm text-text-secondary">Fotocopiadoras Ricoh en alquiler integradas al flujo documental digital de la empresa.</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+{# ESPACIO IMAGEN FINAL #}
+<section class="section-sm">
+    <div class="container-custom max-w-5xl">
+        <div class="w-full aspect-video rounded-2xl overflow-hidden">
+            <img src="{% static 'images/img-exito-empresarial.jpg' %}"
+                 alt="Equipo celebrando resultados de transformación digital exitosa"
+                 class="w-full h-full object-cover object-center"
+                 loading="lazy">
+        </div>
+    </div>
+</section>
+
+{% else %}
+{# Fallback para slugs no definidos #}
+<section class="section">
+    <div class="container-custom max-w-4xl">
+        <h1 class="font-display text-display-xl mb-6 text-balance">Solución empresarial</h1>
+        <p class="text-lg text-text-secondary">Contenido próximamente.</p>
+    </div>
+</section>
+{% endif %}
+
+{% include "components/_cta_section.html" %}
+
+{% endblock %}

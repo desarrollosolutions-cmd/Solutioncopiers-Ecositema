@@ -1,0 +1,52 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}{{ action }}{% endblock %}
+{% block nav_copiers %}active{% endblock %}
+{% block breadcrumb %}<span class="da-breadcrumb-sep">/</span><a href="{% url 'dashboard:copiers' %}">Fotocopiadoras</a><span class="da-breadcrumb-sep">/</span><span class="da-breadcrumb-current">{{ action }}</span>{% endblock %}
+{% block content %}
+<div class="da-page-header"><h1 class="da-page-title">{{ action }}</h1><a href="{% url 'dashboard:copiers' %}" class="da-btn da-btn-secondary">← Cancelar</a></div>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:1.25rem;">
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+      <div class="da-card"><div class="da-card-header">Información del equipo</div><div class="da-card-body"><div class="da-form-grid">
+        <div class="da-field da-form-full"><label>Nombre</label>{{ form.name }}</div>
+        <div class="da-field"><label>Marca</label>{{ form.brand }}</div>
+        <div class="da-field"><label>Número de modelo</label>{{ form.model_number }}</div>
+        <div class="da-field"><label>Categoría</label>{{ form.category }}</div>
+        <div class="da-field"><label>Tipo de tóner</label>{{ form.toner_type }}</div>
+        <div class="da-field"><label>Tamaño de papel</label>{{ form.paper_size }}</div>
+        <div class="da-field"><label>Velocidad (ppm)</label>{{ form.speed_ppm }}</div>
+        <div class="da-field"><label>Ciclo mensual</label>{{ form.monthly_duty_cycle }}</div>
+        <div class="da-field da-form-full"><label>Descripción corta</label>{{ form.short_description }}</div>
+        <div class="da-field da-form-full"><label>Descripción completa</label>{{ form.description }}</div>
+      </div></div></div>
+      <div class="da-card"><div class="da-card-header">Precios</div><div class="da-card-body"><div class="da-form-grid">
+        <div class="da-field"><label>Precio alquiler/mes</label>{{ form.monthly_rental_price }}</div>
+        <div class="da-field"><label>Precio venta</label>{{ form.sale_price }}</div>
+        <div class="da-field"><label>Páginas incluidas/mes</label>{{ form.pages_included_monthly }}</div>
+        <div class="da-field"><label>Costo página extra</label>{{ form.extra_page_cost }}</div>
+      </div></div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+      <div class="da-card"><div class="da-card-header">Publicación</div><div class="da-card-body">
+        <div class="da-field"><label>Estado</label>{{ form.status }}</div>
+        <div style="margin-top:.75rem;display:flex;flex-direction:column;gap:.5rem;">
+          <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;cursor:pointer;">{{ form.available_for_rental }} Disponible para alquiler</label>
+          <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;cursor:pointer;">{{ form.available_for_sale }} Disponible para venta</label>
+          <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;cursor:pointer;">{{ form.is_featured }} Destacado en homepage</label>
+          <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;cursor:pointer;">{{ form.has_scanner }} Escáner incluido</label>
+          <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;cursor:pointer;">{{ form.has_duplex }} Impresión dúplex</label>
+          <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;cursor:pointer;">{{ form.has_network }} Red incluida</label>
+          <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;cursor:pointer;">{{ form.has_wifi }} WiFi</label>
+        </div>
+      </div></div>
+      <div class="da-card"><div class="da-card-header">Imagen</div><div class="da-card-body">
+        {% if object and object.main_image %}<img src="{{ object.main_image.url }}" style="width:100%;border-radius:.5rem;margin-bottom:.75rem;">{% endif %}
+        <div class="da-field"><label>Imagen</label>{{ form.main_image }}</div>
+        <div class="da-field" style="margin-top:.75rem;"><label>Alt text</label>{{ form.main_image_alt }}</div>
+      </div></div>
+      <button type="submit" class="da-btn da-btn-primary" style="width:100%;padding:.75rem;justify-content:center;">Guardar equipo</button>
+    </div>
+  </div>
+</form>
+{% endblock %}

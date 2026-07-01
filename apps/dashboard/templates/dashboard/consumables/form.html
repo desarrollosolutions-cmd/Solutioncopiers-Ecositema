@@ -1,0 +1,74 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}{{ action }}{% endblock %}
+{% block nav_consumables %}active{% endblock %}
+{% block breadcrumb %}<span class="da-breadcrumb-sep">/</span><a href="{% url 'dashboard:consumables' %}">Consumibles</a><span class="da-breadcrumb-sep">/</span><span class="da-breadcrumb-current">{{ action }}</span>{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">{{ action }}</h1>
+  <a href="{% url 'dashboard:consumables' %}" class="da-btn da-btn-secondary">← Cancelar</a>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;">
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <div class="da-card">
+        <div class="da-card-header">Información básica</div>
+        <div class="da-card-body">
+          <div class="da-form-grid">
+            <div class="da-field da-form-full"><label>Nombre del producto *</label>{{ form.name }}</div>
+            <div class="da-field da-form-full"><label>Descripción corta</label>{{ form.short_description }}</div>
+            <div class="da-field"><label>Tipo</label>{{ form.consumable_type }}</div>
+            <div class="da-field"><label>Marca</label>{{ form.brand }}</div>
+            <div class="da-field"><label>Código / Referencia</label>{{ form.part_number }}</div>
+            <div class="da-field"><label>Rendimiento (páginas)</label>{{ form.yield_pages }}</div>
+            <div class="da-field da-form-full"><label>Descripción detallada</label>{{ form.description }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="da-card">
+        <div class="da-card-header">Precios</div>
+        <div class="da-card-body">
+          <div class="da-form-grid da-form-grid-3">
+            <div class="da-field"><label>Precio público (nivel 1)</label>{{ form.price }}</div>
+            <div class="da-field"><label>Precio empresa (nivel 2)</label>{{ form.price_business }}</div>
+            <div class="da-field"><label>Precio mayorista (nivel 3)</label>{{ form.price_wholesale }}</div>
+          </div>
+          <div class="da-field" style="margin-top:1rem;">
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
+              {{ form.price_on_request }} Precio bajo solicitud (no mostrar precio en catálogo)
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+      <div class="da-card">
+        <div class="da-card-header">Publicación</div>
+        <div class="da-card-body">
+          <div class="da-field"><label>Estado</label>{{ form.status }}</div>
+          <div class="da-field" style="margin-top:.75rem;"><label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">{{ form.in_stock }} En stock</label></div>
+          <div class="da-field" style="margin-top:.5rem;"><label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">{{ form.is_featured }} Destacado en homepage</label></div>
+        </div>
+      </div>
+      <div class="da-card">
+        <div class="da-card-header">Imagen</div>
+        <div class="da-card-body">
+          {% if object and object.main_image %}<img src="{{ object.main_image.url }}" style="width:100%;border-radius:.5rem;margin-bottom:.75rem;">{% endif %}
+          <div class="da-field"><label>Imagen del producto</label>{{ form.main_image }}</div>
+          <div class="da-field" style="margin-top:.75rem;"><label>Texto alternativo (SEO)</label>{{ form.main_image_alt }}</div>
+        </div>
+      </div>
+      <button type="submit" class="da-btn da-btn-primary" style="width:100%;padding:.75rem;justify-content:center;font-size:.9375rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Guardar
+      </button>
+    </div>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{# Fondo decorativo igual que el wizard #}
+<div class="wizard-bg-decoration" aria-hidden="true">
+    <div class="wizard-bg-orb wizard-bg-orb--1"></div>
+    <div class="wizard-bg-orb wizard-bg-orb--2"></div>
+</div>
+
+<div class="relative z-10 container-custom section">
+    <div class="max-w-xl mx-auto text-center">
+
+        {# Ícono de éxito animado #}
+        <div class="wizard-success-icon">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+
+        <div class="silo-label hardware mx-auto mb-4 w-fit">Cotización recibida</div>
+        <h1 class="font-display text-display-xl mb-4 text-balance">¡Listo! Ya tenemos tu solicitud</h1>
+        <p class="text-lg text-text-secondary mb-10 text-pretty">
+            Un asesor de Solution Copiers te contactará en las próximas
+            <strong class="text-primary">24 horas</strong> con una propuesta personalizada.
+        </p>
+
+        {# Card de próximos pasos #}
+        <div class="card-padded mb-8 text-left">
+            <h2 class="font-display text-lg mb-6 flex items-center gap-2">
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                ¿Qué pasa ahora?
+            </h2>
+            <ol class="space-y-5">
+                <li class="flex gap-4">
+                    <div class="w-9 h-9 rounded-full bg-primary text-white font-display text-sm flex items-center justify-center shrink-0 shadow-sm">1</div>
+                    <div class="pt-1">
+                        <div class="font-semibold mb-0.5">Revisión inicial</div>
+                        <div class="text-sm text-text-secondary">Un especialista analizará tu solicitud en detalle.</div>
+                    </div>
+                </li>
+                <li class="flex gap-4">
+                    <div class="w-9 h-9 rounded-full bg-primary text-white font-display text-sm flex items-center justify-center shrink-0 shadow-sm">2</div>
+                    <div class="pt-1">
+                        <div class="font-semibold mb-0.5">Llamada de descubrimiento</div>
+                        <div class="text-sm text-text-secondary">Conversaremos contigo para entender mejor tus necesidades.</div>
+                    </div>
+                </li>
+                <li class="flex gap-4">
+                    <div class="w-9 h-9 rounded-full bg-primary text-white font-display text-sm flex items-center justify-center shrink-0 shadow-sm">3</div>
+                    <div class="pt-1">
+                        <div class="font-semibold mb-0.5">Propuesta formal</div>
+                        <div class="text-sm text-text-secondary">Recibirás un documento con la solución y precios definitivos.</div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        {# Trust indicators #}
+        <div class="flex flex-wrap justify-center gap-6 mb-10 text-sm text-text-secondary">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                Respuesta en &lt; 24 h
+            </div>
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                Sin compromisos
+            </div>
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                Datos protegidos (Ley 1581)
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-4 justify-center">
+            <a href="{% url 'core:home' %}" class="btn-primary">Volver al inicio</a>
+            <a href="{% url 'blog:post_list' %}" class="btn-outline">Leer nuestro blog</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

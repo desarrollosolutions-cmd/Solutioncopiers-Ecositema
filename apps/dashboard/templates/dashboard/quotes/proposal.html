@@ -1,0 +1,327 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Propuesta comercial — {{ quote.lead.full_name }}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      color: #1a1a2e;
+      background: #f8f9fc;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      background: #fff;
+      box-shadow: 0 4px 40px rgba(0,0,0,.1);
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #0C1F3F 0%, #1a3a6b 100%);
+      color: #fff;
+      padding: 2.5rem 3rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+    .header-brand { }
+    .brand-name {
+      font-size: 1.5rem; font-weight: 800;
+      letter-spacing: -.02em; color: #fff;
+    }
+    .brand-tagline {
+      font-size: .75rem; color: rgba(255,255,255,.6);
+      margin-top: .25rem;
+    }
+    .header-meta { text-align: right; }
+    .proposal-label {
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: rgba(255,255,255,.5); margin-bottom: .375rem;
+    }
+    .proposal-number {
+      font-size: 1.125rem; font-weight: 800; color: #60AFFE; font-family: monospace;
+    }
+    .proposal-date { font-size: .8rem; color: rgba(255,255,255,.6); margin-top: .25rem; }
+
+    /* ── STRIPE ── */
+    .stripe {
+      height: .25rem;
+      background: linear-gradient(90deg, #0EA5E9 0%, #06B6D4 50%, #38BDF8 100%);
+    }
+
+    /* ── BODY ── */
+    .body { padding: 2.5rem 3rem; }
+
+    /* ── CLIENT CARD ── */
+    .client-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .section-label {
+      font-size: .65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: #6b7280; margin-bottom: .625rem;
+    }
+    .client-name { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+    .client-detail { font-size: .8rem; color: #6b7280; margin-top: .2rem; }
+    .from-detail { font-size: .8rem; color: #6b7280; margin-top: .2rem; }
+    .from-name { font-size: .9rem; font-weight: 700; color: #1a1a2e; }
+
+    /* ── SUBJECT BANNER ── */
+    .subject-banner {
+      background: #f0f7ff;
+      border-left: 4px solid #0EA5E9;
+      border-radius: .5rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .subject-banner h2 {
+      font-size: 1.05rem; font-weight: 800; color: #0C1F3F; margin-bottom: .25rem;
+    }
+    .subject-banner p { font-size: .82rem; color: #4b5563; line-height: 1.6; }
+
+    /* ── ITEMS TABLE ── */
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+    .items-table th {
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: #6b7280;
+      background: #f9fafb; padding: .625rem .875rem;
+      border-bottom: 2px solid #e5e7eb; text-align: left;
+    }
+    .items-table th:last-child, .items-table td:last-child { text-align: right; }
+    .items-table td {
+      padding: .75rem .875rem;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: .82rem; color: #374151;
+    }
+    .items-table tr:last-child td { border-bottom: none; }
+    .item-name { font-weight: 600; color: #1a1a2e; }
+    .item-desc { font-size: .75rem; color: #9ca3af; margin-top: .15rem; }
+
+    /* ── TOTAL BOX ── */
+    .total-box {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 2rem;
+    }
+    .total-inner {
+      background: #0C1F3F;
+      color: #fff;
+      border-radius: .75rem;
+      padding: 1rem 1.5rem;
+      min-width: 240px;
+    }
+    .total-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.5); }
+    .total-value { font-size: 1.625rem; font-weight: 900; letter-spacing: -.03em; color: #60AFFE; margin-top: .25rem; }
+    .total-note { font-size: .7rem; color: rgba(255,255,255,.4); margin-top: .375rem; }
+
+    /* ── TERMS ── */
+    .terms {
+      background: #f9fafb;
+      border-radius: .5rem;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      font-size: .78rem;
+      color: #6b7280;
+      line-height: 1.7;
+    }
+    .terms strong { color: #374151; }
+
+    /* ── FOOTER ── */
+    .footer {
+      border-top: 2px solid #e5e7eb;
+      padding: 1.5rem 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f9fafb;
+      font-size: .75rem;
+      color: #9ca3af;
+    }
+    .footer-contact { }
+    .footer-contact strong { color: #374151; display: block; margin-bottom: .2rem; }
+
+    /* ── PRINT BUTTON (no imprime) ── */
+    .print-bar {
+      background: #1a3a6b;
+      padding: .875rem 3rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .print-btn {
+      background: #0EA5E9;
+      color: #fff;
+      border: none;
+      border-radius: .5rem;
+      padding: .5rem 1.25rem;
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .print-btn:hover { background: #0284C7; }
+    .back-link { color: rgba(255,255,255,.6); font-size: .78rem; text-decoration: none; }
+    .back-link:hover { color: #fff; }
+
+    @media print {
+      body { background: #fff; }
+      .page { box-shadow: none; }
+      .print-bar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+{# Barra de impresión (no aparece al imprimir) #}
+<div class="print-bar">
+  <button class="print-btn" onclick="window.print()">Imprimir / Guardar PDF</button>
+  <a href="{% url 'dashboard:quote_detail' quote.pk %}" class="back-link">← Volver a la cotización</a>
+</div>
+
+<div class="page">
+
+  {# HEADER #}
+  <div class="header">
+    <div class="header-brand">
+      <div class="brand-name">Solution Copiers</div>
+      <div class="brand-tagline">Soluciones tecnológicas para tu empresa</div>
+    </div>
+    <div class="header-meta">
+      <div class="proposal-label">Propuesta comercial</div>
+      <div class="proposal-number">#{{ quote.public_id|stringformat:"s"|slice:":8"|upper }}</div>
+      <div class="proposal-date">{{ today|date:"j \d\e F \d\e Y" }}</div>
+    </div>
+  </div>
+  <div class="stripe"></div>
+
+  <div class="body">
+
+    {# CLIENTE / DE #}
+    <div class="client-section">
+      <div>
+        <div class="section-label">Para</div>
+        <div class="client-name">{{ quote.lead.full_name }}</div>
+        {% if quote.lead.company_name %}
+        <div class="client-detail">{{ quote.lead.company_name }}</div>
+        {% endif %}
+        {% if quote.lead.job_title %}
+        <div class="client-detail">{{ quote.lead.job_title }}</div>
+        {% endif %}
+        {% if quote.lead.email %}
+        <div class="client-detail">{{ quote.lead.email }}</div>
+        {% endif %}
+        {% if quote.lead.phone %}
+        <div class="client-detail">{{ quote.lead.phone }}</div>
+        {% endif %}
+        {% if quote.lead.city %}
+        <div class="client-detail">{{ quote.lead.city }}, Colombia</div>
+        {% endif %}
+      </div>
+      <div>
+        <div class="section-label">De parte de</div>
+        <div class="from-name">
+          {% if quote.assigned_to %}{{ quote.assigned_to.get_full_name|default:quote.assigned_to.username }}{% else %}Equipo comercial{% endif %}
+        </div>
+        <div class="from-detail">Solution Copiers S.A.S.</div>
+        <div class="from-detail">Medellín, Antioquia</div>
+        <div class="from-detail">comercial@solutioncopiers.com</div>
+        <div class="from-detail">+57 300 000 0000</div>
+      </div>
+    </div>
+
+    {# SERVICIO #}
+    <div class="subject-banner">
+      <h2>{{ quote.get_interest_area_display }}</h2>
+      {% if quote.client_message %}
+      <p>{{ quote.client_message|truncatechars:300 }}</p>
+      {% else %}
+      <p>Nos complace presentarle esta propuesta comercial de acuerdo a sus requerimientos. Estamos comprometidos a brindarle la mejor solución para su empresa.</p>
+      {% endif %}
+    </div>
+
+    {# ITEMS #}
+    {% if items %}
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th style="width:40%">Descripción</th>
+          <th>Cant.</th>
+          <th>Precio unitario</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>
+            <div class="item-name">{{ item.item_name }}</div>
+            {% if item.item_description %}
+            <div class="item-desc">{{ item.item_description }}</div>
+            {% endif %}
+          </td>
+          <td>{{ item.quantity }}</td>
+          <td>
+            {% if item.unit_price %}${{ item.unit_price|floatformat:0 }}{% else %}—{% endif %}
+          </td>
+          <td style="font-weight:700;">
+            {% if item.unit_price %}${{ item.quantity|floatformat:0|add:"0" }}{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {# TOTAL #}
+    {% if quote.estimated_total %}
+    <div class="total-box">
+      <div class="total-inner">
+        <div class="total-label">Total estimado</div>
+        <div class="total-value">${{ quote.estimated_total|floatformat:0 }} COP</div>
+        <div class="total-note">Precios no incluyen IVA salvo indicación contraria</div>
+      </div>
+    </div>
+    {% endif %}
+
+    {# TÉRMINOS #}
+    <div class="terms">
+      <strong>Condiciones de la propuesta:</strong><br>
+      Esta propuesta tiene vigencia de <strong>30 días</strong> a partir de la fecha de emisión.
+      Los precios están expresados en pesos colombianos (COP) y pueden estar sujetos a variaciones de acuerdo al tipo de cambio y disponibilidad de equipos.
+      El servicio de instalación y configuración está incluido en el precio total.
+      Para preguntas o ajustes a esta propuesta, contacte a su asesor comercial.
+    </div>
+
+  </div>
+
+  {# FOOTER #}
+  <div class="footer">
+    <div class="footer-contact">
+      <strong>Solution Copiers S.A.S.</strong>
+      Medellín, Antioquia · Colombia
+    </div>
+    <div style="text-align:center;color:#d1d5db;">
+      Documento generado el {{ today|date:"d/m/Y" }} · Confidencial
+    </div>
+    <div style="text-align:right;">
+      <div style="color:#374151;font-weight:700;margin-bottom:.2rem;">www.solutioncopiers.com</div>
+      <div>comercial@solutioncopiers.com</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

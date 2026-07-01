@@ -1,0 +1,247 @@
+{% extends "panel/_base.html" %}
+{% block title %}Factura {{ invoice.invoice_number }}{% endblock %}
+{% block nav_invoices %}active{% endblock %}
+
+{% block breadcrumb %}
+<span class="pn-breadcrumb-sep">›</span>
+<a href="{% url 'panel:invoices' %}">Facturas</a>
+<span class="pn-breadcrumb-sep">›</span>
+<span class="pn-breadcrumb-current">{{ invoice.invoice_number }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="pn-page-header">
+  <div>
+    <h1 class="pn-page-title">{{ invoice.invoice_number }}</h1>
+    <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">
+      Emitida: {{ invoice.issue_date|date:"d/m/Y"|default:"—" }}
+      {% if invoice.due_date %} · Vence: {{ invoice.due_date|date:"d/m/Y" }}{% endif %}
+    </p>
+  </div>
+  <div style="display:flex;gap:.75rem;align-items:center;">
+    <span class="pn-badge pn-badge-{{ invoice.status }}" style="font-size:.75rem;">{{ invoice.get_status_display }}</span>
+    <a href="{% url 'panel:invoices' %}" class="pn-btn pn-btn-secondary">Volver</a>
+  </div>
+</div>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="pn-alert pn-alert-{{ msg.tags|default:'info' }}">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  {{ msg }}
+</div>
+{% endfor %}
+{% endif %}
+
+<div style="display:grid;grid-template-columns:1fr 340px;gap:1.25rem;">
+
+  {# ── Panel izquierdo ── #}
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+    {# Datos del cliente #}
+    <div class="pn-card">
+      <div class="pn-card-header">Cliente</div>
+      <div class="pn-card-body">
+        <div class="pn-form-grid">
+          <div>
+            <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">Nombre</div>
+            <div style="font-weight:600;color:var(--color-text-primary);">{{ invoice.client_name }}</div>
+          </div>
+          {% if invoice.client_nit %}
+          <div>
+            <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">NIT / Cédula</div>
+            <div>{{ invoice.client_nit }}</div>
+          </div>
+          {% endif %}
+          {% if invoice.client_email %}
+          <div>
+            <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">Correo</div>
+            <div>{{ invoice.client_email }}</div>
+          </div>
+          {% endif %}
+          {% if invoice.client_phone %}
+          <div>
+            <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">Teléfono</div>
+            <div>{{ invoice.client_phone }}</div>
+          </div>
+          {% endif %}
+          {% if invoice.client_address %}
+          <div>
+            <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">Dirección</div>
+            <div>{{ invoice.client_address }}{% if invoice.client_city %}, {{ invoice.client_city }}{% endif %}</div>
+          </div>
+          {% endif %}
+        </div>
+        {% if invoice.notes %}
+        <div style="margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--color-border);">
+          <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem;">Notas</div>
+          <div style="font-size:.8125rem;">{{ invoice.notes }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Ítems #}
+    <div class="pn-table-wrap">
+      <div class="pn-table-header">
+        <span class="pn-table-title">Ítems</span>
+      </div>
+      <table class="pn-table">
+        <thead>
+          <tr>
+            <th>Descripción</th>
+            <th style="text-align:right;">Cant.</th>
+            <th style="text-align:right;">Precio unit.</th>
+            <th style="text-align:right;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for item in invoice.items.all %}
+        <tr>
+          <td>{{ item.description }}</td>
+          <td style="text-align:right;">{{ item.quantity|floatformat:"-2" }}</td>
+          <td style="text-align:right;">${{ item.unit_price|floatformat:0 }}</td>
+          <td style="text-align:right;font-weight:600;color:var(--color-text-primary);">${{ item.line_total|floatformat:0 }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <div style="padding:1rem 1.25rem;border-top:1px solid var(--color-border);">
+        <div style="display:flex;flex-direction:column;gap:.35rem;max-width:280px;margin-left:auto;">
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;">
+            <span style="color:var(--color-text-muted);">Subtotal</span>
+            <span>${{ invoice.subtotal|floatformat:0 }}</span>
+          </div>
+          {% if invoice.discount_amount %}
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;">
+            <span style="color:var(--color-text-muted);">Descuento</span>
+            <span style="color:var(--color-danger);">-${{ invoice.discount_amount|floatformat:0 }}</span>
+          </div>
+          {% endif %}
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;">
+            <span style="color:var(--color-text-muted);">IVA ({{ invoice.tax_rate }}%)</span>
+            <span>${{ invoice.tax_amount|floatformat:0 }}</span>
+          </div>
+          {% if invoice.retention_fuente and invoice.retention_fuente > 0 %}
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;">
+            <span style="color:var(--color-text-muted);">Rte. Fuente ({{ invoice.retention_fuente_pct }}%)</span>
+            <span style="color:var(--color-danger);">-${{ invoice.retention_fuente|floatformat:0 }}</span>
+          </div>
+          {% endif %}
+          {% if invoice.retention_ica and invoice.retention_ica > 0 %}
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;">
+            <span style="color:var(--color-text-muted);">Rte. ICA ({{ invoice.retention_ica_pct }}‰)</span>
+            <span style="color:var(--color-danger);">-${{ invoice.retention_ica|floatformat:0 }}</span>
+          </div>
+          {% endif %}
+          {% if invoice.retention_iva and invoice.retention_iva > 0 %}
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;">
+            <span style="color:var(--color-text-muted);">Rte. IVA ({{ invoice.retention_iva_pct }}%)</span>
+            <span style="color:var(--color-danger);">-${{ invoice.retention_iva|floatformat:0 }}</span>
+          </div>
+          {% endif %}
+          <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:800;color:var(--color-text-primary);border-top:1px solid var(--color-border);padding-top:.5rem;margin-top:.25rem;">
+            <span>Total</span>
+            <span>${{ invoice.total|floatformat:0 }}</span>
+          </div>
+          {% if invoice.net_received and invoice.net_received != invoice.total %}
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;">
+            <span style="color:var(--color-text-muted);">Neto recibido</span>
+            <span style="color:var(--color-success);font-weight:700;">${{ invoice.net_received|floatformat:0 }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# Pagos registrados #}
+    {% if payments %}
+    <div class="pn-table-wrap">
+      <div class="pn-table-header"><span class="pn-table-title">Pagos registrados</span></div>
+      <table class="pn-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Método</th>
+            <th>Referencia</th>
+            <th style="text-align:right;">Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for pago in payments %}
+        <tr>
+          <td>{{ pago.payment_date|date:"d/m/Y" }}</td>
+          <td>{{ pago.payment_method }}</td>
+          <td>{{ pago.reference|default:"—" }}</td>
+          <td style="text-align:right;font-weight:600;">${{ pago.amount|floatformat:0 }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+  </div>
+
+  {# ── Panel derecho ── #}
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+    {# Cambiar estado #}
+    <div class="pn-card">
+      <div class="pn-card-header">Estado de cobro</div>
+      <div class="pn-card-body">
+        <div style="margin-bottom:1rem;">
+          <span class="pn-badge pn-badge-{{ invoice.status }}" style="font-size:.8rem;padding:.3rem .75rem;">{{ invoice.get_status_display }}</span>
+          {% if invoice.paid_date %}
+          <div style="font-size:.72rem;color:var(--color-success);margin-top:.5rem;">Pagada el {{ invoice.paid_date|date:"d/m/Y" }}</div>
+          {% endif %}
+        </div>
+        {% if invoice.status != "voided" %}
+        <form method="post" action="{% url 'panel:invoice_status' pk=invoice.pk %}">
+          {% csrf_token %}
+          <div class="pn-field" style="margin-bottom:.75rem;">
+            <label>Cambiar a</label>
+            <select name="status" class="pn-input">
+              {% for val, label in status_choices %}
+              <option value="{{ val }}" {% if invoice.status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="pn-btn pn-btn-primary" style="width:100%;">
+            Guardar estado
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Datos adicionales #}
+    <div class="pn-card">
+      <div class="pn-card-header">Información</div>
+      <div class="pn-card-body" style="display:flex;flex-direction:column;gap:.625rem;">
+        <div>
+          <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">Forma de pago</div>
+          <div style="font-size:.8125rem;">{{ invoice.get_payment_method_display }}</div>
+        </div>
+        {% if invoice.lead %}
+        <div>
+          <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">Cliente CRM</div>
+          <div style="font-size:.8125rem;color:var(--color-primary);">{{ invoice.lead.full_name }}</div>
+        </div>
+        {% endif %}
+        <div>
+          <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">Creada por</div>
+          <div style="font-size:.8125rem;">{{ invoice.created_by.get_full_name|default:invoice.created_by.username }}</div>
+        </div>
+        {% if invoice.is_overdue %}
+        <div class="pn-alert pn-alert-error" style="margin:0;padding:.5rem .75rem;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Factura vencida
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

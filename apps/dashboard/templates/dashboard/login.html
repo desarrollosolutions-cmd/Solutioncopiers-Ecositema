@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso Administrador — Solution Copiers</title>
+  <link rel="stylesheet" href="{% static 'dist/css/main.css' %}">
+  <meta name="robots" content="noindex,nofollow">
+</head>
+<body style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--color-bg);">
+
+<div style="width:100%;max-width:400px;padding:1rem;">
+  <div class="card-padded">
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div style="width:3rem;height:3rem;border-radius:.75rem;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+        <svg fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2" style="width:1.5rem;height:1.5rem">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+      <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;color:var(--color-text-primary);letter-spacing:-0.02em;">Panel Administrador</h1>
+      <p style="font-size:.875rem;color:var(--color-text-muted);margin-top:.375rem;">Solution Copiers · Zona Restringida</p>
+    </div>
+
+    {% if error %}
+    <div style="padding:.75rem 1rem;border-radius:.5rem;background:color-mix(in srgb,var(--color-danger) 10%,transparent);color:var(--color-danger);border:1px solid color-mix(in srgb,var(--color-danger) 25%,transparent);font-size:.875rem;margin-bottom:1.25rem;">
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div style="margin-bottom:1rem;">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--color-text-secondary);margin-bottom:.375rem;">Usuario</label>
+        <input type="text" name="username" autofocus required
+               style="width:100%;padding:.625rem .875rem;border-radius:.5rem;border:1px solid var(--color-border);background:var(--color-bg-alt);color:var(--color-text-primary);font-size:.875rem;outline:none;"
+               onfocus="this.style.borderColor='var(--color-primary)'"
+               onblur="this.style.borderColor='var(--color-border)'">
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--color-text-secondary);margin-bottom:.375rem;">Contraseña</label>
+        <input type="password" name="password" required
+               style="width:100%;padding:.625rem .875rem;border-radius:.5rem;border:1px solid var(--color-border);background:var(--color-bg-alt);color:var(--color-text-primary);font-size:.875rem;outline:none;"
+               onfocus="this.style.borderColor='var(--color-primary)'"
+               onblur="this.style.borderColor='var(--color-border)'">
+      </div>
+      <button type="submit" style="width:100%;padding:.75rem;border-radius:.5rem;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));color:white;font-size:.9375rem;font-weight:700;border:none;cursor:pointer;">
+        Ingresar al panel
+      </button>
+    </form>
+  </div>
+  <p style="text-align:center;font-size:.75rem;color:var(--color-text-muted);margin-top:1rem;">
+    <a href="/" style="color:var(--color-text-muted);">← Volver al sitio web</a>
+  </p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<div>
+    <h2 class="font-display text-display-md mb-2">Tus datos de contacto</h2>
+    <p class="text-text-secondary mb-8">Te contactaremos en menos de 24 horas.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="md:col-span-2">
+            <label class="form-label">Nombre completo *</label>
+            <input type="text" x-model="contact.full_name" class="wizard-input"
+                   :class="{ 'has-error': errors.full_name }" placeholder="María Restrepo">
+            <div x-show="errors.full_name" class="form-error" x-text="errors.full_name" x-cloak></div>
+        </div>
+
+        <div>
+            <label class="form-label">Email corporativo *</label>
+            <input type="email" x-model="contact.email" class="wizard-input"
+                   :class="{ 'has-error': errors.email }" placeholder="maria@empresa.com">
+            <div x-show="errors.email" class="form-error" x-text="errors.email" x-cloak></div>
+        </div>
+
+        <div>
+            <label class="form-label">Teléfono *</label>
+            <input type="tel" x-model="contact.phone" class="wizard-input"
+                   :class="{ 'has-error': errors.phone }" placeholder="+57 300 000 0000">
+            <div x-show="errors.phone" class="form-error" x-text="errors.phone" x-cloak></div>
+        </div>
+
+        <div>
+            <label class="form-label">Empresa</label>
+            <input type="text" x-model="contact.company_name" class="wizard-input" placeholder="Empresa ABC SAS">
+        </div>
+
+        <div>
+            <label class="form-label">Tamaño de la empresa</label>
+            <select x-model="contact.company_size" class="wizard-input">
+                <option value="">Selecciona...</option>
+                <option value="1-10">1-10 empleados</option>
+                <option value="11-50">11-50 empleados</option>
+                <option value="51-200">51-200 empleados</option>
+                <option value="201+">Más de 200 empleados</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="form-label">Tu cargo</label>
+            <input type="text" x-model="contact.job_title" class="wizard-input" placeholder="Gerente General">
+        </div>
+
+        <div>
+            <label class="form-label">Ciudad</label>
+            <input type="text" x-model="contact.city" class="wizard-input">
+        </div>
+
+        <div class="md:col-span-2 mt-4">
+            <label class="flex items-start gap-3 cursor-pointer p-4 rounded-base border border-border hover:border-primary/40 transition"
+                   :class="{ 'has-error border-danger': errors.gdpr_consent }">
+                <input type="checkbox" x-model="contact.gdpr_consent" class="mt-0.5 w-5 h-5 rounded text-primary focus:ring-primary">
+                <div class="text-sm">
+                    Autorizo a Solution Copiers el tratamiento de mis datos personales conforme a la Ley 1581 de 2012 de Colombia y la
+                    <a href="{% url 'core:privacy' %}" target="_blank" class="link-underline">política de privacidad</a>. *
+                </div>
+            </label>
+            <div x-show="errors.gdpr_consent" class="form-error" x-text="errors.gdpr_consent" x-cloak></div>
+        </div>
+    </div>
+</div>

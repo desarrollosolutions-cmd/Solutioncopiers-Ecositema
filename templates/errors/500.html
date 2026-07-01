@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section min-h-[60vh] flex items-center">
+  <div class="container-custom max-w-2xl text-center">
+
+    <div class="font-display text-[10rem] leading-none text-warning/20 mb-4 select-none">500</div>
+
+    <h1 class="font-display text-display-lg mb-4 text-balance">
+      Algo salió mal en el servidor
+    </h1>
+    <p class="text-lg text-text-secondary mb-6 max-w-xl mx-auto text-pretty">
+      Estamos trabajando para resolver el problema. Generalmente se soluciona en minutos.
+    </p>
+    <p class="text-sm text-text-muted mb-10">
+      Si necesitas ayuda urgente, contáctanos directamente por WhatsApp.
+    </p>
+
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="{% url 'core:home' %}" class="btn-primary">Intentar de nuevo</a>
+      {% if site_settings.phone_whatsapp %}
+      <a href="https://wa.me/57{{ site_settings.phone_whatsapp|cut:' '|cut:'+'|cut:'-' }}"
+         target="_blank" rel="noopener noreferrer"
+         class="btn-outline">Escribir por WhatsApp</a>
+      {% else %}
+      <a href="{% url 'core:contact' %}" class="btn-outline">Contactar soporte</a>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}

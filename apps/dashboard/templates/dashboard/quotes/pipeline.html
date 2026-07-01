@@ -1,0 +1,444 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Pipeline{% endblock %}
+{% block nav_quotes %}active{% endblock %}
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <a href="{% url 'dashboard:quotes' %}">Cotizaciones</a>
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">Pipeline</span>
+{% endblock %}
+
+{% block content %}
+<style>
+  /* ── PIPELINE LAYOUT ─────────────────────────────────────────── */
+  .pipeline-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem;
+  }
+  .pipeline-meta {
+    display: flex; align-items: center; gap: 1rem;
+    font-size: .8125rem; color: var(--color-text-muted);
+  }
+  .pipeline-meta strong { color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+
+  .pipeline-board {
+    display: flex;
+    gap: .875rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+    align-items: flex-start;
+    min-height: 60vh;
+  }
+
+  /* ── COLUMN ──────────────────────────────────────────────────── */
+  .kb-col {
+    flex: 0 0 280px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: .875rem;
+    display: flex; flex-direction: column;
+    min-height: 200px;
+    transition: box-shadow .2s;
+  }
+  .kb-col.drag-over {
+    border-color: var(--kb-col-color, var(--color-primary));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--kb-col-color, var(--color-primary)) 20%, transparent);
+  }
+
+  .kb-col-head {
+    padding: .875rem 1rem .75rem;
+    border-bottom: 1px solid var(--color-border);
+    display: flex; align-items: center; gap: .625rem;
+    border-radius: .875rem .875rem 0 0;
+    background: color-mix(in srgb, var(--kb-col-color, var(--color-primary)) 5%, var(--color-surface));
+  }
+  .kb-col-icon {
+    width: 1.875rem; height: 1.875rem;
+    border-radius: .5rem;
+    background: color-mix(in srgb, var(--kb-col-color, var(--color-primary)) 14%, transparent);
+    color: var(--kb-col-color, var(--color-primary));
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .kb-col-icon svg { width: .875rem; height: .875rem; }
+  .kb-col-title {
+    font-size: .8125rem; font-weight: 700;
+    color: var(--color-text-primary); flex: 1;
+    letter-spacing: -.01em;
+  }
+  .kb-col-count {
+    font-size: .65rem; font-weight: 700;
+    padding: .15rem .5rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--kb-col-color, var(--color-primary)) 14%, transparent);
+    color: var(--kb-col-color, var(--color-primary));
+    min-width: 1.5rem; text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kb-col-body {
+    padding: .625rem;
+    flex: 1;
+    display: flex; flex-direction: column; gap: .5rem;
+    min-height: 80px;
+  }
+  .kb-col-body.drag-active { background: color-mix(in srgb, var(--kb-col-color, var(--color-primary)) 4%, transparent); border-radius: 0 0 .875rem .875rem; }
+
+  /* ── CARD ────────────────────────────────────────────────────── */
+  .kb-card {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: .625rem;
+    padding: .75rem;
+    cursor: grab;
+    transition: transform .18s cubic-bezier(.16,1,.3,1), box-shadow .18s, border-color .18s, opacity .18s;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+  }
+  .kb-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--kb-col-color, var(--color-primary));
+    border-radius: 3px 0 0 3px;
+  }
+  .kb-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--kb-col-color, var(--color-primary)) 30%, var(--color-border));
+    box-shadow: 0 6px 20px rgba(0,0,0,.12);
+  }
+  .kb-card:active, .kb-card.dragging {
+    opacity: .45; cursor: grabbing; transform: scale(.97);
+  }
+
+  .kb-card-name {
+    font-size: .8125rem; font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: .125rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .kb-card-company {
+    font-size: .72rem; color: var(--color-text-muted);
+    margin-bottom: .5rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .kb-card-meta {
+    display: flex; align-items: center; flex-wrap: wrap; gap: .375rem;
+    margin-bottom: .5rem;
+  }
+  .kb-card-tag {
+    font-size: .62rem; font-weight: 600; padding: .125rem .4rem;
+    border-radius: .25rem;
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    color: var(--color-primary);
+  }
+  .kb-card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: .5rem; margin-top: .375rem;
+  }
+  .kb-card-value {
+    font-size: .75rem; font-weight: 700;
+    color: var(--color-text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .kb-card-date { font-size: .65rem; color: var(--color-text-muted); }
+  .kb-card-actions {
+    display: flex; gap: .25rem;
+    opacity: 0; transition: opacity .15s;
+    position: absolute; top: .5rem; right: .5rem;
+  }
+  .kb-card:hover .kb-card-actions { opacity: 1; }
+  .kb-card-btn {
+    width: 1.375rem; height: 1.375rem;
+    border-radius: .3rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+    transition: background .12s, color .12s;
+    cursor: pointer;
+  }
+  .kb-card-btn:hover { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+  .kb-card-btn svg { width: .7rem; height: .7rem; }
+
+  /* ── EMPTY COLUMN ────────────────────────────────────────────── */
+  .kb-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 2rem 1rem; gap: .5rem;
+    color: var(--color-text-muted); font-size: .78rem;
+    border: 1.5px dashed var(--color-border);
+    border-radius: .5rem; margin: .25rem;
+    pointer-events: none;
+  }
+  .kb-empty svg { width: 1.5rem; height: 1.5rem; opacity: .3; }
+
+  /* ── DROP GHOST ──────────────────────────────────────────────── */
+  .kb-drop-ghost {
+    height: 3px; border-radius: 2px;
+    background: var(--kb-col-color, var(--color-primary));
+    opacity: .6; margin: 0 .25rem;
+    display: none;
+  }
+  .kb-col-body.drag-active .kb-drop-ghost { display: block; }
+
+  /* ── TOAST ───────────────────────────────────────────────────── */
+  #kb-toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    padding: .75rem 1.125rem;
+    border-radius: .625rem;
+    font-size: .8125rem; font-weight: 600;
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: transform .3s cubic-bezier(.16,1,.3,1), opacity .3s;
+    pointer-events: none;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  #kb-toast.show { transform: translateY(0); opacity: 1; }
+  #kb-toast.ok   { background: color-mix(in srgb,var(--color-success) 12%,var(--color-surface)); color:var(--color-success); border:1px solid color-mix(in srgb,var(--color-success) 25%,transparent); }
+  #kb-toast.err  { background: color-mix(in srgb,var(--color-danger) 12%,var(--color-surface));  color:var(--color-danger);  border:1px solid color-mix(in srgb,var(--color-danger) 25%,transparent); }
+</style>
+
+{# ── TOPBAR ── #}
+<div class="pipeline-topbar">
+  <h1 class="da-page-title">Pipeline de ventas</h1>
+  <div class="pipeline-meta">
+    <span>{{ total }} cotización{{ total|pluralize:"es" }}</span>
+    {% if total_value %}
+    <span>·</span>
+    <span>Valor activo: <strong>${{ total_value|floatformat:"0g" }}</strong></span>
+    {% endif %}
+    {% if total_forecast %}
+    <span>·</span>
+    <span style="color:var(--color-success);">Forecast ponderado: <strong>${{ total_forecast|floatformat:"0g" }}</strong></span>
+    {% endif %}
+    {% if won_value %}
+    <span>·</span>
+    <span style="color:#10B981;">Ganado: <strong>${{ won_value|floatformat:"0g" }}</strong></span>
+    {% endif %}
+    <a href="{% url 'dashboard:quotes' %}" class="da-btn da-btn-secondary da-btn-sm">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h7"/></svg>
+      Vista lista
+    </a>
+  </div>
+</div>
+
+{# ── BOARD ── #}
+<div class="pipeline-board" id="pipeline-board">
+
+  {% for stage in stages %}
+  <div class="kb-col" data-stage="{{ stage.key }}" style="--kb-col-color:{{ stage.css_color }};">
+    <div class="kb-col-head">
+      <div class="kb-col-icon">
+        {% if stage.icon == "inbox" %}
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+        {% endif %}
+        {% if stage.icon == "eye" %}
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        {% endif %}
+        {% if stage.icon == "send" %}
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+        {% endif %}
+        {% if stage.icon == "check" %}
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {% endif %}
+        {% if stage.icon == "x" %}
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {% endif %}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <span class="kb-col-title">{{ stage.label }}</span>
+        <div style="font-size:.65rem;color:var(--color-text-muted);margin-top:.1rem;">
+          {% if stage.prob %}{{ stage.prob }}% prob · {% endif %}
+          {% if stage.value %}${{ stage.value|floatformat:"0g" }}{% endif %}
+        </div>
+      </div>
+      <span class="kb-col-count" data-count="{{ stage.key }}">{{ stage.count }}</span>
+    </div>
+
+    <div class="kb-col-body" data-body="{{ stage.key }}">
+      <div class="kb-drop-ghost"></div>
+
+      {% for q in stage.quotes %}
+      <div class="kb-card"
+           draggable="true"
+           data-pk="{{ q.pk }}"
+           data-stage="{{ stage.key }}"
+           data-move-url="{% url 'dashboard:quote_move' q.pk %}">
+        <div class="kb-card-name">{{ q.lead.full_name }}</div>
+        <div class="kb-card-company">{{ q.lead.company_name|default:"Particular" }} · {{ q.lead.city }}</div>
+        <div class="kb-card-meta">
+          <span class="kb-card-tag">{{ q.get_interest_area_display|truncatechars:22 }}</span>
+          {% if q.lead.source == "wizard" %}
+          <span class="kb-card-tag" style="background:color-mix(in srgb,#8B5CF6 10%,transparent);color:#7C3AED;">Wizard</span>
+          {% endif %}
+          {% if q.lead.source == "whatsapp" %}
+          <span class="kb-card-tag" style="background:color-mix(in srgb,#10B981 10%,transparent);color:#059669;">WhatsApp</span>
+          {% endif %}
+        </div>
+        <div class="kb-card-footer">
+          {% if q.estimated_total %}
+          <span class="kb-card-value">${{ q.estimated_total|floatformat:0 }}</span>
+          {% else %}
+          <span class="kb-card-value" style="color:var(--color-text-muted);font-weight:500;">Sin cotizar</span>
+          {% endif %}
+          <div style="display:flex;align-items:center;gap:.375rem;">
+            {% if q.close_probability %}
+            <span style="font-size:.62rem;font-weight:700;color:{% if q.close_probability >= 70 %}#10B981{% elif q.close_probability >= 40 %}#F59E0B{% else %}var(--color-text-muted){% endif %};">{{ q.close_probability }}%</span>
+            {% endif %}
+            <span class="kb-card-date">{{ q.created_at|date:"d/m/Y" }}</span>
+          </div>
+        </div>
+        <div class="kb-card-actions">
+          <a href="{% url 'dashboard:quote_detail' q.pk %}" class="kb-card-btn" title="Ver detalle" draggable="false">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <div class="kb-empty">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+        Sin cotizaciones
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+{# ── TOAST ── #}
+<div id="kb-toast"></div>
+
+<script>
+(function () {
+  const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+
+  let dragged = null;   // card element
+  let fromCol = null;   // source column key
+
+  /* ── helpers ─────────────────────────────────────────────── */
+  function updateCount(stageKey, delta) {
+    const el = document.querySelector(`[data-count="${stageKey}"]`);
+    if (!el) return;
+    const n = parseInt(el.textContent, 10) + delta;
+    el.textContent = n;
+  }
+
+  function showToast(msg, type) {
+    const t = document.getElementById('kb-toast');
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  function removeEmptyPlaceholder(body) {
+    body.querySelectorAll('.kb-empty').forEach(e => e.remove());
+  }
+
+  function maybeAddEmpty(body, stageKey) {
+    const cards = body.querySelectorAll('.kb-card');
+    if (cards.length === 0) {
+      const ghost = body.querySelector('.kb-drop-ghost');
+      const empty = document.createElement('div');
+      empty.className = 'kb-empty';
+      empty.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+      </svg>Sin cotizaciones`;
+      body.insertBefore(empty, ghost ? ghost.nextSibling : null);
+    }
+  }
+
+  /* ── DRAG EVENTS on cards ────────────────────────────────── */
+  document.querySelectorAll('.kb-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      dragged = card;
+      fromCol = card.dataset.stage;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.dataset.pk);
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      document.querySelectorAll('.kb-col-body').forEach(b => b.classList.remove('drag-active'));
+      document.querySelectorAll('.kb-col').forEach(c => c.classList.remove('drag-over'));
+    });
+  });
+
+  /* ── DROP EVENTS on columns ──────────────────────────────── */
+  document.querySelectorAll('.kb-col-body').forEach(body => {
+    const col = body.closest('.kb-col');
+    const toStage = body.dataset.body;
+
+    body.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      body.classList.add('drag-active');
+      col.classList.add('drag-over');
+    });
+
+    body.addEventListener('dragleave', e => {
+      if (!body.contains(e.relatedTarget)) {
+        body.classList.remove('drag-active');
+        col.classList.remove('drag-over');
+      }
+    });
+
+    body.addEventListener('drop', e => {
+      e.preventDefault();
+      body.classList.remove('drag-active');
+      col.classList.remove('drag-over');
+
+      if (!dragged || toStage === fromCol) return;
+
+      const pk = dragged.dataset.pk;
+      const moveUrl = dragged.dataset.moveUrl;
+
+      // Optimistic UI: move card immediately
+      const ghost = body.querySelector('.kb-drop-ghost');
+      removeEmptyPlaceholder(body);
+      // update card stage attribute
+      dragged.dataset.stage = toStage;
+      body.insertBefore(dragged, ghost ? ghost.nextSibling : body.firstChild);
+
+      // update col color on the card
+      const colColor = col.style.getPropertyValue('--kb-col-color');
+      dragged.style.setProperty('--kb-col-color', colColor);
+
+      updateCount(fromCol, -1);
+      updateCount(toStage, +1);
+      maybeAddEmpty(
+        document.querySelector(`[data-body="${fromCol}"]`),
+        fromCol
+      );
+
+      // AJAX
+      fetch(moveUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': CSRF,
+        },
+        body: JSON.stringify({ status: toStage }),
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          showToast(`Movido a "${data.label}"`, 'ok');
+        } else {
+          showToast('Error al actualizar', 'err');
+        }
+      })
+      .catch(() => showToast('Error de red', 'err'));
+
+      fromCol = toStage;
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+    <div class="container-custom max-w-4xl">
+        <div class="w-full aspect-video rounded-2xl overflow-hidden mb-8">
+          {% if consumable.main_image %}
+            <img src="{{ consumable.main_image.url }}"
+                 alt="{{ consumable.main_image_alt|default:consumable.name }}"
+                 class="w-full h-full object-cover object-center" loading="lazy">
+          {% else %}
+            {% include "components/_img_placeholder.html" with aspect="aspect-video" label=consumable.name %}
+          {% endif %}
+        </div>
+
+        <h1 class="font-display text-display-lg mb-4">{{ consumable.name }}</h1>
+        <p class="text-lg text-text-secondary mb-8">{{ consumable.description }}</p>
+
+        {% if consumable.price %}
+        <div class="card-padded bg-primary text-white inline-block">
+            <div class="text-sm opacity-80">Precio</div>
+            <div class="font-display text-display-md">${{ consumable.price|floatformat:0 }} <span class="text-base opacity-70">COP</span></div>
+        </div>
+        {% endif %}
+
+        <div class="mt-8">
+            <a href="{% url 'leads:wizard' %}?servicio=consumables" class="btn-primary">Cotizar</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

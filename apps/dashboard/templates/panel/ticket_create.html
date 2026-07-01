@@ -1,0 +1,104 @@
+{% extends "panel/_base.html" %}
+{% block title %}Nuevo ticket{% endblock %}
+{% block nav_tickets %}active{% endblock %}
+{% block breadcrumb %}
+<span class="pn-breadcrumb-sep">/</span>
+<a href="{% url 'panel:tickets' %}" style="color:var(--color-text-muted);text-decoration:none;">Tickets</a>
+<span class="pn-breadcrumb-sep">/</span>
+<span class="pn-breadcrumb-current">Nuevo</span>
+{% endblock %}
+
+{% block content %}
+<div class="pn-page-header">
+  <h1 class="pn-page-title">Crear ticket de servicio</h1>
+</div>
+
+<div style="max-width:600px;">
+  <div class="pn-card">
+    <div class="pn-card-header">Datos del ticket</div>
+    <div class="pn-card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
+
+          <div class="pn-field" style="grid-column:1/-1;">
+            <label class="pn-label">N° de ticket</label>
+            <input type="text" name="ticket_number" class="pn-input" value="{{ next_number }}" readonly style="opacity:.7;cursor:default;">
+            <span style="font-size:.68rem;color:var(--color-text-muted);">Generado automáticamente</span>
+          </div>
+
+          <div class="pn-field" style="grid-column:1/-1;">
+            <label class="pn-label">Cliente *</label>
+            <select name="lead" class="pn-input" required id="lead-select">
+              <option value="">Seleccionar cliente…</option>
+              {% for lead in lead_list %}
+              <option value="{{ lead.pk }}">{{ lead.full_name }}{% if lead.company_name %} — {{ lead.company_name }}{% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="pn-field" style="grid-column:1/-1;">
+            <label class="pn-label">Contrato relacionado</label>
+            <select name="contract" class="pn-input">
+              <option value="">Sin contrato</option>
+              {% for c in contract_list %}
+              <option value="{{ c.pk }}">{{ c.contract_number }} — {{ c.lead.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">Tipo de problema *</label>
+            <select name="issue_type" class="pn-input" required>
+              {% for val, lbl in issue_choices %}
+              <option value="{{ val }}">{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">Prioridad *</label>
+            <select name="priority" class="pn-input" required>
+              {% for val, lbl in priority_choices %}
+              <option value="{{ val }}" {% if val == 'medium' %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="pn-field" style="grid-column:1/-1;">
+            <label class="pn-label">Descripción del equipo</label>
+            <input type="text" name="equipment_description" class="pn-input" placeholder="Ej: Kyocera TASKalfa 2553ci — Serie A1234">
+          </div>
+
+          <div class="pn-field" style="grid-column:1/-1;">
+            <label class="pn-label">Descripción del problema *</label>
+            <textarea name="description" class="pn-input" rows="4" required placeholder="Describe el problema reportado por el cliente…" style="resize:vertical;"></textarea>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">Asignar técnico</label>
+            <select name="assigned_to" class="pn-input">
+              <option value="">— Sin asignar —</option>
+              {% for tech in technician_list %}
+              <option value="{{ tech.pk }}">{{ tech.get_full_name|default:tech.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">Agendar visita</label>
+            <input type="datetime-local" name="scheduled_for" class="pn-input">
+          </div>
+
+        </div>
+
+        <div style="display:flex;gap:.625rem;margin-top:1rem;">
+          <button type="submit" class="pn-btn pn-btn-primary" style="flex:1;justify-content:center;">Crear ticket</button>
+          <a href="{% url 'panel:tickets' %}" class="pn-btn pn-btn-secondary" style="justify-content:center;">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

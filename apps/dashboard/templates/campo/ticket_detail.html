@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#070E18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Ticket {{ ticket.ticket_number }}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-serif;color:#E4F1FA;-webkit-font-smoothing:antialiased;}
+.topbar{background:#101E30;border-bottom:1px solid #192D42;padding:.875rem 1.125rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:10;}
+.back-btn{background:none;border:none;color:#0EA5E9;cursor:pointer;padding:.25rem;display:flex;align-items:center;flex-shrink:0;}
+.back-btn svg{width:1.25rem;height:1.25rem;}
+.topbar-info{flex:1;min-width:0;}
+.topbar-ticket{font-size:.875rem;font-weight:700;color:#E4F1FA;}
+.topbar-client{font-size:.7rem;color:#7AAEC8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.content{padding:1rem 1rem 5rem;}
+.info-card{background:#101E30;border:1px solid #192D42;border-radius:1rem;padding:1.125rem;margin-bottom:.875rem;}
+.info-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;}
+.info-row:last-child{margin-bottom:0;}
+.info-label{font-size:.68rem;font-weight:600;color:#3E6E8A;text-transform:uppercase;letter-spacing:.06em;}
+.info-value{font-size:.8125rem;font-weight:600;color:#E4F1FA;text-align:right;}
+.section-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#3E6E8A;margin:1.25rem 0 .625rem;}
+.text-block{background:#101E30;border:1px solid #192D42;border-radius:.875rem;padding:.875rem 1rem;font-size:.8rem;line-height:1.6;color:#C5DCF0;}
+.badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;font-weight:700;padding:.25rem .625rem;border-radius:9999px;}
+.badge-open{background:rgba(14,165,233,.12);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);}
+.badge-in_progress{background:rgba(139,92,246,.12);color:#7C3AED;border:1px solid rgba(139,92,246,.2);}
+.badge-waiting_parts{background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.2);}
+.badge-resolved{background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);}
+.badge-closed{background:rgba(100,116,139,.12);color:#64748B;border:1px solid rgba(100,116,139,.2);}
+.badge-high{background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.2);}
+.badge-urgent{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.2);}
+.badge-medium{background:rgba(14,165,233,.12);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);}
+.badge-low{background:rgba(100,116,139,.12);color:#94A3B8;border:1px solid rgba(100,116,139,.2);}
+.action-card{background:#101E30;border:1px solid #192D42;border-radius:1rem;padding:1.25rem;margin-bottom:.875rem;}
+.form-label{font-size:.7rem;font-weight:600;color:#7AAEC8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;display:block;}
+.form-textarea{width:100%;padding:.75rem .875rem;background:#070E18;border:1.5px solid #192D42;border-radius:.75rem;color:#E4F1FA;font-size:.875rem;font-family:inherit;outline:none;resize:vertical;min-height:80px;transition:border-color .18s;margin-bottom:1rem;}
+.form-textarea:focus{border-color:#0EA5E9;}
+.btn-grid{display:grid;gap:.5rem;margin-top:.25rem;}
+.btn{width:100%;padding:.8rem;border-radius:.75rem;border:none;font-size:.8125rem;font-weight:700;cursor:pointer;transition:transform .15s,opacity .18s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.4rem;}
+.btn:active{transform:scale(.97);}
+.btn svg{width:.9rem;height:.9rem;}
+.btn-progress{background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#fff;}
+.btn-waiting{background:rgba(245,158,11,.15);color:#D97706;border:1px solid rgba(245,158,11,.3);}
+.btn-resolve{background:linear-gradient(135deg,#10B981,#059669);color:#fff;}
+.btn-disabled{opacity:.35;pointer-events:none;}
+.resolved-banner{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:.875rem;padding:1rem;display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem;}
+.resolved-banner svg{width:1.5rem;height:1.5rem;color:#10B981;flex-shrink:0;}
+.resolved-text{font-size:.8125rem;font-weight:600;color:#10B981;}
+.resolved-sub{font-size:.72rem;color:#7AAEC8;margin-top:.15rem;}
+.bottombar{position:fixed;bottom:0;left:0;right:0;background:#101E30;border-top:1px solid #192D42;padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
+.bottombar-tick{font-size:.72rem;color:#3E6E8A;}
+.logout-btn{background:none;border:none;color:#3E6E8A;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;padding:.375rem .625rem;border-radius:.375rem;}
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:#101E30;border:1px solid #0EA5E9;color:#E4F1FA;padding:.625rem 1.25rem;border-radius:.75rem;font-size:.78rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="{% url 'campo:turno' %}" class="back-btn" aria-label="Volver">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+    </svg>
+  </a>
+  <div class="topbar-info">
+    <div class="topbar-ticket">{{ ticket.ticket_number }}</div>
+    <div class="topbar-client">{{ ticket.lead.full_name }}</div>
+  </div>
+  <span class="badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+</div>
+
+<div class="content">
+
+  {# Banner si ya está resuelto #}
+  {% if ticket.status == "resolved" or ticket.status == "closed" %}
+  <div class="resolved-banner">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div>
+      <div class="resolved-text">Ticket {{ ticket.get_status_display|lower }}</div>
+      {% if ticket.resolved_at %}
+      <div class="resolved-sub">{{ ticket.resolved_at|date:"d/m/Y H:i" }}</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# Info general #}
+  <div class="section-title">Información del ticket</div>
+  <div class="info-card">
+    <div class="info-row">
+      <span class="info-label">Tipo de servicio</span>
+      <span class="info-value">{{ ticket.get_issue_type_display }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Prioridad</span>
+      <span class="badge badge-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span>
+    </div>
+    {% if ticket.equipment_description %}
+    <div class="info-row">
+      <span class="info-label">Equipo</span>
+      <span class="info-value" style="max-width:60%;text-align:right;">{{ ticket.equipment_description }}</span>
+    </div>
+    {% endif %}
+    {% if ticket.scheduled_for %}
+    <div class="info-row">
+      <span class="info-label">Visita programada</span>
+      <span class="info-value">{{ ticket.scheduled_for|date:"d/m H:i" }}</span>
+    </div>
+    {% endif %}
+    {% if ticket.contract %}
+    <div class="info-row">
+      <span class="info-label">Contrato</span>
+      <span class="info-value"># {{ ticket.contract.pk }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  {# Descripción del problema #}
+  <div class="section-title">Descripción del problema</div>
+  <div class="text-block">{{ ticket.description|linebreaksbr }}</div>
+
+  {# Notas de resolución actuales #}
+  {% if ticket.resolution_notes %}
+  <div class="section-title">Notas de trabajo</div>
+  <div class="text-block" style="border-color:rgba(16,185,129,.25);">{{ ticket.resolution_notes|linebreaksbr }}</div>
+  {% endif %}
+
+  {# Acciones (solo si no está cerrado/resuelto) #}
+  {% if ticket.status not in "resolved,closed" %}
+  <div class="section-title">Actualizar ticket</div>
+  <div class="action-card">
+    <form method="post" id="update-form">
+      {% csrf_token %}
+      <input type="hidden" name="status" id="status-input" value="">
+
+      <label class="form-label">Notas de trabajo (opcional)</label>
+      <textarea name="resolution_notes" class="form-textarea"
+        placeholder="Describe lo que hiciste, piezas instaladas, estado del equipo…">{{ ticket.resolution_notes }}</textarea>
+
+      <div class="btn-grid">
+        {% if ticket.status == "open" %}
+        <button type="button" class="btn btn-progress" onclick="submitStatus('in_progress')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Iniciar atención
+        </button>
+        <button type="button" class="btn btn-waiting" onclick="submitStatus('waiting_parts')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Esperar repuestos
+        </button>
+        {% elif ticket.status == "in_progress" %}
+        <button type="button" class="btn btn-resolve" onclick="submitStatus('resolved')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Marcar resuelto
+        </button>
+        <button type="button" class="btn btn-waiting" onclick="submitStatus('waiting_parts')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Esperar repuestos
+        </button>
+        {% elif ticket.status == "waiting_parts" %}
+        <button type="button" class="btn btn-progress" onclick="submitStatus('in_progress')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Continuar atención
+        </button>
+        <button type="button" class="btn btn-resolve" onclick="submitStatus('resolved')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Marcar resuelto
+        </button>
+        {% endif %}
+
+        {# Guardar notas sin cambiar estado #}
+        <button type="button" class="btn" style="background:rgba(14,165,233,.1);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);" onclick="submitStatus('')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+          Guardar notas
+        </button>
+      </div>
+    </form>
+  </div>
+  {% else %}
+  {# Solo guardar notas si ya está resuelto #}
+  {% if ticket.status == "resolved" %}
+  <div class="action-card">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="status" value="">
+      <label class="form-label">Actualizar notas de trabajo</label>
+      <textarea name="resolution_notes" class="form-textarea">{{ ticket.resolution_notes }}</textarea>
+      <button type="submit" class="btn" style="background:rgba(14,165,233,.1);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);">
+        Guardar notas
+      </button>
+    </form>
+  </div>
+  {% endif %}
+  {% endif %}
+
+</div>
+
+<div class="bottombar">
+  <div class="bottombar-tick">{{ ticket.ticket_number }}</div>
+  <form method="post" action="{% url 'campo:logout' %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="logout-btn">Salir</button>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = ok ? '#10B981' : '#EF4444';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function submitStatus(status) {
+  document.getElementById('status-input').value = status;
+  document.getElementById('update-form').submit();
+}
+
+{% if request.method == 'POST' %}
+showToast('Ticket actualizado ✓');
+{% endif %}
+</script>
+</body>
+</html>

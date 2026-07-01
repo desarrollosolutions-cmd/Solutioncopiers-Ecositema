@@ -1,0 +1,12 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Blog{% endblock %}
+{% block nav_blog %}active{% endblock %}
+{% block breadcrumb %}<span class="da-breadcrumb-sep">/</span><span class="da-breadcrumb-current">Blog</span>{% endblock %}
+{% block content %}
+<div class="da-page-header"><h1 class="da-page-title">Blog</h1></div>
+<form method="get" style="display:flex;gap:.75rem;margin-bottom:1.25rem;"><div class="da-search-wrap"><div class="da-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div><input type="text" name="q" value="{{ current_q }}" placeholder="Buscar artículo…" class="da-input da-input-search"></div><button type="submit" class="da-btn da-btn-secondary">Buscar</button></form>
+<div class="da-table-wrap"><div class="da-table-header"><span class="da-table-title">{{ paginator.count }} artículo{{ paginator.count|pluralize:"s" }}</span></div>
+<table class="da-table"><thead><tr><th>Título</th><th>Categoría</th><th>Autor</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+<tbody>{% for p in posts %}<tr><td><div class="da-name">{{ p.title|truncatechars:60 }}</div></td><td>{{ p.category.name|default:"—" }}</td><td>{% if p.author %}{{ p.author.get_full_name|default:p.author.username }}{% else %}—{% endif %}</td><td><span class="da-badge da-badge-{{ p.status }}">{{ p.get_status_display }}</span></td><td>{{ p.created_at|date:"d/m/Y" }}</td><td><a href="{% url 'dashboard:blog_edit' p.pk %}" class="da-btn da-btn-secondary da-btn-sm">Editar</a></td></tr>{% empty %}<tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--color-text-muted);">Sin artículos</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

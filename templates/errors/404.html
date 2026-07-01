@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section min-h-[60vh] flex items-center">
+  <div class="container-custom max-w-3xl text-center">
+
+    <div class="font-display text-[10rem] leading-none text-primary/20 mb-4 select-none">404</div>
+
+    <h1 class="font-display text-display-lg mb-4 text-balance">
+      Esta página no existe
+    </h1>
+    <p class="text-lg text-text-secondary mb-10 max-w-xl mx-auto text-pretty">
+      El enlace que seguiste puede estar desactualizado o la página fue movida.
+      Aquí tienes algunas alternativas:
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 text-left">
+      <a href="{% url 'catalog:rental_list' %}"
+         class="card-padded hover:border-primary transition group">
+        <div class="silo-label hardware mb-2">Impresión</div>
+        <h3 class="font-display text-base group-hover:text-primary transition">Alquiler de fotocopiadoras</h3>
+        <p class="text-xs text-text-muted mt-1">Ricoh, Canon, Kyocera y más</p>
+      </a>
+      <a href="{% url 'catalog:structured_cabling' %}"
+         class="card-padded hover:border-primary transition group">
+        <div class="silo-label infra mb-2">Redes</div>
+        <h3 class="font-display text-base group-hover:text-primary transition">Cableado estructurado</h3>
+        <p class="text-xs text-text-muted mt-1">Cat6A certificado en Medellín</p>
+      </a>
+      <a href="{% url 'services:software_development' %}"
+         class="card-padded hover:border-primary transition group">
+        <div class="silo-label software mb-2">Software</div>
+        <h3 class="font-display text-base group-hover:text-primary transition">Desarrollo de software</h3>
+        <p class="text-xs text-text-muted mt-1">Apps web, móviles y bases de datos</p>
+      </a>
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="{% url 'core:home' %}" class="btn-primary">Ir al inicio</a>
+      <a href="{% url 'leads:wizard' %}" class="btn-outline">Solicitar cotización</a>
+      <a href="{% url 'core:contact' %}" class="btn-ghost">Contactar asesor</a>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

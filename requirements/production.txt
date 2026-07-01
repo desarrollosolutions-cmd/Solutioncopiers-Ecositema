@@ -1,0 +1,7 @@
+-r base.txt
+
+# === Servidor de aplicación ===
+gunicorn==23.0.0
+
+# === Observabilidad ===
+sentry-sdk[django]==2.19.2

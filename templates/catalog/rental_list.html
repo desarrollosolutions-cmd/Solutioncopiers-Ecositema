@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="section">
+    <div class="container-custom">
+        <div class="mb-10 max-w-3xl">
+            <div class="silo-label hardware mb-4">Silo Hardware</div>
+            <h1 class="font-display text-display-xl mb-4 text-balance">Alquiler de Impresoras y Fotocopiadoras en Medellín</h1>
+            <p class="text-lg text-text-secondary text-pretty mb-4">
+                El <strong>alquiler de impresoras en Medellín</strong> es la alternativa más eficiente para empresas que
+                buscan reducir costos sin inmovilizar capital. Nuestros planes de renting incluyen fotocopiadoras Ricoh
+                multifuncionales con todo incluido: instalación, capacitación,
+                <strong>servicio técnico de multifuncionales</strong> preventivo y correctivo, y suministro de
+                <strong>insumos y repuestos originales</strong> Ricoh durante toda la vigencia del contrato.
+            </p>
+            <p class="text-base text-text-muted text-pretty">
+                Equipos B/N y color para volúmenes de 5.000 a 100.000 copias mensuales. Atendemos Medellín,
+                El Poblado, Laureles, Bello, Itagüí, Envigado y toda el área metropolitana de Antioquia.
+                Recibe tu cotización personalizada en menos de 24 horas hábiles.
+            </p>
+        </div>
+
+        {% block hero_image %}
+        <div class="w-full aspect-video rounded-2xl overflow-hidden mb-12">
+            <img src="{% static 'images/img-hero-alquiler.jpg' %}"
+                 alt="Fotocopiadora Ricoh multifuncional para alquiler en Medellín"
+                 class="w-full h-full object-cover object-center" loading="lazy">
+        </div>
+        {% endblock %}
+
+        {% if categories %}
+        <div class="flex flex-wrap gap-3 mb-12">
+            <a href="{% url 'catalog:rental_list' %}" class="badge {% if not request.GET.categoria %}badge-primary{% endif %}">Todas</a>
+            {% for cat in categories %}
+                <a href="{% url 'catalog:rental_category' category_slug=cat.slug %}" class="badge hover:badge-primary">{{ cat.name }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for copier in copiers %}
+                {% include "components/_copier_card.html" with copier=copier %}
+            {% empty %}
+                <p class="text-text-secondary col-span-3 text-center py-12">No hay equipos disponibles en este momento.</p>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+        <div class="flex justify-center gap-2 mt-12">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn-outline">Anterior</a>
+            {% endif %}
+            <span class="btn-ghost">Página {{ page_obj.number }} de {{ paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="btn-outline">Siguiente</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% include "components/_cta_section.html" with primary_url="/cotizador/?servicio=rental" primary_text="Cotizar alquiler ahora" %}
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "panel/_base.html" %}
+{% block title %}Ticket {{ ticket.ticket_number }}{% endblock %}
+{% block nav_tickets %}active{% endblock %}
+{% block breadcrumb %}
+<span class="pn-breadcrumb-sep">/</span>
+<a href="{% url 'panel:tickets' %}" style="color:var(--color-text-muted);text-decoration:none;">Tickets</a>
+<span class="pn-breadcrumb-sep">/</span>
+<span class="pn-breadcrumb-current">{{ ticket.ticket_number }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="pn-page-header">
+  <div>
+    <h1 class="pn-page-title" style="font-family:monospace;">{{ ticket.ticket_number }}</h1>
+    <div style="font-size:.8rem;color:var(--color-text-muted);margin-top:.125rem;">{{ ticket.get_issue_type_display }} · {{ ticket.lead.full_name }}</div>
+  </div>
+  <div style="display:flex;gap:.5rem;align-items:center;">
+    <span class="pn-badge pn-badge-{{ ticket.status }}" style="font-size:.8rem;padding:.375rem .875rem;">{{ ticket.get_status_display }}</span>
+    <span class="pn-badge {% if ticket.priority == 'urgent' %}pn-badge-urgent{% elif ticket.priority == 'high' %}pn-badge-high{% elif ticket.priority == 'low' %}pn-badge-low{% else %}pn-badge-medium{% endif %}" style="font-size:.8rem;padding:.375rem .875rem;">{{ ticket.get_priority_display }}</span>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 300px;gap:1.125rem;">
+
+  {# Columna principal #}
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+
+    {# Info #}
+    <div class="pn-card">
+      <div class="pn-card-header">Detalles del ticket</div>
+      <div class="pn-card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem .5rem;margin-bottom:.875rem;">
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Cliente</div>
+            <a href="{% url 'panel:client_detail' ticket.lead.pk %}" style="font-size:.875rem;font-weight:600;color:var(--color-primary);">{{ ticket.lead.full_name }}</a></div>
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Contrato</div>
+            <div style="font-size:.875rem;color:var(--color-text-secondary);">{% if ticket.contract %}{{ ticket.contract.contract_number }}{% else %}—{% endif %}</div></div>
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Equipo</div>
+            <div style="font-size:.875rem;color:var(--color-text-secondary);">{{ ticket.equipment_description|default:"—" }}</div></div>
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Creado</div>
+            <div style="font-size:.875rem;color:var(--color-text-secondary);">{{ ticket.created_at|date:"d/m/Y H:i" }}</div></div>
+          {% if ticket.scheduled_for %}
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Programado para</div>
+            <div style="font-size:.875rem;font-weight:600;color:var(--color-warning);">{{ ticket.scheduled_for|date:"d/m/Y H:i" }}</div></div>
+          {% endif %}
+          {% if ticket.resolved_at %}
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Resuelto</div>
+            <div style="font-size:.875rem;color:#10B981;">{{ ticket.resolved_at|date:"d/m/Y H:i" }}</div></div>
+          {% endif %}
+        </div>
+        <div style="padding:.75rem;background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.625rem;">
+          <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.375rem;">Descripción</div>
+          <div style="font-size:.8125rem;color:var(--color-text-secondary);line-height:1.6;white-space:pre-wrap;">{{ ticket.description }}</div>
+        </div>
+        {% if ticket.resolution_notes %}
+        <div style="padding:.75rem;background:color-mix(in srgb,#10B981 8%,var(--color-bg-alt));border:1px solid color-mix(in srgb,#10B981 25%,var(--color-border));border-radius:.625rem;margin-top:.75rem;">
+          <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#10B981;margin-bottom:.375rem;">Notas de resolución</div>
+          <div style="font-size:.8125rem;color:var(--color-text-secondary);line-height:1.6;white-space:pre-wrap;">{{ ticket.resolution_notes }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Acciones del cliente #}
+    <div class="pn-card">
+      <div class="pn-card-header">Contacto</div>
+      <div class="pn-card-body" style="padding:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+        <a href="tel:{{ ticket.lead.phone }}" class="pn-btn pn-btn-secondary pn-btn-sm">Llamar: {{ ticket.lead.phone }}</a>
+        <a href="https://wa.me/{{ ticket.lead.phone }}" target="_blank" class="pn-btn pn-btn-secondary pn-btn-sm">WhatsApp</a>
+        <a href="{% url 'panel:client_detail' ticket.lead.pk %}" class="pn-btn pn-btn-secondary pn-btn-sm">Ver perfil completo</a>
+      </div>
+    </div>
+
+  </div>
+
+  {# Panel lateral — actualizar ticket #}
+  <div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="pn-card" style="margin-bottom:1rem;">
+        <div class="pn-card-header">Actualizar ticket</div>
+        <div class="pn-card-body" style="padding:.75rem;display:flex;flex-direction:column;gap:.75rem;">
+
+          <div class="pn-field">
+            <label class="pn-label">Estado</label>
+            <select name="status" class="pn-input">
+              {% for val, lbl in status_choices %}
+              <option value="{{ val }}" {% if val == ticket.status %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          {% if can_assign %}
+          <div class="pn-field">
+            <label class="pn-label">Prioridad</label>
+            <select name="priority" class="pn-input">
+              {% for val, lbl in priority_choices %}
+              <option value="{{ val }}" {% if val == ticket.priority %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">Asignado a</label>
+            <select name="assigned_to" class="pn-input">
+              <option value="">Sin asignar</option>
+              {% for tech in technicians %}
+              <option value="{{ tech.pk }}" {% if ticket.assigned_to_id == tech.pk %}selected{% endif %}>{{ tech.get_full_name|default:tech.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">Programar visita</label>
+            <input type="datetime-local" name="scheduled_for" class="pn-input"
+              value="{% if ticket.scheduled_for %}{{ ticket.scheduled_for|date:'Y-m-d\TH:i' }}{% endif %}">
+          </div>
+          {% endif %}
+
+          <div class="pn-field">
+            <label class="pn-label">Notas de resolución</label>
+            <textarea name="resolution_notes" class="pn-input" rows="3" placeholder="Describe lo que hiciste, piezas instaladas, estado del equipo…" style="resize:vertical;">{{ ticket.resolution_notes|default:"" }}</textarea>
+          </div>
+
+          <button type="submit" class="pn-btn pn-btn-primary" style="justify-content:center;">Guardar cambios</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

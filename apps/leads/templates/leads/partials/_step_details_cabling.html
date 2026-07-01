@@ -1,0 +1,42 @@
+<div>
+    <h2 class="font-display text-display-md mb-2">Detalles del cableado</h2>
+    <p class="text-text-secondary mb-8">Indícanos cuántos puntos necesitas instalar.</p>
+
+    <div class="space-y-8">
+        <div>
+            <label class="form-label">Puntos de red lógica</label>
+            <div class="flex items-center gap-4">
+                <input type="number" x-model.number="details.logical_points" min="0" max="500" class="wizard-input w-32">
+                <span class="text-sm text-text-muted">puntos · ~$180.000 c/u</span>
+            </div>
+        </div>
+
+        <div>
+            <label class="form-label">Puntos eléctricos regulados</label>
+            <div class="flex items-center gap-4">
+                <input type="number" x-model.number="details.electrical_points" min="0" max="500" class="wizard-input w-32">
+                <span class="text-sm text-text-muted">puntos · ~$220.000 c/u</span>
+            </div>
+        </div>
+
+        <div>
+            <label class="form-label">Área de la oficina <span class="text-text-muted font-normal">(opcional)</span></label>
+            <div class="flex items-center gap-4">
+                <input type="number" x-model.number="details.office_size_m2" min="10" placeholder="120" class="wizard-input w-32">
+                <span class="text-sm text-text-muted">m²</span>
+            </div>
+        </div>
+
+        <div>
+            <label class="flex items-start gap-3 cursor-pointer p-4 rounded-base border border-border hover:border-primary/40 transition">
+                <input type="checkbox" x-model="details.needs_certification" class="mt-0.5 w-5 h-5 rounded text-primary focus:ring-primary">
+                <div>
+                    <div class="font-medium text-sm">Requiero certificación Cat 6A</div>
+                    <div class="text-xs text-text-muted">Certificación profesional con equipo Fluke DSX-5000 y garantía documentada de 25 años.</div>
+                </div>
+            </label>
+        </div>
+
+        <div x-show="errors.logical_points" class="form-error" x-text="errors.logical_points" x-cloak></div>
+    </div>
+</div>

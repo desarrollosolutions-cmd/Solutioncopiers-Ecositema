@@ -1,0 +1,44 @@
+{% extends "leads/emails/base_email.html" %}
+{% block subject %}⏳ Seguimiento pendiente — {{ quote.lead.full_name }} ({{ days_pending }} días){% endblock %}
+{% block header_subtitle %}Cotización sin atender{% endblock %}
+
+{% block body %}
+<span class="badge badge-warning">Seguimiento requerido</span>
+<h2 class="title" style="margin-top:12px;">Cotización sin atender</h2>
+<p class="subtitle">Esta cotización lleva <strong>{{ days_pending }} días</strong> en estado "Nueva" sin que nadie la haya revisado.</p>
+
+<div class="info-grid">
+  <div class="info-item">
+    <div class="info-label">Cliente</div>
+    <div class="info-value">{{ quote.lead.full_name }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Empresa</div>
+    <div class="info-value">{{ quote.lead.company_name|default:"Particular" }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Servicio solicitado</div>
+    <div class="info-value">{{ quote.get_interest_area_display }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Recibida el</div>
+    <div class="info-value">{{ quote.created_at|date:"d/m/Y" }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Teléfono</div>
+    <div class="info-value">{{ quote.lead.phone }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Email</div>
+    <div class="info-value" style="word-break:break-all;">{{ quote.lead.email }}</div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>⚠️ Riesgo de pérdida</strong>
+  Los leads que no son contactados en los primeros 3 días tienen tasas de conversión significativamente menores.
+  Por favor asigna esta cotización a un asesor y da seguimiento inmediato.
+</div>
+
+<a href="{{ dashboard_url }}" class="btn">Gestionar en el CRM →</a>
+{% endblock %}

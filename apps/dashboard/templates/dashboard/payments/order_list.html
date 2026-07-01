@@ -1,0 +1,83 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Pedidos Online{% endblock %}
+{% block nav_billing %}active{% endblock %}
+{% block breadcrumb %}
+<span class="da-breadcrumb-sep">/</span>
+<a href="{% url 'dashboard:ar_dashboard' %}" class="da-breadcrumb-link">Facturación</a>
+<span class="da-breadcrumb-sep">/</span>
+<span class="da-breadcrumb-current">Pedidos online</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">Pedidos Online</h1>
+</div>
+
+<form method="get" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-bottom:1.25rem;">
+  <div class="da-search-wrap">
+    <div class="da-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
+    <input type="text" name="q" value="{{ q_actual }}" placeholder="Nombre, email o referencia…" class="da-input da-input-search">
+  </div>
+  <select name="estado" class="da-input" style="width:auto;padding:.5rem .875rem;">
+    <option value="">Todos los estados</option>
+    {% for val, lbl in status_choices %}<option value="{{ val }}" {% if estado_actual == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
+  {% if q_actual or estado_actual %}<a href="{% url 'dashboard:order_list' %}" class="da-btn da-btn-secondary">Limpiar</a>{% endif %}
+</form>
+
+<div class="da-table-wrap">
+  <div class="da-table-header">
+    <span class="da-table-title">{{ paginator.count }} pedido{{ paginator.count|pluralize:"s" }}</span>
+  </div>
+  <table class="da-table">
+    <thead>
+      <tr><th>Referencia</th><th>Comprador</th><th>Items</th><th>Total</th><th>Estado</th><th>Fecha</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td style="font-family:var(--font-mono);font-size:.78rem;color:var(--color-primary);">
+          <a href="{% url 'dashboard:order_detail' reference=order.reference %}">{{ order.reference }}</a>
+        </td>
+        <td>
+          <div class="da-name">{{ order.buyer_name|truncatechars:30 }}</div>
+          <div style="font-size:.7rem;color:var(--color-text-muted);">{{ order.buyer_email }}</div>
+        </td>
+        <td style="font-size:.82rem;color:var(--color-text-muted);">{{ order.items.count }} ítem{{ order.items.count|pluralize:"s" }}</td>
+        <td style="font-weight:600;color:var(--color-text-primary);">${{ order.total|floatformat:0 }}</td>
+        <td>
+          {% if order.status == 'paid' %}
+          <span class="da-badge da-badge-stock">Pagado</span>
+          {% elif order.status == 'failed' %}
+          <span class="da-badge da-badge-nostock">Fallido</span>
+          {% elif order.status == 'pending' %}
+          <span class="da-badge" style="background:color-mix(in srgb,var(--color-warning) 15%,transparent);color:var(--color-warning);">Pendiente</span>
+          {% elif order.status == 'cancelled' %}
+          <span class="da-badge">Cancelado</span>
+          {% else %}
+          <span class="da-badge">{{ order.get_status_display }}</span>
+          {% endif %}
+        </td>
+        <td style="font-size:.8rem;">{{ order.created_at|date:"d M Y H:i" }}</td>
+        <td><a href="{% url 'dashboard:order_detail' reference=order.reference %}" class="da-btn da-btn-secondary" style="font-size:.72rem;padding:.25rem .65rem;">Ver</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--color-text-muted);">No se encontraron pedidos</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_paginated %}
+<div style="display:flex;justify-content:center;gap:.5rem;margin-top:1.25rem;">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}{% if q_actual %}&q={{ q_actual }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}" class="da-btn da-btn-secondary">← Anterior</a>
+  {% endif %}
+  <span style="padding:.4rem .75rem;color:var(--color-text-muted);font-size:.85rem;">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}{% if q_actual %}&q={{ q_actual }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}" class="da-btn da-btn-secondary">Siguiente →</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

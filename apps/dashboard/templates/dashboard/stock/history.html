@@ -1,0 +1,91 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Historial de stock — {{ consumable.name }}{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Historial de stock</h1>
+    <div style="font-size:.85rem;color:var(--color-text-secondary);margin-top:.25rem;">{{ consumable.name }}{% if consumable.brand %} · {{ consumable.brand }}{% endif %}</div>
+  </div>
+  <div style="display:flex;gap:.5rem;align-items:center;">
+    <span style="{% if consumable.stock_quantity == 0 %}background:rgba(239,68,68,.1);color:#EF4444;{% elif consumable.stock_quantity <= 5 %}background:color-mix(in srgb,#F59E0B 12%,transparent);color:#D97706;{% else %}background:color-mix(in srgb,#10B981 12%,transparent);color:#10B981;{% endif %} font-size:.8rem;font-weight:700;padding:.3rem .875rem;border-radius:9999px;">
+      Stock actual: {{ consumable.stock_quantity }}
+    </span>
+    <a href="{% url 'dashboard:stock' %}" class="da-btn da-btn-secondary">← Volver a stock</a>
+  </div>
+</div>
+
+{# ── Formulario ajuste rápido ── #}
+<div class="da-card" style="padding:1.25rem;margin-bottom:1.25rem;">
+  <div style="font-size:.875rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1rem;">Registrar movimiento</div>
+  <form method="post" action="{% url 'dashboard:stock_adjust' consumable.pk %}" style="display:flex;gap:.625rem;flex-wrap:wrap;align-items:flex-end;">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.path }}">
+    <div style="display:flex;flex-direction:column;gap:.3rem;">
+      <label style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Tipo</label>
+      <select name="movement_type" class="da-input" style="width:160px;">
+        <option value="in">Entrada</option>
+        <option value="out">Salida</option>
+        <option value="adjustment">Ajuste manual</option>
+      </select>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.3rem;">
+      <label style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Cantidad</label>
+      <input type="number" name="quantity" value="1" min="-9999" max="9999" class="da-input" style="width:110px;" placeholder="Ej: 10">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.3rem;flex:1;min-width:200px;">
+      <label style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Notas (opcional)</label>
+      <input type="text" name="notes" class="da-input" placeholder="Motivo, proveedor, referencia…" style="width:100%;">
+    </div>
+    <button type="submit" class="da-btn da-btn-primary">Registrar</button>
+  </form>
+  <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.5rem;">Para ajuste manual, usa cantidad negativa para reducir el stock directamente.</div>
+</div>
+
+{# ── Historial ── #}
+<div class="da-card" style="overflow:hidden;">
+  <div style="padding:.875rem 1rem;border-bottom:1px solid var(--color-border);font-size:.875rem;font-weight:700;color:var(--color-text-primary);">
+    Movimientos recientes <span style="font-size:.75rem;font-weight:400;color:var(--color-text-muted);">(últimos 100)</span>
+  </div>
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid var(--color-border);background:var(--color-bg-alt);">
+        <th style="padding:.5rem 1rem;text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Fecha</th>
+        <th style="padding:.5rem .75rem;text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Tipo</th>
+        <th style="padding:.5rem .75rem;text-align:center;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Cantidad</th>
+        <th style="padding:.5rem .75rem;text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Notas</th>
+        <th style="padding:.5rem 1rem;text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Registrado por</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for mov in movements %}
+      <tr style="border-bottom:1px solid color-mix(in srgb,var(--color-border) 50%,transparent);">
+        <td style="padding:.5rem 1rem;font-size:.78rem;color:var(--color-text-muted);white-space:nowrap;">{{ mov.created_at|date:"d/m/Y H:i" }}</td>
+        <td style="padding:.5rem .75rem;">
+          {% if mov.movement_type == "in" %}
+          <span style="font-size:.72rem;font-weight:700;color:#10B981;">↑ Entrada</span>
+          {% elif mov.movement_type == "out" %}
+          <span style="font-size:.72rem;font-weight:700;color:#EF4444;">↓ Salida</span>
+          {% else %}
+          <span style="font-size:.72rem;font-weight:700;color:var(--color-primary);">⇌ Ajuste</span>
+          {% endif %}
+        </td>
+        <td style="padding:.5rem .75rem;text-align:center;">
+          <span style="font-size:.875rem;font-weight:800;{% if mov.quantity > 0 %}color:#10B981;{% elif mov.quantity < 0 %}color:#EF4444;{% else %}color:var(--color-text-muted);{% endif %}">
+            {% if mov.quantity > 0 %}+{% endif %}{{ mov.quantity }}
+          </span>
+        </td>
+        <td style="padding:.5rem .75rem;font-size:.78rem;color:var(--color-text-secondary);">{{ mov.notes|default:"—" }}</td>
+        <td style="padding:.5rem 1rem;font-size:.78rem;color:var(--color-text-muted);">
+          {% if mov.created_by %}{{ mov.created_by.get_full_name|default:mov.created_by.username }}{% else %}—{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" style="padding:2.5rem;text-align:center;color:var(--color-text-muted);font-size:.875rem;">Sin movimientos registrados aún.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

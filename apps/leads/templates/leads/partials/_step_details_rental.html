@@ -1,0 +1,79 @@
+<div>
+    <h2 class="font-display text-display-md mb-2">Detalles del alquiler</h2>
+    <p class="text-text-secondary mb-8">Cuéntanos sobre tus necesidades de impresión.</p>
+
+    <div class="space-y-8">
+
+        <div>
+            <label class="form-label">Modelo preferido <span class="text-text-muted font-normal">(opcional)</span></label>
+            <select x-model="details.copier_id" class="wizard-input">
+                <option :value="null">Sin preferencia · sugiéreme el mejor</option>
+                <template x-for="copier in availableCopiers" :key="copier.id">
+                    <option :value="copier.id" x-text="copier.name"></option>
+                </template>
+            </select>
+        </div>
+
+        <div>
+            <label class="form-label">¿Cuántos equipos necesitas?</label>
+            <div class="flex items-center gap-4">
+                <div class="wizard-counter">
+                    <button type="button" class="wizard-counter-btn"
+                            @click="details.quantity = Math.max(1, details.quantity - 1)"
+                            :disabled="details.quantity <= 1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
+                    </button>
+                    <span class="wizard-counter-value" x-text="details.quantity"></span>
+                    <button type="button" class="wizard-counter-btn"
+                            @click="details.quantity = Math.min(50, details.quantity + 1)"
+                            :disabled="details.quantity >= 50">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                </div>
+                <span class="text-sm text-text-muted">
+                    <span x-text="details.quantity === 1 ? 'equipo' : 'equipos'"></span>
+                </span>
+            </div>
+            <div x-show="errors.quantity" class="form-error mt-2" x-text="errors.quantity" x-cloak></div>
+        </div>
+
+        <div>
+            <label class="form-label">Páginas mensuales estimadas</label>
+            <div class="wizard-range-value">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                </svg>
+                <span x-text="details.monthly_pages.toLocaleString('es-CO') + ' páginas / mes'"></span>
+            </div>
+            <div class="wizard-range-wrap">
+                <input type="range" x-model.number="details.monthly_pages"
+                       min="500" max="50000" step="500"
+                       class="w-full accent-primary cursor-pointer">
+                <div class="wizard-range-labels">
+                    <span>500</span>
+                    <span>10.000</span>
+                    <span>25.000</span>
+                    <span>50.000</span>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <label class="flex items-start gap-4 cursor-pointer p-4 rounded-xl border border-border hover:border-primary/40 transition group"
+                   :class="{ 'border-primary bg-primary/5': details.needs_color }">
+                <div class="mt-0.5 w-6 h-6 rounded-md border-2 border-border flex items-center justify-center shrink-0 transition"
+                     :class="details.needs_color ? 'bg-primary border-primary' : 'bg-surface'">
+                    <svg x-show="details.needs_color" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <input type="checkbox" x-model="details.needs_color" class="sr-only">
+                <div>
+                    <div class="font-semibold text-sm">Necesito impresión a color</div>
+                    <div class="text-xs text-text-muted mt-1">El color tiene costo por página adicional pero permite documentos más profesionales.</div>
+                </div>
+            </label>
+        </div>
+
+    </div>
+</div>

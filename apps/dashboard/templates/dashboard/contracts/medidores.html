@@ -1,0 +1,251 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Dashboard de Medidores{% endblock %}
+{% block nav_meters %}active{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Medidores de páginas</h1>
+    <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">
+      {{ this_month|date:"F Y" }} — todos los contratos activos
+    </p>
+  </div>
+  <a href="{% url 'dashboard:contracts' %}" class="da-btn da-btn-secondary">Ver contratos</a>
+</div>
+
+{# ── KPI cards ── #}
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem;margin-bottom:1.75rem;">
+
+  {# Total contratos #}
+  <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:.875rem;padding:1.125rem 1.25rem;">
+    <div style="font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:.5rem;">Contratos activos</div>
+    <div style="font-size:2rem;font-weight:800;color:var(--color-text-primary);font-variant-numeric:tabular-nums;">{{ total_contracts }}</div>
+    <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;">equipos en seguimiento</div>
+  </div>
+
+  {# Pendientes este mes #}
+  <div style="background:var(--color-surface);border:1px solid {% if pending_count > 0 %}rgba(245,158,11,.35){% else %}var(--color-border){% endif %};border-radius:.875rem;padding:1.125rem 1.25rem;">
+    <div style="font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:.5rem;">Sin lectura este mes</div>
+    <div style="font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums;
+      color:{% if pending_count > 0 %}#F59E0B{% else %}#10B981{% endif %};">
+      {{ pending_count }}
+    </div>
+    <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;">
+      {% if pending_count == 0 %}todos al día ✓{% else %}contrato{{ pending_count|pluralize:"s" }} pendiente{{ pending_count|pluralize:"s" }}{% endif %}
+    </div>
+  </div>
+
+  {# Total páginas este mes #}
+  <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:.875rem;padding:1.125rem 1.25rem;">
+    <div style="font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:.5rem;">Páginas este mes</div>
+    <div style="font-size:2rem;font-weight:800;color:var(--color-primary);font-variant-numeric:tabular-nums;">{{ total_pages_month|floatformat:0 }}</div>
+    <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;">impresiones registradas</div>
+  </div>
+
+  {# Excedente total este mes #}
+  <div style="background:var(--color-surface);border:1px solid {% if total_overage_month > 0 %}rgba(239,68,68,.3){% else %}var(--color-border){% endif %};border-radius:.875rem;padding:1.125rem 1.25rem;">
+    <div style="font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:.5rem;">Excedente total</div>
+    <div style="font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums;
+      color:{% if total_overage_month > 0 %}#EF4444{% else %}#10B981{% endif %};">
+      ${{ total_overage_month|floatformat:0 }}
+    </div>
+    <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;">
+      {% if total_overage_month > 0 %}a cobrar este mes{% else %}sin excedentes ✓{% endif %}
+    </div>
+  </div>
+</div>
+
+{# ── Filtro y buscador ── #}
+<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:.875rem;overflow:hidden;">
+  <div style="padding:.875rem 1.25rem;border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+    <div style="display:flex;align-items:center;gap:.75rem;flex:1;">
+      <input id="search-input" type="text" placeholder="Buscar cliente o equipo…"
+        style="flex:1;max-width:320px;padding:.45rem .875rem;border:1px solid var(--color-border);border-radius:.5rem;background:var(--color-bg-alt);color:var(--color-text-primary);font-size:.8125rem;outline:none;"
+        oninput="filterRows()">
+      <div style="display:flex;gap:.375rem;">
+        <button class="filter-btn active" data-filter="all"   onclick="setFilter(this,'all')"     style="padding:.375rem .75rem;border-radius:.5rem;font-size:.75rem;font-weight:600;cursor:pointer;border:1px solid var(--color-primary);background:var(--color-primary);color:#fff;">Todos ({{ total_contracts }})</button>
+        <button class="filter-btn"       data-filter="done"  onclick="setFilter(this,'done')"    style="padding:.375rem .75rem;border-radius:.5rem;font-size:.75rem;font-weight:600;cursor:pointer;border:1px solid var(--color-border);background:transparent;color:var(--color-text-muted);">Al día ({{ total_contracts|add:0|add:0 }})</button>
+        <button class="filter-btn"       data-filter="pending" onclick="setFilter(this,'pending')" style="padding:.375rem .75rem;border-radius:.5rem;font-size:.75rem;font-weight:600;cursor:pointer;border:1px solid var(--color-border);background:transparent;color:var(--color-text-muted);">Pendientes ({{ pending_count }})</button>
+        <button class="filter-btn"       data-filter="over"  onclick="setFilter(this,'over')"    style="padding:.375rem .75rem;border-radius:.5rem;font-size:.75rem;font-weight:600;cursor:pointer;border:1px solid var(--color-border);background:transparent;color:var(--color-text-muted);">Con excedente</button>
+      </div>
+    </div>
+    <span style="font-size:.72rem;color:var(--color-text-muted);" id="row-count">{{ stats|length }} contratos</span>
+  </div>
+
+  {# Tabla principal #}
+  <div style="overflow-x:auto;">
+    <table class="da-table" id="meters-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Equipo</th>
+          <th style="text-align:right;">Cuota</th>
+          <th>Última lectura</th>
+          <th>Estado</th>
+          <th style="min-width:120px;">Uso vs cuota</th>
+          <th style="text-align:right;">Tendencia</th>
+          <th style="text-align:right;">Prom. pág.</th>
+          <th style="text-align:right;">Excedente</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in stats %}
+        <tr class="meter-row"
+          data-filter="{% if s.has_this_month %}done{% else %}pending{% endif %}{% if s.overage_month > 0 %} over{% endif %}"
+          data-search="{{ s.contract.lead.full_name|lower }} {% if s.contract.copier %}{{ s.contract.copier.brand|lower }} {{ s.contract.copier.model|lower }}{% endif %}">
+
+          {# Cliente #}
+          <td>
+            <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">{{ s.contract.lead.full_name }}</div>
+            {% if s.contract.lead.company %}<div style="font-size:.68rem;color:var(--color-text-muted);">{{ s.contract.lead.company }}</div>{% endif %}
+          </td>
+
+          {# Equipo #}
+          <td style="font-size:.78rem;">
+            {% if s.contract.copier %}
+              <div style="font-weight:600;">{{ s.contract.copier.brand }} {{ s.contract.copier.model }}</div>
+              {% if s.contract.copier.serial_number %}<div style="font-size:.65rem;color:var(--color-text-muted);">S/N {{ s.contract.copier.serial_number }}</div>{% endif %}
+            {% else %}<span style="color:var(--color-text-muted);">—</span>{% endif %}
+          </td>
+
+          {# Cuota incluida #}
+          <td style="text-align:right;font-variant-numeric:tabular-nums;font-size:.8rem;">
+            {% if s.included > 0 %}
+              <span style="font-weight:700;">{{ s.included|floatformat:0 }}</span>
+              <span style="font-size:.65rem;color:var(--color-text-muted);">/mes</span>
+            {% else %}<span style="color:var(--color-text-muted);">—</span>{% endif %}
+          </td>
+
+          {# Última lectura #}
+          <td style="font-size:.78rem;">
+            {% if s.last %}
+              <div style="font-weight:600;">{{ s.last.reading_date|date:"d M Y" }}</div>
+              <div style="font-size:.65rem;color:var(--color-text-muted);">{{ s.last.pages_printed|floatformat:0 }} págs. · cont. {{ s.last.current_reading|floatformat:0 }}</div>
+            {% else %}<span style="color:var(--color-text-muted);font-size:.75rem;">Sin lecturas</span>{% endif %}
+          </td>
+
+          {# Estado este mes #}
+          <td>
+            {% if s.has_this_month %}
+              <span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:700;padding:.25rem .6rem;border-radius:9999px;background:rgba(16,185,129,.1);color:#10B981;border:1px solid rgba(16,185,129,.2);">
+                <span style="width:.4rem;height:.4rem;border-radius:50%;background:#10B981;"></span> Al día
+              </span>
+            {% else %}
+              <span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:700;padding:.25rem .6rem;border-radius:9999px;background:rgba(245,158,11,.1);color:#F59E0B;border:1px solid rgba(245,158,11,.2);">
+                <span style="width:.4rem;height:.4rem;border-radius:50%;background:#F59E0B;"></span> Pendiente
+              </span>
+            {% endif %}
+          </td>
+
+          {# Barra de progreso cuota #}
+          <td style="min-width:120px;padding-right:1rem;">
+            {% if s.included > 0 and s.last %}
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <div style="flex:1;height:.375rem;background:var(--color-bg-alt);border-radius:9999px;overflow:hidden;">
+                <div style="height:100%;width:{{ s.quota_pct }}%;border-radius:9999px;transition:width .3s;
+                  background:{% if s.last.overage_pages > 0 %}#EF4444{% elif s.quota_pct >= 80 %}#F59E0B{% else %}#10B981{% endif %};"></div>
+              </div>
+              <span style="font-size:.68rem;font-weight:700;color:var(--color-text-muted);white-space:nowrap;">{{ s.quota_pct }}%</span>
+            </div>
+            {% else %}
+            <span style="font-size:.72rem;color:var(--color-text-muted);">—</span>
+            {% endif %}
+          </td>
+
+          {# Tendencia #}
+          <td style="text-align:right;font-variant-numeric:tabular-nums;font-size:.8rem;">
+            {% if s.trend_pct is not None %}
+              <span style="font-weight:700;
+                color:{% if s.trend_pct > 10 %}#EF4444{% elif s.trend_pct > 0 %}#F59E0B{% else %}#10B981{% endif %};">
+                {% if s.trend_pct > 0 %}↑ +{{ s.trend_pct }}%{% elif s.trend_pct < 0 %}↓ {{ s.trend_pct }}%{% else %}= 0%{% endif %}
+              </span>
+            {% else %}<span style="color:var(--color-text-muted);font-size:.72rem;">—</span>{% endif %}
+          </td>
+
+          {# Promedio mensual #}
+          <td style="text-align:right;font-variant-numeric:tabular-nums;font-size:.8rem;font-weight:600;">
+            {% if s.avg_pages > 0 %}{{ s.avg_pages|floatformat:0 }}{% else %}<span style="color:var(--color-text-muted);">—</span>{% endif %}
+          </td>
+
+          {# Excedente este mes #}
+          <td style="text-align:right;font-variant-numeric:tabular-nums;font-size:.8rem;">
+            {% if s.overage_month > 0 %}
+              <span style="font-weight:700;color:#EF4444;">${{ s.overage_month|floatformat:0 }}</span>
+            {% elif s.has_this_month %}
+              <span style="color:#10B981;font-size:.72rem;">✓ Sin excedente</span>
+            {% else %}
+              <span style="color:var(--color-text-muted);font-size:.72rem;">—</span>
+            {% endif %}
+          </td>
+
+          {# Acción #}
+          <td>
+            <a href="{% url 'dashboard:contract_detail' s.contract.pk %}"
+              style="font-size:.72rem;color:var(--color-primary);text-decoration:none;white-space:nowrap;font-weight:600;">
+              Ver contrato →
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="10" style="text-align:center;padding:3rem;color:var(--color-text-muted);font-size:.8rem;">
+            No hay contratos activos con medidor configurado.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+let currentFilter = 'all';
+
+function setFilter(btn, filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.color = 'var(--color-text-muted)';
+    b.style.borderColor = 'var(--color-border)';
+  });
+  btn.style.background = 'var(--color-primary)';
+  btn.style.color = '#fff';
+  btn.style.borderColor = 'var(--color-primary)';
+  filterRows();
+}
+
+function filterRows() {
+  const query = document.getElementById('search-input').value.toLowerCase().trim();
+  const rows  = document.querySelectorAll('.meter-row');
+  let visible = 0;
+
+  rows.forEach(row => {
+    const matchSearch = !query || row.dataset.search.includes(query);
+    const matchFilter = currentFilter === 'all'
+      || row.dataset.filter.includes(currentFilter);
+    const show = matchSearch && matchFilter;
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  document.getElementById('row-count').textContent = visible + ' contrato' + (visible !== 1 ? 's' : '');
+}
+
+// Actualizar contadores en botones de filtro al cargar
+document.addEventListener('DOMContentLoaded', () => {
+  const rows = document.querySelectorAll('.meter-row');
+  let doneCount = 0, pendingCount = 0, overCount = 0;
+  rows.forEach(r => {
+    if (r.dataset.filter.includes('done'))    doneCount++;
+    if (r.dataset.filter.includes('pending')) pendingCount++;
+    if (r.dataset.filter.includes('over'))    overCount++;
+  });
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    if (b.dataset.filter === 'done')    b.textContent = `Al día (${doneCount})`;
+    if (b.dataset.filter === 'pending') b.textContent = `Pendientes (${pendingCount})`;
+    if (b.dataset.filter === 'over')    b.textContent = `Con excedente (${overCount})`;
+  });
+});
+</script>
+{% endblock %}

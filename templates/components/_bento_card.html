@@ -1,0 +1,23 @@
+<a href="{{ href }}"
+   class="bento-card {{ size|default:'bento-4x1' }} {% if theme == 'primary' %}bg-primary text-white{% elif theme == 'accent' %}bg-accent text-white{% elif theme == 'dark' %}bg-primary-dark text-white{% endif %}"
+   data-bento-card>
+    <div class="bento-card-content flex flex-col h-full">
+        {% if icon %}
+        <div class="mb-4 w-12 h-12 rounded-base {% if theme %}bg-white/10{% else %}bg-primary/10{% endif %} flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <circle cx="12" cy="12" r="9"/>
+            </svg>
+        </div>
+        {% endif %}
+
+        <h3 class="font-display text-xl md:text-2xl mb-2 text-balance">{{ title }}</h3>
+        <p class="text-sm opacity-80 flex-1">{{ description }}</p>
+
+        <div class="mt-6 inline-flex items-center gap-2 text-sm font-medium">
+            <span>Ver más</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+        </div>
+    </div>
+</a>

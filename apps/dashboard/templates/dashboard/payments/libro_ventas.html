@@ -1,0 +1,106 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Libro de Ventas{% endblock %}
+{% block nav_contabilidad %}active{% endblock %}
+{% block breadcrumb %}
+<span class="da-breadcrumb-sep">/</span>
+<a href="{% url 'dashboard:contabilidad' %}" class="da-breadcrumb-link">Contabilidad</a>
+<span class="da-breadcrumb-sep">/</span>
+<span class="da-breadcrumb-current">Libro de Ventas</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Libro Auxiliar de Ventas</h1>
+    <div style="font-size:.8rem;color:var(--color-text-muted);">{{ periodo_label }} · {{ date_from }} al {{ date_to }}</div>
+  </div>
+  <a href="?year={{ year }}&bimestre={{ bimestre }}&export=csv" class="da-btn da-btn-secondary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.9rem;height:.9rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+    Exportar CSV
+  </a>
+</div>
+
+<form method="get" style="display:flex;flex-wrap:wrap;gap:.625rem;align-items:center;margin-bottom:1.25rem;">
+  <select name="year" class="da-input" style="width:auto;padding:.45rem .875rem;">
+    {% for y in años %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}
+  </select>
+  <select name="bimestre" class="da-input" style="width:auto;padding:.45rem .875rem;">
+    <option value="0" {% if bimestre == 0 %}selected{% endif %}>Año completo</option>
+    {% for num, lbl in bimestres %}<option value="{{ num }}" {% if bimestre == num %}selected{% endif %}>Bimestre {{ num }}: {{ lbl }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
+</form>
+
+<div class="da-table-wrap">
+  <div class="da-table-header" style="flex-wrap:wrap;gap:.5rem;">
+    <span class="da-table-title">{{ facturas.count }} factura{{ facturas.count|pluralize:"s" }}</span>
+    {% if totales.total %}
+    <div style="display:flex;gap:1.25rem;font-size:.8rem;flex-wrap:wrap;">
+      <span style="color:var(--color-text-muted);">Base: <strong style="color:var(--color-text-secondary);">${{ totales.sub|default:0|floatformat:0 }}</strong></span>
+      <span style="color:var(--color-text-muted);">IVA: <strong style="color:#F59E0B;">${{ totales.iva|default:0|floatformat:0 }}</strong></span>
+      <span style="color:var(--color-text-muted);">Total: <strong style="color:var(--color-primary);">${{ totales.total|default:0|floatformat:0 }}</strong></span>
+      <span style="color:var(--color-text-muted);">Retenciones: <strong style="color:var(--color-danger);">-${{ totales.rte_f|default:0|floatformat:0 }}</strong></span>
+      <span style="color:var(--color-text-muted);">Neto: <strong style="color:var(--color-success);">${{ totales.neto|default:0|floatformat:0 }}</strong></span>
+    </div>
+    {% endif %}
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="da-table" style="min-width:900px;">
+      <thead>
+        <tr>
+          <th>Nro.</th><th>Fecha</th><th>NIT/Céd.</th><th>Cliente</th>
+          <th class="text-right">Base</th><th class="text-right">IVA (19%)</th><th class="text-right">Total</th>
+          <th class="text-right">RteFte</th><th class="text-right">RteICA</th><th class="text-right">RteIVA</th>
+          <th class="text-right">Neto</th><th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in facturas %}
+        <tr>
+          <td><a href="{% url 'dashboard:invoice_detail' pk=inv.pk %}" style="color:var(--color-primary);font-family:var(--font-mono);font-size:.75rem;">{{ inv.invoice_number }}</a></td>
+          <td style="font-size:.8rem;">{{ inv.issue_date }}</td>
+          <td style="font-family:var(--font-mono);font-size:.75rem;color:var(--color-text-muted);">{{ inv.client_nit|default:"—" }}</td>
+          <td style="font-size:.82rem;">{{ inv.client_name|truncatechars:28 }}</td>
+          <td style="text-align:right;font-size:.82rem;">${{ inv.subtotal|floatformat:0 }}</td>
+          <td style="text-align:right;font-size:.82rem;color:#F59E0B;">${{ inv.tax_amount|floatformat:0 }}</td>
+          <td style="text-align:right;font-weight:600;color:var(--color-primary);">${{ inv.total|floatformat:0 }}</td>
+          <td style="text-align:right;font-size:.8rem;{% if inv.retention_fuente %}color:var(--color-danger);{% else %}color:var(--color-text-muted);{% endif %}">
+            {% if inv.retention_fuente %}-${{ inv.retention_fuente|floatformat:0 }}{% else %}—{% endif %}
+          </td>
+          <td style="text-align:right;font-size:.8rem;{% if inv.retention_ica %}color:var(--color-danger);{% else %}color:var(--color-text-muted);{% endif %}">
+            {% if inv.retention_ica %}-${{ inv.retention_ica|floatformat:0 }}{% else %}—{% endif %}
+          </td>
+          <td style="text-align:right;font-size:.8rem;{% if inv.retention_iva %}color:var(--color-danger);{% else %}color:var(--color-text-muted);{% endif %}">
+            {% if inv.retention_iva %}-${{ inv.retention_iva|floatformat:0 }}{% else %}—{% endif %}
+          </td>
+          <td style="text-align:right;font-weight:600;color:var(--color-success);">${{ inv.net_received|floatformat:0 }}</td>
+          <td>
+            {% if inv.status == 'paid' %}<span class="da-badge da-badge-stock" style="font-size:.65rem;">Pagada</span>
+            {% elif inv.status == 'draft' %}<span class="da-badge" style="font-size:.65rem;">Borrador</span>
+            {% elif inv.status == 'voided' %}<span class="da-badge da-badge-nostock" style="font-size:.65rem;">Anulada</span>
+            {% else %}<span class="da-badge" style="font-size:.65rem;background:color-mix(in srgb,var(--color-warning) 15%,transparent);color:var(--color-warning);">{{ inv.get_status_display }}</span>{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="12" style="text-align:center;padding:2rem;color:var(--color-text-muted);">Sin facturas en el período seleccionado</td></tr>
+        {% endfor %}
+      </tbody>
+      {% if totales.total %}
+      <tfoot style="background:var(--color-bg-alt);font-weight:700;border-top:2px solid var(--color-border);">
+        <tr>
+          <td colspan="4" style="padding:.75rem 1.125rem;color:var(--color-text-muted);font-size:.8rem;">TOTALES</td>
+          <td style="text-align:right;padding:.75rem 1.125rem;">${{ totales.sub|default:0|floatformat:0 }}</td>
+          <td style="text-align:right;padding:.75rem 1.125rem;color:#F59E0B;">${{ totales.iva|default:0|floatformat:0 }}</td>
+          <td style="text-align:right;padding:.75rem 1.125rem;color:var(--color-primary);">${{ totales.total|default:0|floatformat:0 }}</td>
+          <td style="text-align:right;padding:.75rem 1.125rem;color:var(--color-danger);">-${{ totales.rte_f|default:0|floatformat:0 }}</td>
+          <td style="text-align:right;padding:.75rem 1.125rem;color:var(--color-danger);">-${{ totales.rte_i|default:0|floatformat:0 }}</td>
+          <td style="text-align:right;padding:.75rem 1.125rem;color:var(--color-danger);">-${{ totales.rte_v|default:0|floatformat:0 }}</td>
+          <td style="text-align:right;padding:.75rem 1.125rem;color:var(--color-success);">${{ totales.neto|default:0|floatformat:0 }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+{% endblock %}

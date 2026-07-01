@@ -1,0 +1,156 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Mapa de campo{% endblock %}
+{% block nav_campo %}active{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Equipo de campo en tiempo real</h1>
+    <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">
+      <span id="counter">{{ on_shift }}</span> persona(s) en turno activo · actualiza cada 30 seg
+    </p>
+  </div>
+  <div style="display:flex;gap:.75rem;">
+    <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Tareas de entrega</a>
+    <a href="{% url 'dashboard:campo_users' %}" class="da-btn da-btn-secondary">Gestionar equipo</a>
+    <button onclick="refreshMap()" class="da-btn da-btn-primary" id="refresh-btn">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Actualizar
+    </button>
+  </div>
+</div>
+
+{# Mapa Leaflet #}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;">
+
+  <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
+    <div id="map" style="height:520px;"></div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:.75rem;">
+    <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
+      <div style="padding:.875rem 1.125rem;border-bottom:1px solid var(--color-border);font-size:.8125rem;font-weight:700;color:var(--color-text-primary);">
+        Personal en campo
+      </div>
+      <div id="user-list" style="max-height:440px;overflow-y:auto;">
+        {% for fu in field_users %}
+        <div class="campo-user-row" data-uid="{{ fu.user.pk }}"
+          style="padding:.75rem 1.125rem;border-bottom:1px solid var(--color-border);cursor:pointer;transition:background .15s;"
+          onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='transparent'"
+          onclick="focusUser({{ fu.user.pk }})">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">{{ fu.user.get_full_name|default:fu.user.username }}</div>
+              <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.1rem;">{{ fu.get_role_display }}{% if fu.phone %} · {{ fu.phone }}{% endif %}</div>
+            </div>
+            <span id="status-{{ fu.user.pk }}"
+              style="font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(107,114,128,.12);color:#6B7280;border:1px solid rgba(107,114,128,.2);">
+              {% if fu.user.field_location and fu.user.field_location.is_on_shift %}En turno{% else %}Inactivo{% endif %}
+            </span>
+          </div>
+          <div id="ago-{{ fu.user.pk }}" style="font-size:.65rem;color:var(--color-text-muted);margin-top:.3rem;">
+            {% if fu.user.field_location and fu.user.field_location.is_on_shift %}
+              Actualizado hace {{ fu.user.field_location.updated_at|timesince }}
+            {% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <div style="padding:2rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">
+          No hay personal de campo registrado.
+          <br><a href="{% url 'dashboard:campo_user_create' %}" style="color:var(--color-primary);">Agregar ahora</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const MAP_CENTER = [6.2442, -75.5812]; // Medellín por defecto
+
+const map = L.map('map').setView(MAP_CENTER, 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors',
+  maxZoom: 19,
+}).addTo(map);
+
+const markers = {};
+
+function makeIcon(role) {
+  const color = role === 'mensajero' ? '#0EA5E9' : '#10B981';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="44" viewBox="0 0 36 44">
+    <ellipse cx="18" cy="40" rx="8" ry="3" fill="rgba(0,0,0,.2)"/>
+    <circle cx="18" cy="18" r="16" fill="${color}" stroke="#fff" stroke-width="2.5"/>
+    <circle cx="18" cy="18" r="7" fill="#fff" opacity=".9"/>
+    <polygon points="14,40 18,30 22,40" fill="${color}"/>
+  </svg>`;
+  return L.divIcon({
+    html: svg, className: '', iconSize: [36, 44], iconAnchor: [18, 44], popupAnchor: [0, -44]
+  });
+}
+
+function refreshMap() {
+  document.getElementById('refresh-btn').style.opacity = '.5';
+  fetch('{% url "dashboard:campo_locations_json" %}', { headers: {'X-Requested-With':'XMLHttpRequest'} })
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('counter').textContent = data.count;
+
+      // Limpiar marcadores fuera del turno
+      Object.keys(markers).forEach(uid => {
+        if (!data.locations.find(l => l.id == uid)) {
+          map.removeLayer(markers[uid]);
+          delete markers[uid];
+          const row = document.getElementById('status-' + uid);
+          if (row) {
+            row.textContent = 'Inactivo';
+            row.style.cssText = 'font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(107,114,128,.12);color:#6B7280;border:1px solid rgba(107,114,128,.2);';
+          }
+        }
+      });
+
+      data.locations.forEach(loc => {
+        const icon = makeIcon(loc.role_key);
+        const popup = `<div style="min-width:160px;font-family:Inter,sans-serif;">
+          <div style="font-weight:700;font-size:.875rem;">${loc.name}</div>
+          <div style="font-size:.72rem;color:#666;margin:.25rem 0;">${loc.role}</div>
+          ${loc.battery !== null ? `<div style="font-size:.68rem;">Batería: ${loc.battery}%</div>` : ''}
+          <div style="font-size:.65rem;color:#999;margin-top:.25rem;">Hace ${loc.ago}</div>
+        </div>`;
+
+        if (markers[loc.id]) {
+          markers[loc.id].setLatLng([loc.lat, loc.lng]).setPopupContent(popup);
+        } else {
+          markers[loc.id] = L.marker([loc.lat, loc.lng], { icon }).addTo(map).bindPopup(popup);
+        }
+
+        // Actualizar sidebar
+        const st = document.getElementById('status-' + loc.id);
+        if (st) {
+          st.textContent = 'En turno';
+          st.style.cssText = 'font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);';
+        }
+        const ag = document.getElementById('ago-' + loc.id);
+        if (ag) ag.textContent = 'Actualizado hace ' + loc.ago;
+      });
+
+      document.getElementById('refresh-btn').style.opacity = '1';
+    })
+    .catch(() => { document.getElementById('refresh-btn').style.opacity = '1'; });
+}
+
+function focusUser(uid) {
+  if (markers[uid]) {
+    map.setView(markers[uid].getLatLng(), 16);
+    markers[uid].openPopup();
+  }
+}
+
+refreshMap();
+setInterval(refreshMap, 30000);
+</script>
+{% endblock %}

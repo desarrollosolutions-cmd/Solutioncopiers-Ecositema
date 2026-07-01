@@ -1,0 +1,434 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block nav_home %}active{% endblock %}
+{% block breadcrumb %}<span class="da-breadcrumb-sep">/</span><span class="da-breadcrumb-current">Dashboard</span>{% endblock %}
+
+{% block content %}
+
+{# ── Hero de bienvenida ── #}
+<div style="background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary) 14%,var(--color-surface)) 0%,var(--color-surface) 60%);border:1px solid color-mix(in srgb,var(--color-primary) 18%,var(--color-border));border-radius:1.25rem;padding:1.5rem 2rem;margin-bottom:1.75rem;position:relative;overflow:hidden;">
+  {# orbs decorativos #}
+  <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--color-primary) 15%,transparent) 0%,transparent 70%);pointer-events:none;"></div>
+  <div style="position:absolute;bottom:-60px;right:120px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,#4F8EF7 8%,transparent) 0%,transparent 70%);pointer-events:none;"></div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;position:relative;">
+    <div>
+      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-primary);opacity:.8;margin-bottom:.25rem;">Panel de control</div>
+      <h1 style="font-size:1.6rem;font-weight:900;color:var(--color-text-primary);letter-spacing:-.04em;line-height:1.1;margin:0 0 .375rem;">
+        Hola, {{ request.user.get_full_name|default:request.user.username }} 👋
+      </h1>
+      <p style="font-size:.875rem;color:var(--color-text-muted);margin:0;">
+        {% now "l j \d\e F, Y" %} ·
+        {% if quotes_new > 0 %}
+          <span style="color:var(--color-warning);font-weight:600;">{{ quotes_new }} cotización{{ quotes_new|pluralize:"es" }} sin atender</span>
+        {% else %}
+          <span style="color:var(--color-success);font-weight:600;">Todo al día</span>
+        {% endif %}
+      </p>
+    </div>
+
+    {# Quick actions #}
+    <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+      <a href="{% url 'dashboard:pipeline' %}" class="da-btn da-btn-secondary" style="font-size:.78rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"/></svg>
+        Pipeline
+      </a>
+      <a href="{% url 'dashboard:ticket_create' %}" class="da-btn da-btn-secondary" style="font-size:.78rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Nuevo ticket
+      </a>
+      <a href="{% url 'dashboard:contract_create' %}" class="da-btn da-btn-secondary" style="font-size:.78rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Nuevo contrato
+      </a>
+      <a href="{% url 'dashboard:reports' %}" class="da-btn da-btn-primary" style="font-size:.78rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Ver reportes
+      </a>
+    </div>
+  </div>
+</div>
+
+{# ── Alerta contratos por vencer ── #}
+{% if contracts_expiring %}
+<div class="da-alert da-alert-warning" style="margin-bottom:1.5rem;">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;flex-shrink:0;margin-top:.1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+  <div>
+    <strong>Contratos por vencer:</strong>
+    {% for c in contracts_expiring %}
+    <a href="{% url 'dashboard:contract_detail' c.pk %}" style="color:inherit;font-weight:600;">{{ c.lead.full_name }}</a>
+    ({{ c.days_until_expiry }}d){% if not forloop.last %}, {% endif %}
+    {% endfor %}
+    — <a href="{% url 'dashboard:contracts' %}?alert=expiring" style="color:inherit;font-weight:700;text-decoration:underline;">Gestionar →</a>
+  </div>
+</div>
+{% endif %}
+
+{# ── Stats principales ── #}
+<div class="da-stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.75rem;">
+
+  <div class="da-stat">
+    <div class="da-stat-bar"></div>
+    <div class="da-stat-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+    <div class="da-stat-val">{{ quotes_today }}</div>
+    <div class="da-stat-lbl">Cotizaciones hoy</div>
+    <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;">{{ quotes_month }} este mes</div>
+  </div>
+
+  <div class="da-stat">
+    <div class="da-stat-bar"></div>
+    <div class="da-stat-icon" style="background:color-mix(in srgb,#F59E0B 13%,transparent);color:#D97706;border-color:color-mix(in srgb,#F59E0B 20%,transparent);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:#D97706;">{{ quotes_new }}</div>
+    <div class="da-stat-lbl">Sin atender</div>
+    <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;">
+      {% if quotes_new > 0 %}<a href="{% url 'dashboard:quotes' %}?status=new" style="color:#D97706;">Ver ahora →</a>{% else %}Al día ✓{% endif %}
+    </div>
+  </div>
+
+  <div class="da-stat">
+    <div class="da-stat-bar"></div>
+    <div class="da-stat-icon" style="background:color-mix(in srgb,var(--color-success) 12%,transparent);color:var(--color-success);border-color:color-mix(in srgb,var(--color-success) 20%,transparent);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:var(--color-success);">{{ quotes_won }}</div>
+    <div class="da-stat-lbl">Ganadas</div>
+    <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;">
+      {% if quotes_total %}{{ quotes_won|floatformat:0 }}/{{ quotes_total }} total{% endif %}
+    </div>
+  </div>
+
+  <div class="da-stat">
+    <div class="da-stat-bar"></div>
+    <div class="da-stat-icon" style="background:color-mix(in srgb,#3B82F6 12%,transparent);color:#2563EB;border-color:color-mix(in srgb,#3B82F6 20%,transparent);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 7H7a2 2 0 00-2 2v9a2 2 0 002 2h9.5"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:#2563EB;">{{ contracts_active }}</div>
+    <div class="da-stat-lbl">Contratos activos</div>
+    <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;">
+      <a href="{% url 'dashboard:contracts' %}" style="color:#2563EB;">Gestionar →</a>
+    </div>
+  </div>
+
+</div>
+
+{# ── Segunda fila de stats ── #}
+<div class="da-stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.75rem;">
+
+  <div class="da-stat">
+    <div class="da-stat-bar"></div>
+    <div class="da-stat-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg></div>
+    <div class="da-stat-val">{{ copiers_published }}</div>
+    <div class="da-stat-lbl">Fotocopiadoras</div>
+    <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;">{{ copiers_total }} total en catálogo</div>
+  </div>
+
+  <div class="da-stat">
+    <div class="da-stat-bar"></div>
+    <div class="da-stat-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
+    <div class="da-stat-val">{{ consumables_stock }}</div>
+    <div class="da-stat-lbl">Insumos en stock</div>
+    <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;">{{ consumables_total }} productos</div>
+  </div>
+
+  <div class="da-stat">
+    <div class="da-stat-bar"></div>
+    <div class="da-stat-icon" style="background:color-mix(in srgb,#8B5CF6 12%,transparent);color:#7C3AED;border-color:color-mix(in srgb,#8B5CF6 20%,transparent);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:#7C3AED;">{{ tickets_open }}</div>
+    <div class="da-stat-lbl">Tickets abiertos</div>
+    <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;">
+      <a href="{% url 'dashboard:tickets' %}" style="color:#7C3AED;">Ver tickets →</a>
+    </div>
+  </div>
+
+  <div class="da-stat">
+    <div class="da-stat-bar"></div>
+    <div class="da-stat-icon" style="background:color-mix(in srgb,#F59E0B 12%,transparent);color:#D97706;border-color:color-mix(in srgb,#F59E0B 20%,transparent);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:#D97706;">{{ surveys_avg }}</div>
+    <div class="da-stat-lbl">Satisfacción promedio</div>
+    <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;">
+      {% with pct=surveys_avg|floatformat:0 %}
+      <div style="display:flex;align-items:center;gap:.375rem;margin-top:.1rem;">
+        <div style="flex:1;height:4px;border-radius:99px;background:var(--color-border);overflow:hidden;">
+          <div style="height:100%;width:{% widthratio surveys_avg 5 100 %}%;background:linear-gradient(90deg,#F59E0B,#FBBF24);border-radius:99px;"></div>
+        </div>
+        <span style="font-size:.68rem;font-weight:700;color:#D97706;">/5</span>
+      </div>
+      {% endwith %}
+    </div>
+  </div>
+
+</div>
+
+{# ── Mi Día ── #}
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.75rem;">
+
+  {# Tareas de hoy #}
+  <div class="da-card" style="overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem;border-bottom:1px solid var(--color-border);">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <div style="width:.375rem;height:1.125rem;border-radius:9999px;background:#3B82F6;"></div>
+        <span style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);">Tareas de hoy</span>
+        {% if tasks_today %}<span style="font-size:.68rem;font-weight:700;background:rgba(59,130,246,.12);color:#3B82F6;border-radius:9999px;padding:.1rem .45rem;">{{ tasks_today|length }}</span>{% endif %}
+      </div>
+      <a href="{% url 'dashboard:clients' %}" style="font-size:.72rem;color:var(--color-primary);">Ver clientes</a>
+    </div>
+    <div style="max-height:220px;overflow-y:auto;">
+      {% for t in tasks_today %}
+      <div style="display:flex;align-items:flex-start;gap:.625rem;padding:.625rem 1rem;border-bottom:1px solid var(--color-border);">
+        <form method="post" action="{% url 'dashboard:task_toggle' t.pk %}" style="margin:0;flex-shrink:0;">
+          {% csrf_token %}
+          <button type="submit" style="width:1rem;height:1rem;border-radius:.25rem;border:1.5px solid var(--color-border);background:none;cursor:pointer;margin-top:.15rem;flex-shrink:0;"></button>
+        </form>
+        <div style="flex:1;min-width:0;">
+          <a href="{% url 'dashboard:client_detail' t.lead.pk %}" style="font-size:.78rem;font-weight:600;color:var(--color-text-primary);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.description|truncatechars:50 }}</a>
+          <div style="font-size:.68rem;color:var(--color-text-muted);">{{ t.lead.full_name }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="padding:1.5rem;text-align:center;font-size:.78rem;color:var(--color-text-muted);">Sin tareas para hoy</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Tareas vencidas #}
+  <div class="da-card" style="overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem;border-bottom:1px solid var(--color-border);">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <div style="width:.375rem;height:1.125rem;border-radius:9999px;background:#EF4444;"></div>
+        <span style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);">Tareas vencidas</span>
+        {% if tasks_overdue %}<span style="font-size:.68rem;font-weight:700;background:rgba(239,68,68,.12);color:#EF4444;border-radius:9999px;padding:.1rem .45rem;">{{ tasks_overdue|length }}</span>{% endif %}
+      </div>
+    </div>
+    <div style="max-height:220px;overflow-y:auto;">
+      {% for t in tasks_overdue %}
+      <div style="display:flex;align-items:flex-start;gap:.625rem;padding:.625rem 1rem;border-bottom:1px solid var(--color-border);">
+        <div style="width:.375rem;min-width:.375rem;border-radius:9999px;background:#EF4444;align-self:stretch;"></div>
+        <div style="flex:1;min-width:0;">
+          <a href="{% url 'dashboard:client_detail' t.lead.pk %}" style="font-size:.78rem;font-weight:600;color:var(--color-text-primary);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.description|truncatechars:50 }}</a>
+          <div style="font-size:.68rem;color:#EF4444;">{{ t.lead.full_name }} · vencio {{ t.due_date|date:"d/m" }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="padding:1.5rem;text-align:center;font-size:.78rem;color:var(--color-success);">Sin tareas vencidas</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Cotizaciones pendientes #}
+  <div class="da-card" style="overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem;border-bottom:1px solid var(--color-border);">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <div style="width:.375rem;height:1.125rem;border-radius:9999px;background:#F59E0B;"></div>
+        <span style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);">Cotizaciones nuevas</span>
+        {% if quotes_pending %}<span style="font-size:.68rem;font-weight:700;background:rgba(245,158,11,.12);color:#F59E0B;border-radius:9999px;padding:.1rem .45rem;">{{ quotes_pending|length }}</span>{% endif %}
+      </div>
+      <a href="{% url 'dashboard:quotes' %}?status=new" style="font-size:.72rem;color:var(--color-primary);">Ver todas</a>
+    </div>
+    <div style="max-height:220px;overflow-y:auto;">
+      {% for q in quotes_pending %}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.625rem 1rem;border-bottom:1px solid var(--color-border);gap:.5rem;">
+        <div style="flex:1;min-width:0;">
+          <a href="{% url 'dashboard:quote_detail' q.pk %}" style="font-size:.78rem;font-weight:600;color:var(--color-text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;">{{ q.lead.full_name }}</a>
+          <div style="font-size:.68rem;color:var(--color-text-muted);">{{ q.get_interest_area_display }} · {{ q.created_at|date:"d/m" }}</div>
+        </div>
+        <span style="font-size:.65rem;font-weight:700;background:rgba(245,158,11,.12);color:#F59E0B;padding:.15rem .45rem;border-radius:9999px;white-space:nowrap;flex-shrink:0;">Nueva</span>
+      </div>
+      {% empty %}
+      <div style="padding:1.5rem;text-align:center;font-size:.78rem;color:var(--color-success);">Sin cotizaciones pendientes</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+{# ── Layout principal: tabla + widgets ── #}
+<div style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;">
+
+  {# Últimas cotizaciones #}
+  <div class="da-table-wrap">
+    <div class="da-table-header">
+      <span class="da-table-title">Últimas cotizaciones</span>
+      <a href="{% url 'dashboard:quotes' %}" class="da-btn da-btn-secondary da-btn-sm">Ver todas</a>
+    </div>
+    <table class="da-table">
+      <thead>
+        <tr><th>Cliente</th><th>Servicio</th><th>Estado</th><th>Fecha</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for q in recent_quotes %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:.625rem;">
+              <div style="width:1.875rem;height:1.875rem;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:.7rem;font-weight:800;flex-shrink:0;">{{ q.lead.full_name|first|upper }}</div>
+              <div>
+                <div class="da-name">{{ q.lead.full_name }}</div>
+                <div style="font-size:.7rem;color:var(--color-text-muted);">{{ q.lead.company_name|default:"Particular" }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-size:.8rem;">{{ q.get_interest_area_display }}</td>
+          <td><span class="da-badge da-badge-{{ q.status }}">{{ q.get_status_display }}</span></td>
+          <td style="white-space:nowrap;font-size:.75rem;color:var(--color-text-muted);">{{ q.created_at|date:"d/m · H:i" }}</td>
+          <td><a href="{% url 'dashboard:quote_detail' q.pk %}" style="font-size:.78rem;">Ver →</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:var(--color-text-muted);padding:2.5rem;">Sin cotizaciones aún</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# Panel derecho #}
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+
+    {# Por estado con barras de progreso #}
+    <div class="da-card">
+      <div class="da-card-header">
+        Cotizaciones por estado
+        <a href="{% url 'dashboard:quotes' %}" class="da-btn da-btn-secondary da-btn-sm">Ver</a>
+      </div>
+      <div class="da-card-body" style="padding:.875rem 1.125rem;">
+        {% for item in quotes_by_status %}
+        <div style="margin-bottom:.75rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem;">
+            <span class="da-badge da-badge-{{ item.status }}">{{ item.status }}</span>
+            <span style="font-weight:700;font-size:.875rem;color:var(--color-text-primary);">{{ item.n }}</span>
+          </div>
+          {% if quotes_total %}
+          <div style="height:4px;border-radius:99px;background:var(--color-border);overflow:hidden;">
+            <div style="height:100%;width:{% widthratio item.n quotes_total 100 %}%;background:var(--color-primary);border-radius:99px;transition:width .6s cubic-bezier(.16,1,.3,1);"></div>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Por servicio — top 5 #}
+    <div class="da-card">
+      <div class="da-card-header">Top servicios solicitados</div>
+      <div class="da-card-body" style="padding:.875rem 1.125rem;">
+        {% for item in quotes_by_area %}
+        <div style="display:flex;align-items:center;gap:.625rem;margin-bottom:.625rem;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.78rem;font-weight:500;color:var(--color-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.25rem;">{{ item.interest_area }}</div>
+            {% if quotes_total %}
+            <div style="height:3px;border-radius:99px;background:var(--color-border);overflow:hidden;">
+              <div style="height:100%;width:{% widthratio item.n quotes_total 100 %}%;background:linear-gradient(90deg,var(--color-primary),color-mix(in srgb,var(--color-primary) 60%,#4F8EF7));border-radius:99px;"></div>
+            </div>
+            {% endif %}
+          </div>
+          <span style="font-size:.8125rem;font-weight:700;color:var(--color-text-primary);flex-shrink:0;">{{ item.n }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Accesos rápidos #}
+    <div class="da-card">
+      <div class="da-card-header">Accesos rápidos</div>
+      <div class="da-card-body" style="padding:.875rem;display:flex;flex-direction:column;gap:.5rem;">
+        <a href="{% url 'dashboard:clients' %}" class="da-btn da-btn-secondary" style="justify-content:center;font-size:.78rem;gap:.5rem;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          {{ leads_total }} clientes registrados
+        </a>
+        <a href="{% url 'dashboard:surveys' %}" class="da-btn da-btn-secondary" style="justify-content:center;font-size:.78rem;gap:.5rem;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          {{ surveys_total }} encuestas · {{ surveys_avg }}/5 avg
+        </a>
+        <a href="{% url 'dashboard:blog' %}" class="da-btn da-btn-secondary" style="justify-content:center;font-size:.78rem;gap:.5rem;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+          {{ posts_published }} post{{ posts_published|pluralize:"s" }} publicado{{ posts_published|pluralize:"s" }}
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{# ── Ventas online + Contabilidad ── #}
+{% if recent_orders or invoices_por_cobrar %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem;">
+
+  {# Pedidos recientes del carrito #}
+  <div class="da-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem;border-bottom:1px solid var(--color-border);">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.9rem;height:.9rem;color:var(--color-primary);"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <span style="font-size:.82rem;font-weight:700;color:var(--color-text-primary);">Pedidos online del mes</span>
+      </div>
+      <a href="{% url 'dashboard:order_list' %}" style="font-size:.72rem;color:var(--color-primary);">Ver todos →</a>
+    </div>
+    <div style="padding:.75rem 1.125rem;">
+      {% if orders_paid_month.n %}
+      <div style="display:flex;gap:1rem;margin-bottom:.875rem;">
+        <div style="background:var(--color-bg-alt);border-radius:.75rem;padding:.625rem 1rem;flex:1;text-align:center;">
+          <div style="font-size:1.4rem;font-weight:800;color:var(--color-text-primary);">{{ orders_paid_month.n }}</div>
+          <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;">Pedidos pagados</div>
+        </div>
+        <div style="background:var(--color-bg-alt);border-radius:.75rem;padding:.625rem 1rem;flex:1;text-align:center;">
+          <div style="font-size:1.1rem;font-weight:800;color:var(--color-primary);">${{ orders_paid_month.total|floatformat:0 }}</div>
+          <div style="font-size:.68rem;color:var(--color-text-muted);text-transform:uppercase;">Ventas online</div>
+        </div>
+      </div>
+      {% endif %}
+      {% for order in recent_orders %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid color-mix(in srgb,var(--color-border) 50%,transparent);font-size:.8rem;">
+        <div>
+          <a href="{% url 'dashboard:order_detail' reference=order.reference %}" style="color:var(--color-primary);font-family:var(--font-mono);font-size:.72rem;">{{ order.reference }}</a>
+          <span style="color:var(--color-text-muted);margin-left:.4rem;">{{ order.buyer_name|truncatechars:18 }}</span>
+        </div>
+        <span style="font-weight:600;color:var(--color-text-primary);">${{ order.total|floatformat:0 }}</span>
+      </div>
+      {% empty %}
+      <div style="text-align:center;padding:1rem;color:var(--color-text-muted);font-size:.82rem;">Sin pedidos pagados aún</div>
+      {% endfor %}
+      {% if orders_pending %}
+      <div style="margin-top:.625rem;padding:.375rem .75rem;border-radius:.5rem;background:color-mix(in srgb,var(--color-warning) 10%,transparent);font-size:.75rem;color:var(--color-warning);">
+        ⚠ {{ orders_pending }} pedido{{ orders_pending|pluralize:"s" }} pendiente{{ orders_pending|pluralize:"s" }} de pago
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Resumen contabilidad #}
+  <div class="da-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem;border-bottom:1px solid var(--color-border);">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.9rem;height:.9rem;color:var(--color-primary);"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+        <span style="font-size:.82rem;font-weight:700;color:var(--color-text-primary);">Contabilidad</span>
+      </div>
+      <a href="{% url 'dashboard:contabilidad' %}" style="font-size:.72rem;color:var(--color-primary);">Ver detalle →</a>
+    </div>
+    <div style="padding:.875rem 1.125rem;display:flex;flex-direction:column;gap:.625rem;">
+      <a href="{% url 'dashboard:invoice_list' %}?estado=issued" style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;border-radius:.625rem;text-decoration:none;background:color-mix(in srgb,var(--color-warning) 8%,transparent);">
+        <span style="font-size:.82rem;color:var(--color-text-secondary);">Por cobrar</span>
+        <span style="font-weight:700;color:var(--color-warning);">
+          ${{ invoices_por_cobrar.total|default:0|floatformat:0 }}
+          <span style="font-size:.72rem;font-weight:400;">({{ invoices_por_cobrar.n|default:0 }} fact.)</span>
+        </span>
+      </a>
+      {% if invoices_vencidas %}
+      <a href="{% url 'dashboard:invoice_list' %}?estado=overdue" style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;border-radius:.625rem;text-decoration:none;background:color-mix(in srgb,var(--color-danger) 8%,transparent);">
+        <span style="font-size:.82rem;color:var(--color-text-secondary);">Vencidas</span>
+        <span style="font-weight:700;color:var(--color-danger);">{{ invoices_vencidas }} factura{{ invoices_vencidas|pluralize:"s" }}</span>
+      </a>
+      {% endif %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.25rem;">
+        <a href="{% url 'dashboard:invoice_create' %}" class="da-btn da-btn-secondary" style="font-size:.75rem;justify-content:center;">+ Nueva factura</a>
+        <a href="{% url 'dashboard:libro_ventas' %}" class="da-btn da-btn-secondary" style="font-size:.75rem;justify-content:center;">Libro ventas</a>
+        <a href="{% url 'dashboard:iva_report' %}" class="da-btn da-btn-secondary" style="font-size:.75rem;justify-content:center;">Declaración IVA</a>
+        <a href="{% url 'dashboard:retenciones' %}" class="da-btn da-btn-secondary" style="font-size:.75rem;justify-content:center;">Retenciones</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endif %}
+{% endblock %}

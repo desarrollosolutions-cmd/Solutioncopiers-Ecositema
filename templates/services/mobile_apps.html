@@ -1,0 +1,10 @@
+{% extends "services/software_development.html" %}
+{% load static %}
+
+{% block hero_image %}
+<div class="w-full aspect-video rounded-2xl overflow-hidden mb-12">
+    <img src="{% static 'images/img-hero-mobile.jpg' %}"
+         alt="Desarrollo de aplicaciones móviles iOS y Android"
+         class="w-full h-full object-cover object-center" loading="lazy">
+</div>
+{% endblock %}

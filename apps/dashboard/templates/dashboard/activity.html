@@ -1,0 +1,113 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Actividad de empleados{% endblock %}
+
+{% block content %}
+<style>
+  .act-icon{width:2rem;height:2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;}
+  .act-login   {background:color-mix(in srgb,#10B981 15%,transparent);color:#10B981;}
+  .act-logout  {background:color-mix(in srgb,#6B7280 15%,transparent);color:#9CA3AF;}
+  .act-quote   {background:color-mix(in srgb,var(--color-primary) 15%,transparent);color:var(--color-primary);}
+  .act-ticket  {background:color-mix(in srgb,#F59E0B 15%,transparent);color:#D97706;}
+  .act-client  {background:color-mix(in srgb,#8B5CF6 15%,transparent);color:#7C3AED;}
+  .act-search  {background:color-mix(in srgb,#EC4899 15%,transparent);color:#DB2777;}
+  .act-default {background:var(--color-bg-alt);color:var(--color-text-muted);}
+</style>
+
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Actividad de empleados</h1>
+    <div style="font-size:.8rem;color:var(--color-text-muted);margin-top:.125rem;">{{ total }} registros</div>
+  </div>
+  <a href="{% url 'dashboard:employees' %}" class="da-btn da-btn-secondary">Ver empleados</a>
+</div>
+
+{# ── Filtros ── #}
+<form method="get" style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:flex-end;">
+  <div style="flex:1;min-width:180px;">
+    <input type="text" name="q" value="{{ q }}" class="da-input" placeholder="Buscar descripción o usuario…" style="width:100%;">
+  </div>
+  <select name="user" class="da-input" style="width:170px;">
+    <option value="">Todos los empleados</option>
+    {% for emp in employees %}
+    <option value="{{ emp.pk }}" {% if filter_user == emp.pk|stringformat:"s" %}selected{% endif %}>
+      {{ emp.get_full_name|default:emp.username }}
+    </option>
+    {% endfor %}
+  </select>
+  <select name="action" class="da-input" style="width:190px;">
+    <option value="">Todas las acciones</option>
+    {% for code, label in action_choices %}
+    <option value="{{ code }}" {% if filter_action == code %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="da-btn da-btn-primary">Filtrar</button>
+  {% if q or filter_user or filter_action %}
+  <a href="{% url 'dashboard:activity' %}" class="da-btn da-btn-secondary">Limpiar</a>
+  {% endif %}
+</form>
+
+{# ── Lista de actividad ── #}
+<div class="da-card" style="overflow:hidden;">
+  {% if activities %}
+  <div style="display:flex;flex-direction:column;">
+    {% for act in activities %}
+    {% with action=act.action %}
+    <div style="display:flex;align-items:flex-start;gap:.875rem;padding:.75rem 1rem;border-bottom:1px solid color-mix(in srgb,var(--color-border) 50%,transparent);">
+
+      {# Ícono de acción #}
+      <div class="act-icon {% if action == 'login' or action == 'logout' %}act-{{ action }}{% elif 'quote' in action %}act-quote{% elif 'ticket' in action %}act-ticket{% elif 'client' in action or 'contract' in action %}act-client{% elif 'search' in action or 'consumable' in action %}act-search{% else %}act-default{% endif %}">
+        {% if action == "login" %}⏵
+        {% elif action == "logout" %}⏹
+        {% elif "quote" in action %}◈
+        {% elif "ticket" in action %}⚙
+        {% elif "client" in action or "contract" in action %}◉
+        {% elif "consumable" in action or "search" in action %}⌕
+        {% else %}·
+        {% endif %}
+      </div>
+
+      {# Contenido #}
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;">
+          {# Avatar del usuario #}
+          <span style="width:1.625rem;height:1.625rem;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:.6rem;font-weight:800;flex-shrink:0;">{{ act.user.get_full_name|first|upper|default:act.user.username|first|upper }}</span>
+          <span style="font-size:.8rem;font-weight:600;color:var(--color-text-primary);">{{ act.user.get_full_name|default:act.user.username }}</span>
+          <span style="font-size:.72rem;font-weight:700;padding:.1rem .45rem;border-radius:.3rem;background:var(--color-bg-alt);color:var(--color-text-secondary);">{{ act.get_action_display }}</span>
+          {% if act.related_pk %}
+          <span style="font-size:.68rem;color:var(--color-text-muted);font-family:monospace;">#{{ act.related_pk }}</span>
+          {% endif %}
+        </div>
+        {% if act.description %}
+        <div style="font-size:.78rem;color:var(--color-text-secondary);margin-top:.2rem;line-height:1.4;">{{ act.description }}</div>
+        {% endif %}
+      </div>
+
+      {# Timestamp + IP #}
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:.72rem;color:var(--color-text-muted);white-space:nowrap;">{{ act.created_at|date:"d/m/Y" }}</div>
+        <div style="font-size:.68rem;color:var(--color-text-muted);font-family:monospace;">{{ act.created_at|date:"H:i:s" }}</div>
+        {% if act.ip_address %}
+        <div style="font-size:.62rem;color:var(--color-text-muted);font-family:monospace;margin-top:.1rem;">{{ act.ip_address }}</div>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+
+  {% if total > 200 %}
+  <div style="padding:.875rem 1rem;text-align:center;font-size:.78rem;color:var(--color-text-muted);border-top:1px solid var(--color-border);">
+    Mostrando los 200 más recientes de {{ total }} registros. Usa los filtros para acotar.
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div style="padding:3.5rem;text-align:center;color:var(--color-text-muted);">
+    <div style="font-size:2rem;margin-bottom:.75rem;">📋</div>
+    <div style="font-size:.9rem;font-weight:600;">Sin actividad registrada</div>
+    <div style="font-size:.78rem;margin-top:.25rem;">Las acciones de los empleados en el panel aparecerán aquí.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,453 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#070E18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Mi Turno — Campo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-serif;color:#E4F1FA;-webkit-font-smoothing:antialiased;}
+.topbar{background:#101E30;border-bottom:1px solid #192D42;padding:.875rem 1.125rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.topbar-name{font-size:.875rem;font-weight:700;}
+.topbar-role{font-size:.65rem;color:#0EA5E9;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.content{padding:1rem 1rem 5rem;}
+.shift-card{background:#101E30;border:1px solid #192D42;border-radius:1rem;padding:1.25rem;margin-bottom:1rem;}
+.shift-dot{width:.75rem;height:.75rem;border-radius:50%;flex-shrink:0;}
+.shift-dot.on{background:#10B981;box-shadow:0 0 8px rgba(16,185,129,.6);animation:pulse 2s infinite;}
+.shift-dot.off{background:#3E6E8A;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:.625rem;}
+.btn{padding:.75rem;border-radius:.75rem;border:none;font-size:.8rem;font-weight:700;cursor:pointer;transition:transform .15s,opacity .18s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.375rem;}
+.btn:active{transform:scale(.96);}
+.btn svg{width:.9rem;height:.9rem;}
+.btn-start{background:linear-gradient(135deg,#10B981,#059669);color:#fff;}
+.btn-end{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.2);}
+.section-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#3E6E8A;margin:1.25rem 0 .625rem;display:flex;align-items:center;justify-content:space-between;}
+/* Delivery task card */
+.dtask{background:#101E30;border:1px solid #192D42;border-radius:.875rem;padding:.875rem 1rem;margin-bottom:.5rem;display:flex;gap:.75rem;align-items:flex-start;transition:border-color .2s;}
+.dtask.done{opacity:.55;border-color:#132030;}
+.dtask-num{width:2rem;height:2rem;border-radius:.625rem;background:rgba(245,158,11,.12);color:#F59E0B;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dtask.done .dtask-num{background:rgba(16,185,129,.12);color:#10B981;}
+.dtask-body{flex:1;min-width:0;}
+.dtask-title{font-size:.8125rem;font-weight:600;color:#E4F1FA;line-height:1.4;}
+.dtask-addr{font-size:.7rem;color:#7AAEC8;margin-top:.2rem;display:flex;align-items:center;gap:.25rem;}
+.dtask-desc{font-size:.7rem;color:#7AAEC8;margin-top:.15rem;}
+.dtask-complete-btn{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;border:none;padding:.5rem .875rem;border-radius:.625rem;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;margin-top:.25rem;}
+.dtask-done-info{font-size:.68rem;color:#10B981;margin-top:.3rem;display:flex;align-items:center;gap:.25rem;}
+/* Other task cards */
+.task-card{background:#101E30;border:1px solid #192D42;border-radius:.875rem;padding:.875rem 1rem;margin-bottom:.5rem;display:flex;gap:.75rem;align-items:flex-start;}
+.task-icon{width:2rem;height:2rem;border-radius:.625rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.task-icon svg{width:1rem;height:1rem;}
+.task-body{flex:1;min-width:0;}
+.task-title{font-size:.8125rem;font-weight:600;color:#E4F1FA;line-height:1.4;}
+.task-sub{font-size:.7rem;color:#7AAEC8;margin-top:.2rem;}
+.badge{display:inline-block;font-size:.6rem;font-weight:700;padding:.15rem .5rem;border-radius:9999px;margin-top:.3rem;}
+.badge-open{background:rgba(14,165,233,.12);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);}
+.badge-in_progress{background:rgba(139,92,246,.12);color:#7C3AED;border:1px solid rgba(139,92,246,.2);}
+.badge-waiting_parts{background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.2);}
+.empty{text-align:center;padding:2rem 1rem;color:#3E6E8A;font-size:.8rem;}
+.bottombar{position:fixed;bottom:0;left:0;right:0;background:#101E30;border-top:1px solid #192D42;padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
+.battery{font-size:.7rem;color:#7AAEC8;display:flex;align-items:center;gap:.3rem;}
+.battery svg{width:.875rem;height:.875rem;}
+.logout-btn{background:none;border:none;color:#3E6E8A;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;padding:.375rem .625rem;border-radius:.375rem;}
+.logout-btn:active{background:rgba(239,68,68,.1);color:#EF4444;}
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:#101E30;border:1px solid #0EA5E9;color:#E4F1FA;padding:.625rem 1.25rem;border-radius:.75rem;font-size:.78rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:flex;align-items:flex-end;}
+.modal-sheet{background:#101E30;border-top:1px solid #192D42;border-radius:1.25rem 1.25rem 0 0;padding:1.5rem 1.25rem;width:100%;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:1rem;font-weight:800;margin-bottom:1.25rem;color:#E4F1FA;}
+.modal-label{font-size:.7rem;font-weight:600;color:#7AAEC8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;display:block;}
+.modal-input{width:100%;padding:.7rem .875rem;background:#070E18;border:1.5px solid #192D42;border-radius:.75rem;color:#E4F1FA;font-size:.875rem;font-family:inherit;outline:none;transition:border-color .18s;margin-bottom:.875rem;}
+.modal-input:focus{border-color:#0EA5E9;}
+.modal-textarea{resize:vertical;min-height:90px;}
+.photo-preview{width:100%;border-radius:.75rem;margin-top:.5rem;display:none;}
+.btn-confirm{width:100%;padding:.875rem;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:.875rem;font-size:.9375rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:.5rem;}
+.btn-cancel-modal{width:100%;padding:.75rem;background:none;border:1.5px solid #192D42;color:#7AAEC8;border-radius:.875rem;font-size:.875rem;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.5rem;}
+.gps-pill{display:inline-flex;align-items:center;gap:.3rem;font-size:.62rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:rgba(14,165,233,.1);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);margin-top:.4rem;}
+.gps-pill.ok{background:rgba(16,185,129,.1);color:#10B981;border-color:rgba(16,185,129,.2);}
+.gps-spin{display:inline-block;animation:spin .8s linear infinite;width:.6rem;height:.6rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+    <div class="topbar-role">{{ field_user.get_role_display }}</div>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:.7rem;color:#7AAEC8;" id="clock"></div>
+    <div id="gps-pill" class="gps-pill"><span class="gps-spin"></span> Buscando GPS…</div>
+  </div>
+</div>
+
+<div class="content">
+
+  {# ── Turno ── #}
+  <div class="shift-card">
+    <div style="display:flex;align-items:center;gap:.625rem;margin-bottom:.875rem;">
+      <div class="shift-dot {% if location and location.is_on_shift %}on{% else %}off{% endif %}" id="shift-dot"></div>
+      <div>
+        <div style="font-size:.875rem;font-weight:700;" id="shift-label">
+          {% if location and location.is_on_shift %}En turno — GPS activo{% else %}Sin turno activo{% endif %}
+        </div>
+        <div style="font-size:.7rem;color:#7AAEC8;margin-top:.1rem;" id="shift-sub">
+          {% if location and location.is_on_shift %}Ubicación enviando cada 30 seg{% else %}Presiona "Iniciar turno" para activar{% endif %}
+        </div>
+      </div>
+    </div>
+    <div id="gps-coords-row" style="font-size:.68rem;color:#3E6E8A;margin-bottom:.875rem;{% if not location or not location.is_on_shift %}display:none;{% endif %}">
+      <span id="gps-coords">{% if location %}Lat {{ location.latitude }}, Lng {{ location.longitude }}{% endif %}</span>
+      <span style="margin-left:.5rem;color:#3E6E8A;" id="gps-accuracy"></span>
+    </div>
+    <div class="btn-grid">
+      <button class="btn btn-start" onclick="startShift()" id="btn-start"
+        {% if location and location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Iniciar turno
+      </button>
+      <button class="btn btn-end" onclick="endShift()" id="btn-end"
+        {% if not location or not location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+        Terminar turno
+      </button>
+    </div>
+  </div>
+
+  {# ── Tareas de entrega ── #}
+  {% if delivery_tasks %}
+  <div class="section-title">
+    <span>Entregas de hoy</span>
+    <span style="font-weight:400;color:#3E6E8A;">
+      {{ delivery_tasks|length }} tarea{{ delivery_tasks|length|pluralize:"s" }}
+    </span>
+  </div>
+  {% for dt in delivery_tasks %}
+  <div class="dtask {% if dt.status == 'done' %}done{% endif %}" id="dtask-{{ dt.pk }}">
+    <div class="dtask-num">{% if dt.status == 'done' %}✓{% else %}{{ forloop.counter }}{% endif %}</div>
+    <div class="dtask-body" style="flex:1;">
+      <div class="dtask-title">{{ dt.title }}</div>
+      {% if dt.address %}<div class="dtask-addr">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.7rem;height:.7rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+        {{ dt.address }}
+      </div>{% endif %}
+      {% if dt.description %}<div class="dtask-desc">{{ dt.description|truncatechars:90 }}</div>{% endif %}
+      {% if dt.status == 'done' %}
+      <div class="dtask-done-info">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" style="width:.75rem;height:.75rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Completada{% if dt.completion_invoice %} · Fact: {{ dt.completion_invoice }}{% endif %}
+        {% if dt.completed_at %} · {{ dt.completed_at|time:"H:i" }}{% endif %}
+      </div>
+      {% else %}
+      <button class="dtask-complete-btn" onclick="openComplete({{ dt.pk }}, '{{ dt.title|escapejs }}')">Completar</button>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {# ── Tareas CRM ── #}
+  {% if tasks %}
+  <div class="section-title"><span>Otras tareas de hoy ({{ tasks|length }})</span></div>
+  {% for task in tasks %}
+  <div class="task-card">
+    <div class="task-icon" style="background:rgba(14,165,233,.12);color:#0EA5E9;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+    </div>
+    <div class="task-body">
+      <div class="task-title">{{ task.description|truncatechars:80 }}</div>
+      {% if task.lead %}<div class="task-sub">{{ task.lead.full_name }}</div>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {# ── Tickets ── #}
+  {% if tickets %}
+  <div class="section-title">
+    <span>Tickets asignados ({{ tickets|length }})</span>
+    {% if field_user.role == "tecnico" %}<span style="font-size:.6rem;font-weight:400;color:#0EA5E9;">Toca para gestionar</span>{% endif %}
+  </div>
+  {% for ticket in tickets %}
+  {% if field_user.role == "tecnico" %}
+  <a href="{% url 'campo:ticket_detail' ticket.pk %}" style="display:block;text-decoration:none;color:inherit;">
+  {% endif %}
+  <div class="task-card" style="{% if field_user.role == 'tecnico' %}cursor:pointer;transition:border-color .2s;{% endif %}">
+    <div class="task-icon" style="background:rgba(139,92,246,.12);color:#7C3AED;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </div>
+    <div class="task-body">
+      <div class="task-title">{{ ticket.equipment_description|default:ticket.description|truncatechars:80 }}</div>
+      {% if ticket.lead %}<div class="task-sub">{{ ticket.lead.full_name }}</div>{% endif %}
+      <span class="badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+      {% if field_user.role == "tecnico" %}
+      <span style="display:inline-block;margin-left:.375rem;font-size:.6rem;color:#7AAEC8;">Ver detalle &rsaquo;</span>
+      {% endif %}
+    </div>
+  </div>
+  {% if field_user.role == "tecnico" %}</a>{% endif %}
+  {% endfor %}
+  {% endif %}
+
+  {% if not delivery_tasks and not tasks and not tickets %}
+  <div class="empty" style="margin-top:2rem;">
+    <div style="font-size:2rem;margin-bottom:.5rem;">📋</div>
+    Sin tareas asignadas por el momento
+  </div>
+  {% endif %}
+
+</div>
+
+{# ── Bottom bar ── #}
+<div class="bottombar">
+  <div class="battery" id="battery-info">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v4a2 2 0 01-2 2h-2m-2-6H5a2 2 0 00-2 2v4a2 2 0 002 2h10V8z"/></svg>
+    <span id="battery-pct">--</span>
+  </div>
+  <form method="post" action="{% url 'campo:logout' %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="logout-btn">Salir</button>
+  </form>
+</div>
+
+{# ── Modal completar tarea ── #}
+<div class="modal-overlay" id="complete-modal" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal-sheet">
+    <div class="modal-title" id="modal-task-title">Completar entrega</div>
+
+    <form id="complete-form" onsubmit="submitComplete(event)" enctype="multipart/form-data">
+      <input type="hidden" id="modal-task-id" name="task_id">
+
+      <label class="modal-label">Notas de entrega</label>
+      <textarea name="notes" id="modal-notes" class="modal-input modal-textarea"
+        placeholder="¿Qué se entregó? ¿Hay observaciones?"></textarea>
+
+      <label class="modal-label"># Factura o remisión (opcional)</label>
+      <input type="text" name="invoice" id="modal-invoice" class="modal-input"
+        placeholder="Ej: FAC-001, REM-2345">
+
+      <label class="modal-label">Foto del comprobante</label>
+      <input type="file" name="photo" id="modal-photo" accept="image/*" capture="environment"
+        class="modal-input" style="padding:.5rem;" onchange="previewPhoto(this)">
+      <img id="photo-preview" class="photo-preview" alt="Vista previa">
+
+      <button type="submit" class="btn-confirm" id="btn-confirm">
+        <span id="confirm-text">Confirmar entrega</span>
+      </button>
+      <button type="button" class="btn-cancel-modal" onclick="closeModal()">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CSRF = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+let watchId = null;
+let isOnShift = {{ location.is_on_shift|yesno:"true,false" }};
+let batteryLevel = null;
+let currentTaskId = null;
+
+// ── Toast ──
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = ok ? '#10B981' : '#EF4444';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Reloj ──
+(function tick(){
+  const now = new Date();
+  const p = n => String(n).padStart(2,'0');
+  document.getElementById('clock').textContent = p(now.getDate()) + '/' + p(now.getMonth()+1) + ' ' + p(now.getHours()) + ':' + p(now.getMinutes());
+  setTimeout(tick, 20000);
+})();
+
+// ── Batería ──
+if (navigator.getBattery) {
+  navigator.getBattery().then(b => {
+    const upd = () => {
+      batteryLevel = Math.round(b.level * 100);
+      document.getElementById('battery-pct').textContent = batteryLevel + '%';
+    };
+    upd(); b.addEventListener('levelchange', upd);
+  });
+}
+
+// ── GPS ──
+function updateGpsPill(state, coords) {
+  const pill = document.getElementById('gps-pill');
+  if (state === 'searching') {
+    pill.className = 'gps-pill';
+    pill.innerHTML = '<span class="gps-spin"></span> Buscando…';
+  } else if (state === 'ok') {
+    pill.className = 'gps-pill ok';
+    pill.textContent = 'GPS ✓';
+    if (coords) {
+      document.getElementById('gps-coords').textContent = 'Lat ' + coords.lat.toFixed(5) + ', Lng ' + coords.lng.toFixed(5);
+      document.getElementById('gps-coords-row').style.display = '';
+      if (coords.acc) document.getElementById('gps-accuracy').textContent = '±' + Math.round(coords.acc) + 'm';
+    }
+  } else {
+    pill.className = 'gps-pill';
+    pill.innerHTML = '⚠ Sin GPS';
+    pill.style.color = '#EF4444';
+    pill.style.borderColor = 'rgba(239,68,68,.3)';
+  }
+}
+
+function sendLocation(pos) {
+  const { latitude: lat, longitude: lng, accuracy: acc } = pos.coords;
+  updateGpsPill('ok', { lat, lng, acc });
+  const fd = new FormData();
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fd.append('lat', lat); fd.append('lng', lng);
+  if (acc) fd.append('accuracy', acc);
+  if (batteryLevel !== null) fd.append('battery', batteryLevel);
+  fetch('{% url "campo:ubicacion" %}', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .catch(() => {});
+}
+
+function startGPS() {
+  if (!navigator.geolocation) { updateGpsPill('error'); return; }
+  updateGpsPill('searching');
+  // Posición rápida inmediata (baja precisión, < 2 seg)
+  navigator.geolocation.getCurrentPosition(
+    pos => sendLocation(pos),
+    () => {},
+    { enableHighAccuracy: false, timeout: 4000, maximumAge: 30000 }
+  );
+  // Luego watchPosition de alta precisión (continuo)
+  watchId = navigator.geolocation.watchPosition(
+    pos => sendLocation(pos),
+    () => updateGpsPill('error'),
+    { enableHighAccuracy: true, timeout: 30000, maximumAge: 10000 }
+  );
+  // Fallback cada 30 seg
+  setInterval(() => {
+    if (isOnShift && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(sendLocation, () => {}, { enableHighAccuracy: false, timeout: 5000, maximumAge: 20000 });
+    }
+  }, 30000);
+}
+
+function startShift() {
+  const fd = new FormData(); fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('{% url "campo:shift_start" %}', { method: 'POST', body: fd })
+    .then(() => {
+      isOnShift = true;
+      document.getElementById('shift-dot').className = 'shift-dot on';
+      document.getElementById('shift-label').textContent = 'En turno — GPS activo';
+      document.getElementById('shift-sub').textContent = 'Ubicación enviando cada 30 seg';
+      document.getElementById('btn-start').style.cssText = 'opacity:.4;pointer-events:none;';
+      document.getElementById('btn-end').style.cssText = '';
+      startGPS();
+      showToast('Turno iniciado ✓');
+    });
+}
+
+function endShift() {
+  const fd = new FormData(); fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('{% url "campo:shift_end" %}', { method: 'POST', body: fd })
+    .then(() => {
+      isOnShift = false;
+      if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+      document.getElementById('shift-dot').className = 'shift-dot off';
+      document.getElementById('shift-label').textContent = 'Turno terminado';
+      document.getElementById('shift-sub').textContent = 'GPS detenido';
+      document.getElementById('btn-start').style.cssText = '';
+      document.getElementById('btn-end').style.cssText = 'opacity:.4;pointer-events:none;';
+      document.getElementById('gps-coords-row').style.display = 'none';
+      updateGpsPill('searching');
+      document.getElementById('gps-pill').innerHTML = 'GPS inactivo';
+      showToast('Turno terminado');
+    });
+}
+
+// Iniciar GPS si ya estaba en turno al cargar
+if (isOnShift) startGPS();
+
+// ── Modal completar tarea ──
+function openComplete(taskId, title) {
+  currentTaskId = taskId;
+  document.getElementById('modal-task-id').value = taskId;
+  document.getElementById('modal-task-title').textContent = title;
+  document.getElementById('modal-notes').value = '';
+  document.getElementById('modal-invoice').value = '';
+  document.getElementById('modal-photo').value = '';
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('confirm-text').textContent = 'Confirmar entrega';
+  document.getElementById('btn-confirm').disabled = false;
+  document.getElementById('complete-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('complete-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function previewPhoto(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('photo-preview');
+      img.src = e.target.result;
+      img.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function submitComplete(e) {
+  e.preventDefault();
+  const taskId = document.getElementById('modal-task-id').value;
+  const fd = new FormData(e.target);
+  fd.append('csrfmiddlewaretoken', CSRF);
+
+  document.getElementById('confirm-text').textContent = 'Enviando…';
+  document.getElementById('btn-confirm').disabled = true;
+
+  fetch(`/campo/tareas/${taskId}/completar/`, { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        closeModal();
+        // Marcar tarjeta como completada visualmente
+        const card = document.getElementById('dtask-' + taskId);
+        if (card) {
+          card.classList.add('done');
+          card.querySelector('.dtask-num').textContent = '✓';
+          const btn = card.querySelector('.dtask-complete-btn');
+          if (btn) {
+            const info = document.createElement('div');
+            info.className = 'dtask-done-info';
+            info.innerHTML = '✓ Completada ahora';
+            btn.replaceWith(info);
+          }
+        }
+        showToast('Entrega registrada ✓');
+      } else {
+        showToast('Error al guardar', false);
+        document.getElementById('confirm-text').textContent = 'Confirmar entrega';
+        document.getElementById('btn-confirm').disabled = false;
+      }
+    })
+    .catch(() => {
+      showToast('Error de conexión', false);
+      document.getElementById('confirm-text').textContent = 'Confirmar entrega';
+      document.getElementById('btn-confirm').disabled = false;
+    });
+}
+</script>
+</body>
+</html>

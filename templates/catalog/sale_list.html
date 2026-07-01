@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="section">
+    <div class="container-custom">
+        <div class="mb-10 max-w-3xl">
+            <div class="silo-label hardware mb-4">Silo Hardware</div>
+            <h1 class="font-display text-display-xl mb-4 text-balance">Venta de Fotocopiadoras Ricoh</h1>
+            <p class="text-lg text-text-secondary">Equipos nuevos y refurbished con garantía oficial.</p>
+        </div>
+
+        <div class="w-full aspect-video rounded-2xl overflow-hidden mb-12">
+            <img src="{% static 'images/img-hero-venta.jpg' %}"
+                 alt="Venta de fotocopiadoras Ricoh nuevas y remanufacturadas"
+                 class="w-full h-full object-cover object-center" loading="lazy">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for copier in copiers %}
+                {% include "components/_copier_card.html" with copier=copier %}
+            {% empty %}
+                <p class="text-text-secondary col-span-3 text-center py-12">Próximamente disponible.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% include "components/_cta_section.html" %}
+{% endblock %}

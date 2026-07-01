@@ -1,0 +1,95 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Administradores{% endblock %}
+{% block nav_admins %}active{% endblock %}
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">Administradores</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">Gestión de administradores</h1>
+  <a href="{% url 'dashboard:admin_create' %}" class="da-btn da-btn-primary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+    Nuevo administrador
+  </a>
+</div>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="da-alert-{% if msg.tags == 'error' %}warning{% else %}success{% endif %}" style="margin-bottom:1rem;">{{ msg }}</div>
+{% endfor %}
+{% endif %}
+
+<div class="da-card">
+  <div class="da-card-header">
+    <span>Cuentas de administración</span>
+    <span style="font-size:.78rem;color:var(--color-text-muted);">{{ admins.count }} cuenta{{ admins.count|pluralize:"s" }}</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="da-table">
+      <thead>
+        <tr>
+          <th>Administrador</th>
+          <th>Usuario</th>
+          <th>Email</th>
+          <th>Nivel</th>
+          <th>Estado</th>
+          <th>Último acceso</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for adm in admins %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:.75rem;">
+              <div style="width:2.25rem;height:2.25rem;border-radius:50%;background:{% if adm.is_superuser %}linear-gradient(135deg,#7C3AED,#5B21B6){% else %}linear-gradient(135deg,var(--color-primary),var(--color-primary-dark)){% endif %};display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:800;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                {{ adm.get_full_name|first|upper|default:adm.username|first|upper }}
+              </div>
+              <div>
+                <div style="font-size:.875rem;font-weight:600;color:var(--color-text-primary);">
+                  {{ adm.get_full_name|default:"Sin nombre" }}
+                  {% if adm.pk == request.user.pk %}<span style="font-size:.65rem;color:var(--color-primary);font-weight:700;margin-left:.375rem;">(tú)</span>{% endif %}
+                </div>
+                <div style="font-size:.68rem;color:var(--color-text-muted);">
+                  {% if adm.is_superuser %}Superusuario{% else %}Staff{% endif %}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td style="font-family:monospace;font-size:.8rem;color:var(--color-text-secondary);">{{ adm.username }}</td>
+          <td style="font-size:.78rem;color:var(--color-text-secondary);">{{ adm.email|default:"—" }}</td>
+          <td>
+            {% if adm.is_superuser %}
+            <span class="da-badge" style="background:color-mix(in srgb,#7C3AED 12%,transparent);color:#7C3AED;border:1px solid color-mix(in srgb,#7C3AED 25%,transparent);">Superusuario</span>
+            {% else %}
+            <span class="da-badge da-badge-sent">Staff</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if adm.is_active %}
+            <span style="background:color-mix(in srgb,#10B981 12%,transparent);color:#10B981;font-size:.68rem;font-weight:700;padding:.2rem .625rem;border-radius:9999px;border:1px solid color-mix(in srgb,#10B981 25%,transparent);">Activo</span>
+            {% else %}
+            <span style="background:rgba(239,68,68,.1);color:#EF4444;font-size:.68rem;font-weight:700;padding:.2rem .625rem;border-radius:9999px;border:1px solid rgba(239,68,68,.25);">Inactivo</span>
+            {% endif %}
+          </td>
+          <td style="font-size:.75rem;color:var(--color-text-muted);">
+            {% if adm.last_login %}{{ adm.last_login|date:"d/m/Y H:i" }}{% else %}Nunca{% endif %}
+          </td>
+          <td>
+            <a href="{% url 'dashboard:admin_detail' adm.pk %}" class="da-btn da-btn-secondary da-btn-sm">Editar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align:center;padding:3rem;color:var(--color-text-muted);">
+            Sin administradores registrados
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

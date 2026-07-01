@@ -1,0 +1,995 @@
+﻿{% extends "base.html" %}
+{% load static i18n %}
+
+{% block content %}
+
+{# ================================================================== #}
+{# 1. HERO PREMIUM                                                     #}
+{# ================================================================== #}
+<section class="hp-hero" data-hero>
+
+  <div class="hp-aurora" aria-hidden="true">
+    <span class="hp-aurora-orb hp-aurora-orb--1"></span>
+    <span class="hp-aurora-orb hp-aurora-orb--2"></span>
+    <span class="hp-aurora-orb hp-aurora-orb--3"></span>
+  </div>
+
+  <div class="hp-grid-bg" aria-hidden="true"></div>
+
+  <div class="hp-floats" aria-hidden="true">
+    <span class="hp-float hp-float--1">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+      </svg>
+    </span>
+    <span class="hp-float hp-float--2">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+      </svg>
+    </span>
+    <span class="hp-float hp-float--3">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
+      </svg>
+    </span>
+    <span class="hp-float hp-float--4">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/>
+      </svg>
+    </span>
+  </div>
+
+  <div class="container-custom hp-hero-inner">
+    <div>
+      <div class="hp-eyebrow hp-fade-up" style="--d:.05s">
+        <span class="hp-eyebrow-dot"></span>
+        {% trans "Integrador Tecnológico B2B · Medellín, Colombia" %}
+      </div>
+
+      <h1 class="hp-hero-title hp-fade-up" style="--d:.2s">
+        {% trans "Soluciones Tecnológicas" %}<br>
+        <em class="gradient-text not-italic">{% trans "Integrales" %}</em> {% trans "para Empresas" %}
+      </h1>
+
+      <p class="hp-hero-sub hp-fade-up" style="--d:.35s">
+        {% blocktrans %}Software empresarial, cableado estructurado, impresión corporativa,
+        suministros tecnológicos y soporte especializado.
+        Todo en un solo aliado estratégico.{% endblocktrans %}
+      </p>
+
+      <div class="hp-hero-ctas hp-fade-up" style="--d:.5s">
+        <a href="{% url 'leads:wizard' %}" class="btn-primary btn-lg">
+          {% trans "Solicitar Cotización" %}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </a>
+        {% if site_settings.phone_whatsapp %}
+        <a href="https://wa.me/{{ site_settings.phone_whatsapp|cut:'+'|cut:' ' }}?text=Hola, me interesa conocer más sobre sus servicios"
+           target="_blank" rel="noopener noreferrer" class="hp-btn-whatsapp">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+          </svg>
+          {% trans "Hablar con un Asesor" %}
+        </a>
+        {% else %}
+        <a href="{% url 'core:contact' %}" class="hp-btn-whatsapp">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+          {% trans "Hablar con un Asesor" %}
+        </a>
+        {% endif %}
+      </div>
+
+      <div class="hp-trust-pills hp-fade-up" style="--d:.65s">
+        <span class="hp-trust-pill">{% trans "Distribuidor Autorizado Ricoh" %}</span>
+        <span class="hp-trust-pill">{% trans "+3.600 empresas atendidas" %}</span>
+        <span class="hp-trust-pill">{% trans "Soporte técnico 24h" %}</span>
+        <span class="hp-trust-pill">{% trans "Cobertura Antioquia" %}</span>
+      </div>
+    </div>
+
+    <div class="hp-hero-stats hp-fade-up" style="--d:.8s">
+      <div class="hp-hero-stat">
+        <span class="hp-stat-val"><span data-counter="3600" data-suffix="+">3,600+</span></span>
+        <span class="hp-stat-lbl">{% trans "Empresas atendidas" %}</span>
+      </div>
+      <div class="hp-hero-stat-div"></div>
+      <div class="hp-hero-stat">
+        <span class="hp-stat-val"><span data-counter="15" data-suffix="+">15+</span></span>
+        <span class="hp-stat-lbl">{% trans "Años de experiencia" %}</span>
+      </div>
+      <div class="hp-hero-stat-div"></div>
+      <div class="hp-hero-stat">
+        <span class="hp-stat-val"><span data-counter="98" data-suffix="%">98%</span></span>
+        <span class="hp-stat-lbl">{% trans "Satisfacción" %}</span>
+      </div>
+      <div class="hp-hero-stat-div"></div>
+      <div class="hp-hero-stat">
+        <span class="hp-stat-val">24<span class="text-base font-semibold">h</span></span>
+        <span class="hp-stat-lbl">{% trans "Atención técnica" %}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ================================================================== #}
+{# 2. LOGOS STRIP                                                      #}
+{# ================================================================== #}
+<div class="hp-logos-section">
+  <p class="hp-logos-label">{% trans "Empresas de todos los sectores confían en nosotros" %}</p>
+  <div class="mask-fade-sides overflow-hidden px-4">
+    <div class="hp-logos-track">
+      {% with badges="PYMES|Colegios|Universidades|Hospitales|Constructoras|Notarías|Oficinas|Industria|Ent. Públicas|Distribuidoras|Clínicas|Cooperativas" %}
+      {% for item in badges|make_list %}{% endfor %}
+      {% endwith %}
+      {% for item in "PYMES,Colegios,Universidades,Hospitales,Constructoras,Notarías,Oficinas,Industria,Ent. Públicas,Distribuidoras,Clínicas,Cooperativas"|ljust:"1"|rjust:"1" %}{% endfor %}
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>PYMES</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>Colegios</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>Universidades</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>Hospitales</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Constructoras</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Notarías</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Oficinas</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Industria</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>Ent. Públicas</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>Distribuidoras</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>Clínicas</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Cooperativas</span>
+      {# Duplicado para el marquee infinito #}
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>PYMES</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>Colegios</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>Universidades</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>Hospitales</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Constructoras</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Notarías</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Oficinas</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>Ent. Públicas</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>Distribuidoras</span>
+      <span class="hp-logo-badge"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Cooperativas</span>
+    </div>
+  </div>
+</div>
+
+{# ================================================================== #}
+{# 3. SERVICIOS PRINCIPALES                                            #}
+{# ================================================================== #}
+<section class="section">
+  <div class="container-custom">
+    <div class="hp-sh">
+      <div class="silo-label software mb-4">{% trans "Nuestros servicios" %}</div>
+      <h2>{% trans "Todo lo que tu empresa necesita," %}<br><em class="not-italic gradient-text">{% trans "en un solo lugar" %}</em></h2>
+      <p class="mt-3">{% blocktrans %}Desde impresoras corporativas hasta software empresarial a la medida. Somos el integrador tecnológico que tu empresa necesita para crecer con tecnología confiable.{% endblocktrans %}</p>
+    </div>
+
+    <div class="hp-services-grid">
+
+      <a href="{% url 'catalog:rental_list' %}" class="hp-svc">
+        <div class="hp-svc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+        </div>
+        <h3>{% trans "Impresión Corporativa" %}</h3>
+        <p>{% trans "Alquiler y venta de equipos Ricoh multifuncionales con mantenimiento preventivo y suministros incluidos." %}</p>
+        <ul class="hp-svc-feats">
+          <li class="hp-svc-feat">{% trans "Alquiler de fotocopiadoras Ricoh" %}</li>
+          <li class="hp-svc-feat">{% trans "Venta de equipos nuevos y certificados" %}</li>
+          <li class="hp-svc-feat">{% trans "Tóner y consumibles originales" %}</li>
+          <li class="hp-svc-feat">{% trans "Mantenimiento preventivo incluido" %}</li>
+        </ul>
+        <span class="hp-svc-link">
+          {% trans "Ver equipos" %}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </span>
+      </a>
+
+      <a href="{% url 'services:software_development' %}" class="hp-svc hp-svc--accent">
+        <div class="hp-svc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
+          </svg>
+        </div>
+        <h3>{% trans "Software Empresarial" %}</h3>
+        <p>{% trans "Sistemas a la medida que digitalizan y automatizan los procesos de tu empresa con tecnología moderna." %}</p>
+        <ul class="hp-svc-feats">
+          <li class="hp-svc-feat">{% trans "ERPs y CRMs personalizados" %}</li>
+          <li class="hp-svc-feat">{% trans "Aplicaciones web y móviles" %}</li>
+          <li class="hp-svc-feat">{% trans "Automatización de procesos" %}</li>
+          <li class="hp-svc-feat">{% trans "Integraciones empresariales" %}</li>
+        </ul>
+        <span class="hp-svc-link">
+          {% trans "Conocer soluciones" %}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </span>
+      </a>
+
+      <a href="{% url 'catalog:structured_cabling' %}" class="hp-svc">
+        <div class="hp-svc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+          </svg>
+        </div>
+        <h3>{% trans "Cableado Estructurado" %}</h3>
+        <p>{% trans "Instalación y certificación de redes de datos de alto rendimiento. La infraestructura que garantiza que todo funcione." %}</p>
+        <ul class="hp-svc-feats">
+          <li class="hp-svc-feat">{% trans "Redes Cat 6A certificadas" %}</li>
+          <li class="hp-svc-feat">{% trans "Fibra óptica y voz/datos" %}</li>
+          <li class="hp-svc-feat">{% trans "Centros de cableado (racks)" %}</li>
+          <li class="hp-svc-feat">{% trans "Certificación de canales" %}</li>
+        </ul>
+        <span class="hp-svc-link">
+          {% trans "Ver proyectos" %}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </span>
+      </a>
+
+      <a href="{% url 'catalog:technical_service' %}" class="hp-svc">
+        <div class="hp-svc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/>
+          </svg>
+        </div>
+        <h3>{% trans "Soporte Tecnológico" %}</h3>
+        <p>{% trans "Servicio técnico especializado y suministros tecnológicos. Mantenemos tu infraestructura en óptimas condiciones." %}</p>
+        <ul class="hp-svc-feats">
+          <li class="hp-svc-feat">{% trans "Servicio técnico en sitio" %}</li>
+          <li class="hp-svc-feat">{% trans "Tóner y repuestos originales" %}</li>
+          <li class="hp-svc-feat">{% trans "Mantenimiento preventivo" %}</li>
+          <li class="hp-svc-feat">{% trans "Respuesta en 24 horas" %}</li>
+        </ul>
+        <span class="hp-svc-link">
+          {% trans "Solicitar soporte" %}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+{# ================================================================== #}
+{# 4. STATS BAND                                                       #}
+{# ================================================================== #}
+<section class="hp-stats-band">
+  <div class="container-custom hp-stats-band-inner">
+    <div class="text-center mb-10">
+      <p class="text-xs font-mono font-semibold uppercase tracking-widest mb-2" style="color:rgba(255,255,255,0.5)">{% trans "Resultados que hablan por sí solos" %}</p>
+      <h2 class="font-display text-3xl md:text-4xl font-bold text-white" style="letter-spacing:-0.025em">{% trans "Números que generan confianza" %}</h2>
+    </div>
+    <div class="hp-stats-grid">
+
+      <div class="hp-stat-box">
+        <div class="hp-stat-box-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+        </div>
+        <div class="hp-stat-box-num"><span data-counter="3600" data-suffix="+">3,600+</span></div>
+        <div class="hp-stat-box-lbl">{% trans "Empresas atendidas" %}</div>
+        <div class="hp-stat-box-sub">{% trans "En Medellín y toda Colombia" %}</div>
+      </div>
+
+      <div class="hp-stat-box">
+        <div class="hp-stat-box-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="hp-stat-box-num"><span data-counter="15" data-suffix="+">15+</span></div>
+        <div class="hp-stat-box-lbl">{% trans "Años de experiencia" %}</div>
+        <div class="hp-stat-box-sub">{% trans "Desde 2009 en el mercado" %}</div>
+      </div>
+
+      <div class="hp-stat-box">
+        <div class="hp-stat-box-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+          </svg>
+        </div>
+        <div class="hp-stat-box-num"><span data-counter="98" data-suffix="%">98%</span></div>
+        <div class="hp-stat-box-lbl">{% trans "Clientes satisfechos" %}</div>
+        <div class="hp-stat-box-sub">{% trans "Según encuesta de satisfacción" %}</div>
+      </div>
+
+      <div class="hp-stat-box">
+        <div class="hp-stat-box-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div class="hp-stat-box-num">24<span style="font-size:1.125rem;font-weight:600">h</span></div>
+        <div class="hp-stat-box-lbl">{% trans "Tiempo de respuesta" %}</div>
+        <div class="hp-stat-box-sub">{% trans "Soporte técnico garantizado" %}</div>
+      </div>
+
+      <div class="hp-stat-box">
+        <div class="hp-stat-box-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+          </svg>
+        </div>
+        <div class="hp-stat-box-num"><span data-counter="20" data-suffix="+">20+</span></div>
+        <div class="hp-stat-box-lbl">{% trans "Modelos Ricoh" %}</div>
+        <div class="hp-stat-box-sub">{% trans "Equipos en stock disponibles" %}</div>
+      </div>
+
+      <div class="hp-stat-box">
+        <div class="hp-stat-box-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div class="hp-stat-box-num">100<span style="font-size:1.125rem;font-weight:600">%</span></div>
+        <div class="hp-stat-box-lbl">{% trans "Cobertura garantizada" %}</div>
+        <div class="hp-stat-box-sub">{% trans "Medellín y Antioquia" %}</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# ================================================================== #}
+{# 5. EQUIPOS DESTACADOS                                               #}
+{# ================================================================== #}
+{% if featured_copiers %}
+<section class="section">
+  <div class="container-custom">
+    <div class="flex flex-wrap items-end justify-between mb-12 gap-4">
+      <div class="max-w-2xl">
+        <div class="silo-label hardware mb-4">{% trans "Catálogo destacado" %}</div>
+        <h2 class="font-display text-display-lg text-balance" style="letter-spacing:-0.02em">
+          {% trans "Equipos Ricoh listos para tu oficina" %}
+        </h2>
+        <p class="text-text-secondary mt-2">{% trans "Impresoras multifuncionales de alto rendimiento. Desde compactas hasta industriales." %}</p>
+      </div>
+      <a href="{% url 'catalog:rental_list' %}" class="link-underline shrink-0">{% trans "Ver catálogo completo" %} →</a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for copier in featured_copiers|slice:":6" %}
+        {% include "components/_copier_card.html" with copier=copier %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ================================================================== #}
+{# 5b. INSUMOS Y REPUESTOS                                             #}
+{# ================================================================== #}
+<section class="section bg-gradient-section">
+  <div class="container-custom">
+    <div class="flex flex-wrap items-end justify-between mb-12 gap-4">
+      <div class="max-w-2xl">
+        <div class="silo-label hardware mb-4">{% trans "Consumibles & Repuestos" %}</div>
+        <h2 class="font-display text-display-lg text-balance" style="letter-spacing:-0.02em">
+          {% trans "Tóner, tintas y repuestos" %} <em>{% trans "originales y genéricos" %}</em>
+        </h2>
+        <p class="text-text-secondary mt-2">
+          {% trans "Más de 700 referencias disponibles. Ricoh, HP, Epson, Kyocera, Samsung, Brother y más." %}
+          <span class="font-semibold text-primary">{% trans "Precios según volumen y tipo de cliente." %}</span>
+        </p>
+      </div>
+      <a href="{% url 'catalog:consumables_list' %}" class="link-underline shrink-0">{% trans "Ver catálogo completo" %} →</a>
+    </div>
+
+    {# Categorías de consumibles — cards #}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+
+      <a href="{% url 'catalog:consumables_list' %}?tipo=toner"
+         class="hp-svc" style="text-decoration:none">
+        <div class="hp-svc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>
+          </svg>
+        </div>
+        <h3>{% trans "Tóner" %}</h3>
+        <p>{% trans "B/N y color. Originales, americanos y genéricos para Ricoh, HP, Kyocera, Samsung y más." %}</p>
+        <ul class="hp-svc-feats">
+          <li class="hp-svc-feat">{% trans "Tóner Ricoh MP / MPC" %}</li>
+          <li class="hp-svc-feat">{% trans "Tóner HP, Samsung, Epson" %}</li>
+          <li class="hp-svc-feat">Kyocera, Brother, Lexmark</li>
+          <li class="hp-svc-feat">{% trans "Recarga de 200g a 1.000g" %}</li>
+        </ul>
+        <span class="hp-svc-link">
+          {% trans "Ver tóneres" %}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </span>
+      </a>
+
+      <a href="{% url 'catalog:consumables_list' %}?tipo=tinta"
+         class="hp-svc" style="text-decoration:none">
+        <div class="hp-svc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42"/>
+          </svg>
+        </div>
+        <h3>{% trans "Tintas & Cartuchos" %}</h3>
+        <p>{% trans "Tintas en botella y cartuchos para impresoras Epson, HP, Canon, Brother y otras marcas." %}</p>
+        <ul class="hp-svc-feats">
+          <li class="hp-svc-feat">Epson 664, 673, 544</li>
+          <li class="hp-svc-feat">HP, Canon, Brother</li>
+          <li class="hp-svc-feat">{% trans "Tintas universales x litro" %}</li>
+          <li class="hp-svc-feat">{% trans "CMYK y colores especiales" %}</li>
+        </ul>
+        <span class="hp-svc-link">
+          {% trans "Ver tintas" %}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </span>
+      </a>
+
+      <a href="{% url 'catalog:consumables_list' %}?tipo=repuesto"
+         class="hp-svc" style="text-decoration:none">
+        <div class="hp-svc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/>
+          </svg>
+        </div>
+        <h3>{% trans "Repuestos & Kits" %}</h3>
+        <p>{% trans "Rodillos, cilindros, cuchillas, bandas, chips y kits de mantenimiento para todas las marcas." %}</p>
+        <ul class="hp-svc-feats">
+          <li class="hp-svc-feat">{% trans "Rodillos, cilindros y cuchillas" %}</li>
+          <li class="hp-svc-feat">{% trans "Bandas fusoras y acetatos" %}</li>
+          <li class="hp-svc-feat">{% trans "Chips y reveladores" %}</li>
+          <li class="hp-svc-feat">{% trans "Kits de mantenimiento" %}</li>
+        </ul>
+        <span class="hp-svc-link">
+          {% trans "Ver repuestos" %}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </span>
+      </a>
+
+    </div>
+
+    {# Productos destacados individuales con precio #}
+    {% if featured_consumables %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {% for item in featured_consumables %}
+      <a href="{{ item.get_absolute_url }}" class="consumable-card group" style="text-decoration:none">
+        <div class="consumable-card-img">
+          {% if item.main_image %}
+            <img src="{{ item.main_image.url }}" alt="{{ item.main_image_alt|default:item.name }}"
+                 class="w-full h-full object-contain p-3" loading="lazy">
+          {% else %}
+            <div class="consumable-card-placeholder">
+              <svg class="w-10 h-10 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>
+              </svg>
+            </div>
+          {% endif %}
+          {% if item.in_stock %}
+            <span class="consumable-badge-stock">{% trans "En stock" %}</span>
+          {% endif %}
+        </div>
+        <div class="consumable-card-body">
+          <div class="consumable-card-type">{{ item.get_consumable_type_display }}</div>
+          <h3 class="consumable-card-name group-hover:text-primary transition-colors">
+            {{ item.name|truncatechars:70 }}
+          </h3>
+          {% if item.part_number %}
+            <div class="consumable-card-ref">Ref: {{ item.part_number }}</div>
+          {% endif %}
+          <div class="consumable-card-price">
+            {% if item.price %}
+              <span class="consumable-price-from">{% trans "Desde" %}</span>
+              <span class="consumable-price-val">${{ item.price|floatformat:0 }}</span>
+              <span class="consumable-price-currency">COP</span>
+            {% else %}
+              <span class="consumable-price-request">{% trans "Consultar precio" %}</span>
+            {% endif %}
+          </div>
+          <div class="consumable-card-tiers">
+            <span title="Precio empresa">Empresa: {% if item.price_business %}${{ item.price_business|floatformat:0 }}{% else %}—{% endif %}</span>
+            <span title="Precio mayorista">Mayor: {% if item.price_wholesale %}${{ item.price_wholesale|floatformat:0 }}{% else %}—{% endif %}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="text-center mt-8">
+      <p class="text-sm text-text-muted mb-4">
+        {% trans "Manejamos más de 700 referencias. Los precios varían según volumen y tipo de cliente." %}
+      </p>
+      <a href="{% url 'leads:wizard' %}" class="btn-primary">
+        {% trans "Solicitar cotización de insumos" %}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{# ================================================================== #}
+{# 6. CÓMO TRABAJAMOS                                                  #}
+{# ================================================================== #}
+<section class="section bg-gradient-section">
+  <div class="container-custom">
+    <div class="hp-sh">
+      <div class="silo-label mb-4">{% trans "Nuestro proceso" %}</div>
+      <h2>{% trans "Así trabajamos contigo," %}<br><em class="gradient-text not-italic">{% trans "sin complicaciones" %}</em></h2>
+      <p class="mt-3">{% trans "Desde el primer contacto hasta el soporte post-implementación, acompañamos cada etapa con profesionalismo y transparencia." %}</p>
+    </div>
+    <div class="hp-process-grid">
+
+      <div class="hp-proc-step">
+        <div class="hp-proc-num">01</div>
+        <div class="hp-proc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        <h3>{% trans "Diagnóstico" %}</h3>
+        <p>{% trans "Analizamos las necesidades de tu empresa sin costo. Evaluamos equipos, procesos y requerimientos tecnológicos." %}</p>
+      </div>
+
+      <div class="hp-proc-step">
+        <div class="hp-proc-num">02</div>
+        <div class="hp-proc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h3>{% trans "Propuesta" %}</h3>
+        <p>{% trans "Diseñamos un plan personalizado con costos claros, tiempos definidos y condiciones adaptadas a tu presupuesto." %}</p>
+      </div>
+
+      <div class="hp-proc-step">
+        <div class="hp-proc-num">03</div>
+        <div class="hp-proc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <h3>{% trans "Implementación" %}</h3>
+        <p>{% trans "Ejecutamos el proyecto con mínima interrupción. Instalación profesional y capacitación incluida." %}</p>
+      </div>
+
+      <div class="hp-proc-step">
+        <div class="hp-proc-num">04</div>
+        <div class="hp-proc-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </div>
+        <h3>{% trans "Soporte continuo" %}</h3>
+        <p>{% trans "Atención técnica permanente, mantenimientos preventivos programados y soporte en 24 horas garantizado." %}</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# ================================================================== #}
+{# 10. PORTAFOLIO DE PROYECTOS                                         #}
+{# ================================================================== #}
+<section class="section bg-gradient-section" id="portafolio">
+  <div class="container-custom">
+    <div class="hp-sh">
+      <div class="silo-label mb-4">{% trans "Portafolio de desarrollo" %}</div>
+      <h2>{% trans "Proyectos" %} <em class="gradient-text not-italic">{% trans "desarrollados" %}</em> {% trans "a medida" %}</h2>
+      <p class="mt-3">{% trans "Soluciones de software construidas con tecnologías modernas para distintas industrias y necesidades." %}</p>
+    </div>
+
+    <style>
+      .port-card { display:flex; flex-direction:column; background:var(--color-surface,#fff); border:1px solid var(--color-border,#e5e7eb); border-radius:1rem; overflow:hidden; transition:transform .25s,box-shadow .25s; }
+      .port-card:hover { transform:translateY(-5px); box-shadow:0 20px 40px rgba(0,0,0,.15); }
+      .port-screen { position:relative; overflow:hidden; background:#0D1117; }
+      .port-screen-bar { background:#1C1C1E; padding:.45rem .75rem; display:flex; gap:.375rem; align-items:center; border-bottom:1px solid rgba(255,255,255,.06); }
+      .port-screen-dot { width:10px; height:10px; border-radius:50%; }
+      .port-screen img { width:100%; height:180px; object-fit:cover; object-position:top; display:block; transition:transform .5s; }
+      .port-card:hover .port-screen img { transform:scale(1.04); }
+      .port-info { padding:1.125rem 1.25rem 1.25rem; flex:1; display:flex; flex-direction:column; }
+      .port-title { font-size:.9375rem; font-weight:700; color:var(--color-text-primary,#111); margin-bottom:.375rem; }
+      .port-desc { font-size:.78rem; color:var(--color-text-secondary,#6b7280); line-height:1.6; flex:1; }
+      .port-tags { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.875rem; }
+      .port-tag { font-size:.62rem; font-weight:600; padding:.15rem .5rem; border-radius:9999px; border:1px solid; }
+      .port-status { font-size:.62rem; font-weight:700; padding:.2rem .55rem; border-radius:9999px; white-space:nowrap; }
+      .port-status-done { background:rgba(16,185,129,.12); color:#10B981; border:1px solid rgba(16,185,129,.2); }
+      .port-status-wip  { background:rgba(245,158,11,.12); color:#D97706; border:1px solid rgba(245,158,11,.2); }
+    </style>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
+
+      {# ── Trekly ── #}
+      <div class="port-card">
+        <div class="port-screen">
+          <div class="port-screen-bar">
+            <div class="port-screen-dot" style="background:#FF5F56"></div>
+            <div class="port-screen-dot" style="background:#FFBD2E"></div>
+            <div class="port-screen-dot" style="background:#27C93F"></div>
+          </div>
+          <img src="{% static 'images/portfolio/trekly.jpg' %}" alt="Trekly — Turismo de Aventura" loading="lazy">
+        </div>
+        <div class="port-info">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">
+            <h3 class="port-title">Trekly — Turismo de Aventura</h3>
+            <span class="port-status port-status-done">{% trans "Completado" %}</span>
+          </div>
+          <p class="port-desc">Plataforma web para gestión de rutas de trekking con roles de usuario, guías y panel administrativo. Incluye autenticación con Google OAuth.</p>
+          <div class="port-tags">
+            <span class="port-tag" style="background:rgba(14,165,233,.1);color:#0EA5E9;border-color:rgba(14,165,233,.2);">Django 5.1</span>
+            <span class="port-tag" style="background:rgba(14,165,233,.1);color:#0EA5E9;border-color:rgba(14,165,233,.2);">Bootstrap 5</span>
+            <span class="port-tag" style="background:rgba(14,165,233,.1);color:#0EA5E9;border-color:rgba(14,165,233,.2);">Google OAuth</span>
+          </div>
+        </div>
+      </div>
+
+      {# ── ERP Corporativo ── #}
+      <div class="port-card">
+        <div class="port-screen">
+          <div class="port-screen-bar">
+            <div class="port-screen-dot" style="background:#FF5F56"></div>
+            <div class="port-screen-dot" style="background:#FFBD2E"></div>
+            <div class="port-screen-dot" style="background:#27C93F"></div>
+          </div>
+          <img src="{% static 'images/portfolio/erp.jpg' %}" alt="ERP Corporativo" loading="lazy">
+        </div>
+        <div class="port-info">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">
+            <h3 class="port-title">ERP Corporativo</h3>
+            <span class="port-status port-status-wip">{% trans "En desarrollo" %}</span>
+          </div>
+          <p class="port-desc">Sistema de planificación empresarial con módulos de contabilidad, inventario, manufactura, ventas y logística. Arquitectura comparable a SAP Business One.</p>
+          <div class="port-tags">
+            <span class="port-tag" style="background:rgba(124,58,237,.1);color:#7C3AED;border-color:rgba(124,58,237,.2);">Django + DRF</span>
+            <span class="port-tag" style="background:rgba(124,58,237,.1);color:#7C3AED;border-color:rgba(124,58,237,.2);">Next.js 14</span>
+            <span class="port-tag" style="background:rgba(124,58,237,.1);color:#7C3AED;border-color:rgba(124,58,237,.2);">Docker</span>
+            <span class="port-tag" style="background:rgba(124,58,237,.1);color:#7C3AED;border-color:rgba(124,58,237,.2);">PostgreSQL</span>
+          </div>
+        </div>
+      </div>
+
+      {# ── TiendaPos ── #}
+      <div class="port-card">
+        <div class="port-screen">
+          <div class="port-screen-bar">
+            <div class="port-screen-dot" style="background:#FF5F56"></div>
+            <div class="port-screen-dot" style="background:#FFBD2E"></div>
+            <div class="port-screen-dot" style="background:#27C93F"></div>
+          </div>
+          <img src="{% static 'images/portfolio/tiendapos.jpg' %}" alt="TiendaPos" loading="lazy">
+        </div>
+        <div class="port-info">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">
+            <h3 class="port-title">TiendaPos — Punto de Venta</h3>
+            <span class="port-status port-status-done">{% trans "Completado" %}</span>
+          </div>
+          <p class="port-desc">Sistema POS offline-first para tiendas de abarrotes con lector de código de barras por cámara, historial de ventas y reportes contables.</p>
+          <div class="port-tags">
+            <span class="port-tag" style="background:rgba(16,185,129,.1);color:#10B981;border-color:rgba(16,185,129,.2);">PWA</span>
+            <span class="port-tag" style="background:rgba(16,185,129,.1);color:#10B981;border-color:rgba(16,185,129,.2);">JavaScript</span>
+            <span class="port-tag" style="background:rgba(16,185,129,.1);color:#10B981;border-color:rgba(16,185,129,.2);">IndexedDB</span>
+            <span class="port-tag" style="background:rgba(16,185,129,.1);color:#10B981;border-color:rgba(16,185,129,.2);">ZXing Scanner</span>
+          </div>
+        </div>
+      </div>
+
+      {# ── FumiElite ── #}
+      <div class="port-card">
+        <div class="port-screen">
+          <div class="port-screen-bar">
+            <div class="port-screen-dot" style="background:#FF5F56"></div>
+            <div class="port-screen-dot" style="background:#FFBD2E"></div>
+            <div class="port-screen-dot" style="background:#27C93F"></div>
+          </div>
+          <img src="{% static 'images/portfolio/fumi-delta.jpg' %}" alt="FumiElite" loading="lazy">
+        </div>
+        <div class="port-info">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">
+            <h3 class="port-title">FumiElite — Landing Corporativa</h3>
+            <span class="port-status port-status-done">{% trans "Completado" %}</span>
+          </div>
+          <p class="port-desc">Sitio web moderno para empresa de fumigación con animaciones fluidas, diseño responsivo y sección de cotización en línea.</p>
+          <div class="port-tags">
+            <span class="port-tag" style="background:rgba(245,158,11,.1);color:#D97706;border-color:rgba(245,158,11,.2);">Next.js 15</span>
+            <span class="port-tag" style="background:rgba(245,158,11,.1);color:#D97706;border-color:rgba(245,158,11,.2);">React 19</span>
+            <span class="port-tag" style="background:rgba(245,158,11,.1);color:#D97706;border-color:rgba(245,158,11,.2);">Framer Motion</span>
+            <span class="port-tag" style="background:rgba(245,158,11,.1);color:#D97706;border-color:rgba(245,158,11,.2);">TailwindCSS</span>
+          </div>
+        </div>
+      </div>
+
+      {# ── ProJobs ── #}
+      <div class="port-card">
+        <div class="port-screen">
+          <div class="port-screen-bar">
+            <div class="port-screen-dot" style="background:#FF5F56"></div>
+            <div class="port-screen-dot" style="background:#FFBD2E"></div>
+            <div class="port-screen-dot" style="background:#27C93F"></div>
+          </div>
+          <img src="{% static 'images/portfolio/projobs.jpg' %}" alt="ProJobs" loading="lazy">
+        </div>
+        <div class="port-info">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">
+            <h3 class="port-title">ProJobs — Bolsa de Empleo</h3>
+            <span class="port-status port-status-done">{% trans "Completado" %}</span>
+          </div>
+          <p class="port-desc">Plataforma de empleo con perfiles para empresas y candidatos, publicación de vacantes y panel de seguimiento de postulaciones.</p>
+          <div class="port-tags">
+            <span class="port-tag" style="background:rgba(239,68,68,.1);color:#EF4444;border-color:rgba(239,68,68,.2);">Django</span>
+            <span class="port-tag" style="background:rgba(239,68,68,.1);color:#EF4444;border-color:rgba(239,68,68,.2);">Python</span>
+            <span class="port-tag" style="background:rgba(239,68,68,.1);color:#EF4444;border-color:rgba(239,68,68,.2);">Bootstrap</span>
+          </div>
+        </div>
+      </div>
+
+      {# ── CV Personal ── #}
+      <div class="port-card">
+        <div class="port-screen">
+          <div class="port-screen-bar">
+            <div class="port-screen-dot" style="background:#FF5F56"></div>
+            <div class="port-screen-dot" style="background:#FFBD2E"></div>
+            <div class="port-screen-dot" style="background:#27C93F"></div>
+          </div>
+          <img src="{% static 'images/portfolio/cv-personal.jpg' %}" alt="Portfolio Personal" loading="lazy">
+        </div>
+        <div class="port-info">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">
+            <h3 class="port-title">Portfolio Personal & CV Interactivo</h3>
+            <span class="port-status port-status-done">{% trans "Completado" %}</span>
+          </div>
+          <p class="port-desc">Sitio web personal tipo CV con habilidades técnicas, experiencia laboral, proyectos y formulario de contacto. Diseño responsivo moderno.</p>
+          <div class="port-tags">
+            <span class="port-tag" style="background:rgba(99,102,241,.1);color:#6366F1;border-color:rgba(99,102,241,.2);">HTML5</span>
+            <span class="port-tag" style="background:rgba(99,102,241,.1);color:#6366F1;border-color:rgba(99,102,241,.2);">CSS3</span>
+            <span class="port-tag" style="background:rgba(99,102,241,.1);color:#6366F1;border-color:rgba(99,102,241,.2);">JavaScript</span>
+            <span class="port-tag" style="background:rgba(99,102,241,.1);color:#6366F1;border-color:rgba(99,102,241,.2);">Bootstrap 5</span>
+          </div>
+        </div>
+      </div>
+
+      {# ── Daniela GT ── #}
+      <div class="port-card">
+        <div class="port-screen">
+          <div class="port-screen-bar">
+            <div class="port-screen-dot" style="background:#FF5F56"></div>
+            <div class="port-screen-dot" style="background:#FFBD2E"></div>
+            <div class="port-screen-dot" style="background:#27C93F"></div>
+          </div>
+          <img src="{% static 'images/portfolio/daniela-gt.jpg' %}" alt="Sitio Bilingüe Daniela GT" loading="lazy">
+        </div>
+        <div class="port-info">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">
+            <h3 class="port-title">Sitio Profesional Bilingüe</h3>
+            <span class="port-status port-status-done">{% trans "Completado" %}</span>
+          </div>
+          <p class="port-desc">Página web para intérprete bilingüe Francés–Español con portafolio de servicios, experiencia y formulario de contacto multilenguaje.</p>
+          <div class="port-tags">
+            <span class="port-tag" style="background:rgba(236,72,153,.1);color:#EC4899;border-color:rgba(236,72,153,.2);">HTML5</span>
+            <span class="port-tag" style="background:rgba(236,72,153,.1);color:#EC4899;border-color:rgba(236,72,153,.2);">CSS3</span>
+            <span class="port-tag" style="background:rgba(236,72,153,.1);color:#EC4899;border-color:rgba(236,72,153,.2);">Bootstrap 5</span>
+            <span class="port-tag" style="background:rgba(236,72,153,.1);color:#EC4899;border-color:rgba(236,72,153,.2);">JavaScript</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# ================================================================== #}
+{# 7. TESTIMONIOS                                                      #}
+{# ================================================================== #}
+{% if testimonials %}
+<section class="section">
+  <div class="container-custom">
+    <div class="hp-sh">
+      <div class="silo-label hardware mb-4">{% trans "Testimonios" %}</div>
+      <h2>{% trans "Lo que dicen nuestros" %} <em class="gradient-text not-italic">{% trans "clientes" %}</em></h2>
+      <p class="mt-3">{% trans "Más de 3,600 empresas ya experimentaron la diferencia. Estas son sus palabras." %}</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for testimonial in testimonials %}
+        {% include "components/_testimonial_card.html" with testimonial=testimonial %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ================================================================== #}
+{# 8. BLOG                                                             #}
+{# ================================================================== #}
+{% if latest_posts %}
+<section class="section bg-gradient-section">
+  <div class="container-custom">
+    <div class="flex flex-wrap items-end justify-between mb-12 gap-4">
+      <div class="max-w-xl">
+        <div class="silo-label mb-4">{% trans "Blog corporativo" %}</div>
+        <h2 class="font-display text-display-lg text-balance" style="letter-spacing:-0.02em">
+          {% trans "Novedades tecnológicas para tu empresa" %}
+        </h2>
+      </div>
+      <a href="{% url 'blog:post_list' %}" class="link-underline shrink-0">{% trans "Ver todos los artículos" %} →</a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {% for post in latest_posts %}
+      <a href="{{ post.get_absolute_url }}" class="card group" style="text-decoration:none">
+        {% if post.image %}
+        <div class="overflow-hidden aspect-video rounded-t-xl">
+          <img src="{{ post.image.url }}" alt="{{ post.title }}"
+               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        </div>
+        {% endif %}
+        <div class="p-6">
+          <div class="silo-label mb-2">{% if post.category %}{{ post.category.name }}{% else %}Tecnología{% endif %}</div>
+          <h3 class="font-display font-semibold text-lg text-text-primary group-hover:text-primary transition-colors mb-2 line-clamp-2">{{ post.title }}</h3>
+          <p class="text-sm text-text-secondary line-clamp-3">{{ post.excerpt|default:post.title }}</p>
+          <div class="mt-4 text-xs text-text-muted">{{ post.published_at|date:"d M Y" }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ================================================================== #}
+{# 9. FAQ                                                              #}
+{# ================================================================== #}
+<section class="section">
+  <div class="container-custom">
+    <div class="hp-sh">
+      <div class="silo-label mb-4">{% trans "Preguntas frecuentes" %}</div>
+      <h2>{% trans "Todo lo que necesitas" %} <em class="gradient-text not-italic">{% trans "saber" %}</em></h2>
+      <p class="mt-3">{% trans "Resolvemos las dudas más frecuentes antes de que las tengas." %}</p>
+    </div>
+    <div class="hp-faq-wrap">
+      <div class="hp-faq-list">
+
+        <div class="hp-faq-item">
+          <button class="hp-faq-btn">
+            ¿Qué incluye el alquiler de una fotocopiadora?
+            <svg class="hp-faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="hp-faq-body">
+            <div class="hp-faq-body-inner">
+              El plan incluye el equipo Ricoh, instalación sin costo adicional, mantenimiento preventivo y correctivo, tóner y suministros según el plan contratado, y soporte técnico con respuesta en menos de 24 horas. Sin inversión inicial ni cargos ocultos.
+              <a href="{% url 'catalog:rental_list' %}" class="faq-link">Ver planes de alquiler →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="hp-faq-item">
+          <button class="hp-faq-btn">
+            ¿En cuánto tiempo instalan el equipo?
+            <svg class="hp-faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="hp-faq-body">
+            <div class="hp-faq-body-inner">
+              La instalación se realiza en un máximo de 48 horas hábiles después de confirmar el contrato. Incluye configuración de red, integración con los sistemas de la empresa y capacitación al personal.
+              <a href="{% url 'leads:wizard' %}" class="faq-link">Solicitar instalación →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="hp-faq-item">
+          <button class="hp-faq-btn">
+            ¿Desarrollan software para cualquier tipo de empresa?
+            <svg class="hp-faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="hp-faq-body">
+            <div class="hp-faq-body-inner">
+              Sí. Desarrollamos sistemas para PYMES, grandes corporaciones, entidades educativas y organizaciones gubernamentales. Cada proyecto comienza con un diagnóstico gratuito para entender los procesos específicos antes de proponer una solución.
+              <a href="{% url 'services:software_development' %}" class="faq-link">Ver soluciones de software →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="hp-faq-item">
+          <button class="hp-faq-btn">
+            ¿Tienen cobertura fuera de Medellín?
+            <svg class="hp-faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="hp-faq-body">
+            <div class="hp-faq-body-inner">
+              Cubrimos todo el departamento de Antioquia con atención técnica presencial. Para otras ciudades de Colombia, ofrecemos soporte remoto y coordinamos visitas técnicas según la necesidad del proyecto.
+              <a href="{% url 'core:contact' %}" class="faq-link">Consultar cobertura →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="hp-faq-item">
+          <button class="hp-faq-btn">
+            ¿Qué garantía tienen los equipos y proyectos?
+            <svg class="hp-faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="hp-faq-body">
+            <div class="hp-faq-body-inner">
+              Los equipos Ricoh en venta tienen garantía oficial de 1 a 3 años. Los equipos en alquiler tienen cobertura total durante la vigencia del contrato. Los proyectos de software incluyen 6 meses de soporte post-lanzamiento.
+              <a href="{% url 'catalog:technical_service' %}" class="faq-link">Conocer el servicio técnico →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="hp-faq-item">
+          <button class="hp-faq-btn">
+            ¿Puedo cambiar el equipo si mis necesidades cambian?
+            <svg class="hp-faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="hp-faq-body">
+            <div class="hp-faq-body-inner">
+              Absolutamente. Los planes de alquiler permiten actualizar el equipo sin penalización. Si tu empresa crece y necesitas mayor capacidad, gestionamos el cambio sin interrumpir tus operaciones.
+              <a href="{% url 'leads:wizard' %}" class="faq-link">Solicitar cambio de equipo →</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ================================================================== #}
+{# 11. CTA FINAL                                                       #}
+{# ================================================================== #}
+<section class="hp-cta-final">
+  <div class="hp-cta-inner container-custom">
+    <div class="silo-label justify-center mb-4" style="color:rgba(255,255,255,0.5)">
+      <span class="w-1.5 h-1.5 rounded-full" style="background:rgba(255,255,255,0.4)"></span>
+      {% trans "¿Listo para dar el siguiente paso?" %}
+    </div>
+    <h2>{% trans "Transforma tu empresa con tecnología que funciona" %}</h2>
+    <p>{% trans "Más de 3,600 empresas en Medellín y Antioquia ya confían en nosotros. Agenda una asesoría gratuita hoy." %}</p>
+    <div class="hp-cta-btns">
+      <a href="{% url 'leads:wizard' %}" class="btn-primary btn-lg">
+        {% trans "Solicitar Cotización Gratis" %}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
+      </a>
+      <a href="{% url 'core:contact' %}" class="btn-white btn-lg">{% trans "Hablar con un Asesor" %}</a>
+    </div>
+    <div class="hp-cta-trust">
+      <span class="hp-cta-trust-item">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        {% trans "Sin compromiso" %}
+      </span>
+      <span class="hp-cta-trust-item">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        {% trans "Respuesta en menos de 2 horas" %}
+      </span>
+      <span class="hp-cta-trust-item">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        {% trans "Cotización sin costo" %}
+      </span>
+      <span class="hp-cta-trust-item">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        {% trans "+3,600 empresas satisfechas" %}
+      </span>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

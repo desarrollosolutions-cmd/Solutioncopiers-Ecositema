@@ -1,0 +1,36 @@
+<a href="{{ copier.get_absolute_url }}" class="copier-card group">
+    <div class="copier-card-image">
+        {% if copier.image_card %}
+            <img src="{{ copier.image_card.url }}" alt="{{ copier.main_image_alt|default:copier.name }}"
+                 loading="lazy" width="800" height="600">
+        {% else %}
+            <div class="w-full h-full bg-bg-alt flex items-center justify-center">
+                <svg class="w-16 h-16 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+            </div>
+        {% endif %}
+
+        {% if copier.is_featured %}
+        <span class="absolute top-3 left-3 badge-accent">⭐ Destacado</span>
+        {% endif %}
+    </div>
+
+    <div class="copier-card-body">
+        <div class="silo-label hardware mb-2">{{ copier.brand }} · {{ copier.get_toner_type_display }}</div>
+        <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">{{ copier.name }}</h3>
+        <p class="text-sm text-text-secondary mb-4 flex-1">{{ copier.short_description }}</p>
+
+        <div class="flex flex-wrap gap-2 mb-4">
+            <span class="badge">{{ copier.speed_ppm }} ppm</span>
+            <span class="badge">{{ copier.get_paper_size_display }}</span>
+        </div>
+
+        {% if copier.monthly_rental_price %}
+        <div class="pt-4 border-t border-border">
+            <div class="text-xs text-text-muted">Desde</div>
+            <div class="font-display text-2xl text-primary">${{ copier.monthly_rental_price|floatformat:0 }}<span class="text-sm text-text-muted font-body"> COP/mes</span></div>
+        </div>
+        {% endif %}
+    </div>
+</a>

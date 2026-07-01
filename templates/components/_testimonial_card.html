@@ -1,0 +1,19 @@
+<div class="testimonial-card" data-bento-card>
+    <div class="testimonial-card-quote font-body text-text-primary">
+        {{ testimonial.quote }}
+    </div>
+    <div class="flex items-center gap-3 mt-auto pt-4 border-t border-border">
+        {% if testimonial.author_photo %}
+        <img src="{{ testimonial.author_photo.url }}" alt="{{ testimonial.author_name }}"
+             class="w-12 h-12 rounded-full object-cover" loading="lazy" width="48" height="48">
+        {% else %}
+        <div class="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center font-display text-accent">
+            {{ testimonial.author_name|first }}
+        </div>
+        {% endif %}
+        <div>
+            <div class="font-medium text-sm">{{ testimonial.author_name }}</div>
+            <div class="text-xs text-text-muted">{{ testimonial.author_role }}{% if testimonial.author_company %} · {{ testimonial.author_company }}{% endif %}</div>
+        </div>
+    </div>
+</div>

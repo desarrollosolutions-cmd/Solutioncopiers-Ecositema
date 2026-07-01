@@ -1,0 +1,565 @@
+/* ===========================================================================
+   COMPONENTES ESPECÍFICOS
+   =========================================================================== */
+
+/* ------------------------------------------------------------------ */
+/* NAVBAR                                                              */
+/* ------------------------------------------------------------------ */
+.navbar {
+  @apply fixed top-0 left-0 right-0 z-50;
+  transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.navbar.is-scrolled {
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* Línea de acento en la parte superior del navbar al hacer scroll */
+.navbar.is-scrolled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    var(--color-primary) 0%,
+    var(--color-accent) 50%,
+    var(--color-primary) 100%);
+  pointer-events: none;
+}
+
+.navbar-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  border-radius: 9999px;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.navbar-link:hover {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+.navbar-link.active {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+/* ── Panel del dropdown ── */
+.navbar-dropdown-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  padding: 0.375rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,0.08),
+    0 10px 30px rgba(0,0,0,0.12),
+    0 20px 60px rgba(0,0,0,0.1),
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+
+/* ── Items del dropdown de Software ── */
+.navbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.625rem;
+  transition: background 0.15s ease;
+  text-decoration: none;
+}
+.navbar-dropdown-item:hover {
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-bg-alt));
+}
+.navbar-dropdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.625rem;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.navbar-dropdown-icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  display: block;
+  flex-shrink: 0;
+}
+.navbar-dropdown-item:hover .navbar-dropdown-icon {
+  background: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  transform: scale(1.08);
+}
+.navbar-dropdown-title {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}
+.navbar-dropdown-sub {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin-top: 0.125rem;
+  line-height: 1.3;
+}
+
+/* ------------------------------------------------------------------ */
+/* HERO                                                                */
+/* ------------------------------------------------------------------ */
+.hero-headline {
+  @apply font-display text-display-2xl text-balance;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+
+/* Texto en itálica con gradiente para máximo impacto visual */
+.hero-headline em {
+  font-style: italic;
+  background: linear-gradient(130deg, var(--color-accent) 0%, var(--color-primary) 60%, var(--color-primary-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* También aplicar gradiente a em dentro de headings display */
+h2 em, h3 em {
+  font-style: italic;
+  background: linear-gradient(130deg, var(--color-accent) 0%, var(--color-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ------------------------------------------------------------------ */
+/* BUTTON SHIMMER — Barrido de luz en hover                           */
+/* ------------------------------------------------------------------ */
+.btn-primary,
+.btn-accent {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after,
+.btn-accent::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.22) 50%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  transition: none;
+  pointer-events: none;
+}
+
+.btn-primary:hover::after,
+.btn-accent:hover::after {
+  animation: btn-shimmer 0.55s ease-in-out forwards;
+}
+
+/* ------------------------------------------------------------------ */
+/* BENTO CARD                                                          */
+/* ------------------------------------------------------------------ */
+.bento-card {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.05);
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s ease,
+    border-color 0.3s ease;
+}
+
+/* Spotlight light-follow dentro de cada card */
+.bento-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(196, 18, 26, 0.06),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.bento-card:hover::after {
+  opacity: 1;
+}
+
+.bento-card:hover {
+  transform: translateY(-7px);
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+  box-shadow:
+    0 12px 24px rgba(0,0,0,0.07),
+    0 32px 72px rgba(0,0,0,0.1),
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 12%, transparent),
+    0 8px 24px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+/* Overlay gradiente sutil en hover */
+.bento-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary) 4%, transparent),
+    color-mix(in srgb, var(--color-accent) 4%, transparent)
+  );
+  z-index: 0;
+}
+
+.bento-card:hover::before {
+  opacity: 1;
+}
+
+/* Franja de acento en la parte superior — aparece en hover */
+.bento-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2;
+}
+
+.bento-card:hover::after {
+  transform: scaleX(1);
+}
+
+/* Bento cards con fondo primario (oscuro) */
+.bento-card.bg-primary {
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 1px 3px rgba(0,0,0,0.15);
+}
+.bento-card.bg-primary:hover {
+  border-color: rgba(255,255,255,0.22);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.25), 0 8px 20px rgba(0,0,0,0.18);
+}
+.bento-card.bg-primary::before { display: none; }
+.bento-card.bg-primary::after {
+  background: linear-gradient(90deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 100%);
+}
+
+.bento-card-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+}
+
+/* ------------------------------------------------------------------ */
+/* COPIER CARD                                                         */
+/* ------------------------------------------------------------------ */
+.copier-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.05);
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Franja de acento en top */
+.copier-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
+}
+
+.copier-card:hover {
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.09),
+    0 4px 10px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.copier-card:hover::before {
+  transform: scaleX(1);
+}
+
+.copier-card-image {
+  @apply relative overflow-hidden;
+  background: var(--color-bg-alt);
+  aspect-ratio: 4 / 3;
+}
+
+.copier-card-image img {
+  @apply w-full h-full object-cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.copier-card:hover .copier-card-image img {
+  transform: scale(1.06);
+}
+
+.copier-card-body {
+  @apply p-6 flex flex-col flex-1;
+}
+
+/* ------------------------------------------------------------------ */
+/* TESTIMONIAL CARD                                                    */
+/* ------------------------------------------------------------------ */
+.testimonial-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--color-accent) 22%, var(--color-border));
+  box-shadow: 0 10px 36px rgba(0,0,0,0.09);
+}
+
+/* Comilla decorativa de fondo */
+.testimonial-card::before {
+  content: '\201C';
+  position: absolute;
+  top: 0.5rem;
+  right: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 7rem;
+  line-height: 1;
+  color: var(--color-primary);
+  opacity: 0.07;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Franja lateral izquierda */
+.testimonial-card::after {
+  content: '';
+  position: absolute;
+  top: 1.5rem;
+  bottom: 1.5rem;
+  left: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--color-primary), var(--color-accent));
+  border-radius: 0 2px 2px 0;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.testimonial-card:hover::after {
+  opacity: 1;
+}
+
+.testimonial-card-quote::before {
+  content: "\201C";
+  @apply font-display leading-none block;
+  font-size: 3rem;
+  color: var(--color-primary);
+  opacity: 0.7;
+  margin-bottom: -0.75rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* WHATSAPP FLOATING BUTTON — Con pulso animado                        */
+/* ------------------------------------------------------------------ */
+.whatsapp-float {
+  @apply fixed bottom-6 right-6 z-40
+         w-14 h-14 rounded-full text-white
+         flex items-center justify-center;
+  background: var(--color-success);
+  box-shadow:
+    0 4px 20px rgba(46,125,50,0.45),
+    0 2px 8px rgba(0,0,0,0.16);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+/* Anillo de pulso */
+.whatsapp-float::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 9999px;
+  border: 2px solid rgba(46, 125, 50, 0.45);
+  animation: wa-pulse 2.8s ease-out infinite;
+}
+
+.whatsapp-float:hover {
+  transform: scale(1.12) translateY(-3px);
+  box-shadow:
+    0 8px 32px rgba(46,125,50,0.6),
+    0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ------------------------------------------------------------------ */
+/* BREADCRUMBS                                                         */
+/* ------------------------------------------------------------------ */
+.breadcrumbs {
+  @apply flex items-center gap-2 text-sm text-text-secondary py-4;
+}
+
+.breadcrumbs-separator {
+  @apply text-text-muted;
+}
+
+/* ------------------------------------------------------------------ */
+/* FORMULARIOS                                                         */
+/* ------------------------------------------------------------------ */
+.form-input {
+  @apply w-full px-4 py-3 rounded-base
+         text-text-primary placeholder:text-text-muted
+         transition-all duration-200
+         focus:outline-none;
+  background: var(--color-bg-surface);
+  border: 1.5px solid var(--color-border);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04) inset;
+}
+
+.form-input:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+}
+
+.form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--color-primary) 14%, transparent),
+    0 1px 2px rgba(0,0,0,0.04) inset;
+}
+
+.form-label {
+  @apply block text-sm font-semibold text-text-primary mb-1.5;
+  letter-spacing: 0.01em;
+}
+
+.form-error {
+  @apply text-xs text-danger mt-1.5 flex items-center gap-1;
+}
+
+/* ------------------------------------------------------------------ */
+/* SHIMMER                                                             */
+/* ------------------------------------------------------------------ */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-alt) 0%,
+    var(--color-border) 50%,
+    var(--color-bg-alt) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* CTA SECTION                                                         */
+/* ------------------------------------------------------------------ */
+.cta-section {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg,
+    var(--color-primary-dark) 0%,
+    var(--color-primary) 50%,
+    var(--color-accent) 100%);
+}
+
+.cta-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(255,255,255,0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.04) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* PRICE / TARJETA DE PRECIO                                           */
+/* ------------------------------------------------------------------ */
+.price-display {
+  @apply font-display font-bold;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ------------------------------------------------------------------ */
+/* ICON BOX                                                            */
+/* ------------------------------------------------------------------ */
+.icon-box {
+  @apply w-12 h-12 rounded-base flex items-center justify-center flex-shrink-0;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--color-primary) 12%, transparent),
+    color-mix(in srgb, var(--color-accent) 8%, transparent));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+  color: var(--color-primary);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.icon-box-lg {
+  @apply w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+
+/* theme-picker styles are in input.css */

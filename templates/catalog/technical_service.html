@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+{# HERO #}
+<section class="section">
+    <div class="container-custom max-w-4xl">
+        <div class="silo-label hardware mb-4">Servicio Técnico · Todas las marcas</div>
+        <h1 class="font-display text-display-xl mb-6 text-balance">
+            Servicio Técnico de Fotocopiadoras Garantizado
+        </h1>
+        <p class="text-lg text-text-secondary mb-6 text-pretty">
+            Su fotocopiadora e impresora en manos de expertos. Atendemos todas las marcas del mercado con técnicos certificados, repuestos originales y tiempos de respuesta comprometidos.
+        </p>
+        <p class="text-base text-text-muted mb-10">
+            Ricoh · Canon · Xerox · Kyocera · Brother · Sharp · Lexmark · Minolta · Toshiba · Epson · HP · Samsung
+        </p>
+        <div class="flex flex-wrap gap-4">
+            <a href="{% url 'leads:wizard' %}?servicio=rental" class="btn-primary">Agendar servicio técnico</a>
+            <a href="{% url 'core:contact' %}" class="btn-outline">Llamar ahora</a>
+        </div>
+    </div>
+</section>
+
+{# ESPACIO IMAGEN #}
+<section class="section-sm">
+    <div class="container-custom max-w-4xl">
+        <div class="w-full aspect-video rounded-2xl overflow-hidden">
+            <img src="{% static 'images/img-servicio-tecnico.jpg' %}"
+                 alt="Técnico realizando mantenimiento a fotocopiadora multifuncional"
+                 class="w-full h-full object-cover object-center"
+                 loading="lazy">
+        </div>
+    </div>
+</section>
+
+{# 3 TIPOS DE SERVICIO #}
+<section class="section">
+    <div class="container-custom max-w-4xl">
+        <div class="mb-10 max-w-2xl">
+            <h2 class="font-display text-display-md mb-3 text-balance">Lo que incluye nuestro servicio técnico</h2>
+            <p class="text-text-secondary">Mantenimiento preventivo, correctivo y reparación para que tu equipo nunca se detenga.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+
+            <div class="card-padded">
+                <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 class="font-display text-xl mb-2">Mantenimiento preventivo</h3>
+                <p class="text-text-secondary text-sm mb-4">Visitas programadas para limpiar, calibrar y revisar todos los componentes antes de que fallen. Reduce averías y extiende la vida útil del equipo.</p>
+                <ul class="space-y-1 text-xs text-text-muted">
+                    <li>Limpieza interna completa</li>
+                    <li>Revisión de rodillos y fusores</li>
+                    <li>Calibración de imagen</li>
+                    <li>Actualización de firmware</li>
+                </ul>
+            </div>
+
+            <div class="card-padded">
+                <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <h3 class="font-display text-xl mb-2">Mantenimiento correctivo</h3>
+                <p class="text-text-secondary text-sm mb-4">Atención rápida cuando algo falla. Agendamiento en menos de 24 horas en Medellín. Diagnóstico en sitio y solución definitiva, no parches.</p>
+                <ul class="space-y-1 text-xs text-text-muted">
+                    <li>Diagnóstico en sitio sin costo</li>
+                    <li>Reparación de atascos de papel</li>
+                    <li>Cambio de fusor y tambor</li>
+                    <li>Reparación de tarjetas electrónicas</li>
+                </ul>
+            </div>
+
+            <div class="card-padded">
+                <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                </div>
+                <h3 class="font-display text-xl mb-2">Repuestos originales</h3>
+                <p class="text-text-secondary text-sm mb-4">Suministros originales y genéricos de excelente calidad para todas las marcas. Stock permanente de los repuestos de mayor rotación en Medellín.</p>
+                <ul class="space-y-1 text-xs text-text-muted">
+                    <li>Tóner original y compatible</li>
+                    <li>Fusores y tambores</li>
+                    <li>Rodillos de arrastre</li>
+                    <li>Cartuchos láser</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{# MARCAS QUE ATENDEMOS #}
+<section class="section bg-bg-alt">
+    <div class="container-custom max-w-4xl">
+        <div class="mb-8 max-w-2xl">
+            <h2 class="font-display text-display-md mb-3 text-balance">Todas las marcas del mercado</h2>
+            <p class="text-text-secondary">No importa la marca que tengas: atendemos todos los equipos multifuncionales e impresoras del mercado colombiano.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <span class="badge text-base px-4 py-2 font-display">Ricoh</span>
+            <span class="badge text-base px-4 py-2 font-display">Canon</span>
+            <span class="badge text-base px-4 py-2 font-display">Xerox</span>
+            <span class="badge text-base px-4 py-2 font-display">Kyocera</span>
+            <span class="badge text-base px-4 py-2 font-display">Brother</span>
+            <span class="badge text-base px-4 py-2 font-display">Sharp</span>
+            <span class="badge text-base px-4 py-2 font-display">Lexmark</span>
+            <span class="badge text-base px-4 py-2 font-display">Minolta</span>
+            <span class="badge text-base px-4 py-2 font-display">Toshiba</span>
+            <span class="badge text-base px-4 py-2 font-display">Epson</span>
+            <span class="badge text-base px-4 py-2 font-display">HP</span>
+            <span class="badge text-base px-4 py-2 font-display">Samsung</span>
+        </div>
+    </div>
+</section>
+
+{# COMPROMISOS #}
+<section class="section">
+    <div class="container-custom max-w-4xl">
+        <div class="mb-10">
+            <h2 class="font-display text-display-md mb-3 text-balance">Calidad, responsabilidad y compromiso ambiental</h2>
+            <p class="text-text-secondary">Nuestros valores no son un eslogan: son el estándar mínimo de cada visita técnica.</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-display text-base mb-1">Expertos certificados</h3>
+                    <p class="text-sm text-text-secondary">Técnicos capacitados directamente por Ricoh y con experiencia en todas las marcas del portafolio.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-display text-base mb-1">Respuesta en 24 horas</h3>
+                    <p class="text-sm text-text-secondary">Rápido agendamiento en Medellín. Servicio a domicilio gratis en Medellín y zonas cercanas.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-display text-base mb-1">Honestidad y transparencia</h3>
+                    <p class="text-sm text-text-secondary">Diagnóstico claro antes de intervenir. Sin reparaciones innecesarias ni costos sorpresa.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-display text-base mb-1">Compromiso ambiental</h3>
+                    <p class="text-sm text-text-secondary">Disposición responsable de consumibles y repuestos usados. Reciclaje de tóner y cartuchos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% include "components/_cta_section.html" with title="Agenda tu servicio técnico hoy" description="Atención en menos de 24 horas en Medellín. Servicio a domicilio sin costo en zonas cercanas." primary_text="Agendar ahora" primary_url="/cotizador/" secondary_text="Llamar al (604) 322 22 76" secondary_url="/contacto/" %}
+
+{% endblock %}

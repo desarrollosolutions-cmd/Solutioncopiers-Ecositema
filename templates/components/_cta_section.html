@@ -1,0 +1,27 @@
+<section class="section">
+    <div class="container-custom">
+        <div class="relative overflow-hidden rounded-lg bg-gradient-brand text-white p-8 md:p-16">
+            <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+            <div class="absolute top-0 right-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+
+            <div class="relative z-10 max-w-3xl">
+                <h2 class="font-display text-display-lg mb-4 text-balance">{{ title|default:"¿Listo para transformar tu infraestructura?" }}</h2>
+                <p class="text-lg text-white/80 mb-8 text-pretty">{{ description|default:"Cotiza en línea o agenda una consulta gratuita con nuestro equipo." }}</p>
+
+                <div class="flex flex-wrap gap-4">
+                    <a href="{{ primary_url|default:'/cotizador/' }}" class="btn bg-accent text-white hover:bg-accent-dark">
+                        {{ primary_text|default:"Cotizar ahora" }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
+                    </a>
+                    {% if secondary_url %}
+                    <a href="{{ secondary_url }}" class="btn border border-white/30 text-white hover:bg-white/10">
+                        {{ secondary_text }}
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

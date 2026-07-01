@@ -1,0 +1,73 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Cotizaciones{% endblock %}
+{% block nav_quotes %}active{% endblock %}
+{% block breadcrumb %}<span class="da-breadcrumb-sep">/</span><span class="da-breadcrumb-current">Cotizaciones</span>{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">Cotizaciones</h1>
+</div>
+
+{# Filtros #}
+<form method="get" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-bottom:1.25rem;">
+  <div class="da-search-wrap">
+    <div class="da-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
+    <input type="text" name="q" value="{{ current_q }}" placeholder="Buscar cliente, empresa, email…" class="da-input da-input-search">
+  </div>
+  <select name="status" class="da-input" style="width:auto;padding:.5rem .875rem;">
+    <option value="">Todos los estados</option>
+    {% for val, lbl in status_choices %}
+    <option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <select name="area" class="da-input" style="width:auto;padding:.5rem .875rem;">
+    <option value="">Todos los servicios</option>
+    {% for val, lbl in area_choices %}
+    <option value="{{ val }}" {% if current_area == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
+  {% if current_q or current_status or current_area %}
+  <a href="{% url 'dashboard:quotes' %}" class="da-btn da-btn-secondary">Limpiar</a>
+  {% endif %}
+</form>
+
+<div class="da-table-wrap">
+  <div class="da-table-header">
+    <span class="da-table-title">{{ paginator.count }} cotización{{ paginator.count|pluralize:"es" }}</span>
+  </div>
+  <table class="da-table">
+    <thead>
+      <tr><th>Cliente</th><th>Empresa</th><th>Teléfono</th><th>Servicio</th><th>Estimado</th><th>Estado</th><th>Fecha</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for q in quotes %}
+      <tr>
+        <td><div class="da-name">{{ q.lead.full_name }}</div><div style="font-size:.72rem;color:var(--color-text-muted);">{{ q.lead.email }}</div></td>
+        <td>{{ q.lead.company_name|default:"—" }}</td>
+        <td><a href="tel:{{ q.lead.phone }}">{{ q.lead.phone }}</a></td>
+        <td>{{ q.get_interest_area_display }}</td>
+        <td>{% if q.estimated_total and q.estimated_total > 0 %}${{ q.estimated_total|floatformat:0 }}{% else %}—{% endif %}</td>
+        <td><span class="da-badge da-badge-{{ q.status }}">{{ q.get_status_display }}</span></td>
+        <td style="white-space:nowrap;font-size:.78rem;">{{ q.created_at|date:"d/m/Y H:i" }}</td>
+        <td><a href="{% url 'dashboard:quote_detail' q.pk %}" class="da-btn da-btn-secondary da-btn-sm">Ver</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" style="text-align:center;padding:3rem;color:var(--color-text-muted);">Sin cotizaciones que coincidan</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if is_paginated %}
+  <div class="da-pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if current_q %}&q={{ current_q }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}" class="da-page-btn">← Anterior</a>
+    {% endif %}
+    <span class="da-page-btn active">{{ page_obj.number }} / {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if current_q %}&q={{ current_q }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}" class="da-page-btn">Siguiente →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

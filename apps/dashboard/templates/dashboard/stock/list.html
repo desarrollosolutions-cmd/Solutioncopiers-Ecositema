@@ -1,0 +1,233 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Gestión de Stock{% endblock %}
+{% block nav_stock %}active{% endblock %}
+
+{% block content %}
+<style>
+  /* ── Badges de stock ── */
+  .stk-ok  {background:color-mix(in srgb,#10B981 12%,transparent);color:#10B981;border:1px solid color-mix(in srgb,#10B981 25%,transparent);}
+  .stk-low {background:color-mix(in srgb,#F59E0B 12%,transparent);color:#D97706;border:1px solid color-mix(in srgb,#F59E0B 30%,transparent);}
+  .stk-zero{background:rgba(239,68,68,.1);color:#EF4444;border:1px solid rgba(239,68,68,.25);}
+  .stk-badge{display:inline-block;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:9999px;white-space:nowrap;}
+
+  /* ── Acordeón ── */
+  .cat-card{background:var(--color-surface);border:1.5px solid var(--color-border);border-radius:1rem;overflow:hidden;transition:border-color .18s;}
+  .cat-card:hover{border-color:color-mix(in srgb,var(--color-primary) 35%,var(--color-border));}
+  .cat-header{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem;cursor:pointer;user-select:none;}
+  .cat-title{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;}
+  .cat-chevron{color:var(--color-text-muted);transition:transform .25s;flex-shrink:0;}
+  .cat-card.open .cat-chevron{transform:rotate(180deg);}
+  .cat-body{display:none;border-top:1px solid var(--color-border);}
+  .cat-card.open .cat-body{display:block;}
+
+  /* ── Filas de insumo ── */
+  .stk-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:.75rem;padding:.625rem 1.125rem;border-bottom:1px solid color-mix(in srgb,var(--color-border) 50%,transparent);}
+  .stk-row:last-child{border-bottom:none;}
+  .stk-row:hover{background:color-mix(in srgb,var(--color-primary) 3%,transparent);}
+
+  /* ── Formulario inline ── */
+  .stk-form{display:flex;align-items:center;gap:.3rem;flex-wrap:nowrap;}
+  .stk-qty {width:4rem;text-align:center;padding:.2rem .375rem;border:1.5px solid var(--color-border);border-radius:.4rem;background:var(--color-bg-alt);color:var(--color-text-primary);font-size:.78rem;}
+  .stk-qty:focus{outline:none;border-color:var(--color-primary);}
+  .btn-in  {padding:.2rem .6rem;border-radius:.4rem;font-size:.7rem;font-weight:700;cursor:pointer;border:none;background:color-mix(in srgb,#10B981 15%,transparent);color:#059669;transition:background .15s;}
+  .btn-in:hover{background:color-mix(in srgb,#10B981 25%,transparent);}
+  .btn-out {padding:.2rem .6rem;border-radius:.4rem;font-size:.7rem;font-weight:700;cursor:pointer;border:none;background:rgba(239,68,68,.1);color:#DC2626;transition:background .15s;}
+  .btn-out:hover{background:rgba(239,68,68,.18);}
+  .btn-hist{padding:.2rem .5rem;border-radius:.4rem;font-size:.68rem;font-weight:600;cursor:pointer;border:1.5px solid var(--color-border);background:transparent;color:var(--color-text-muted);transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;}
+  .btn-hist:hover{border-color:var(--color-primary);color:var(--color-primary);}
+
+  /* ── Autocomplete ── */
+  .ac-wrap{position:relative;}
+  #ac-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--color-surface);border:1.5px solid color-mix(in srgb,var(--color-primary) 35%,var(--color-border));border-radius:.75rem;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:200;overflow:hidden;display:none;max-height:340px;overflow-y:auto;}
+  .ac-item{padding:.5rem .875rem;cursor:pointer;display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:.5rem;}
+  .ac-item:hover{background:color-mix(in srgb,var(--color-primary) 8%,transparent);}
+  .ac-main{min-width:0;}
+  .ac-name{font-size:.8rem;color:var(--color-text-primary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ac-sub {font-size:.68rem;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ac-type{font-size:.65rem;color:var(--color-text-muted);white-space:nowrap;text-align:right;}
+  .ac-stk {font-size:.6rem;font-weight:700;padding:.1rem .4rem;border-radius:9999px;white-space:nowrap;}
+  .ac-stk-ok  {background:color-mix(in srgb,#10B981 12%,transparent);color:#10B981;}
+  .ac-stk-low {background:color-mix(in srgb,#F59E0B 12%,transparent);color:#D97706;}
+  .ac-stk-zero{background:rgba(239,68,68,.1);color:#EF4444;}
+  .ac-empty{padding:.875rem;text-align:center;font-size:.78rem;color:var(--color-text-muted);}
+</style>
+
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Gestión de Stock</h1>
+    <div style="font-size:.8rem;color:var(--color-text-muted);margin-top:.125rem;">{{ total }} productos{% if low_only == "1" %} · <span style="color:#D97706;">filtro: stock bajo</span>{% endif %}</div>
+  </div>
+  <div style="display:flex;gap:.5rem;">
+    {% if low_only == "1" %}
+    <a href="{% url 'dashboard:stock' %}" class="da-btn da-btn-secondary">Ver todos</a>
+    {% else %}
+    <a href="{% url 'dashboard:stock' %}?low=1" class="da-btn da-btn-secondary" style="color:#D97706;">⚠ Stock bajo</a>
+    {% endif %}
+    <a href="{% url 'dashboard:activity' %}" class="da-btn da-btn-secondary">Actividad</a>
+  </div>
+</div>
+
+{# ── Buscador con autocomplete ── #}
+<div style="margin-bottom:1.5rem;max-width:520px;">
+  <form method="get" id="stock-form">
+    {% if low_only %}<input type="hidden" name="low" value="{{ low_only }}">{% endif %}
+    <div class="ac-wrap">
+      <div style="position:relative;">
+        <span style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--color-text-muted);pointer-events:none;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </span>
+        <input type="text" name="q" id="stock-q" value="{{ q }}" class="da-input"
+               placeholder="Buscar por nombre, marca, código de parte, modelo compatible…"
+               autocomplete="off" style="padding-left:2.25rem;padding-right:{% if q %}2.5rem{% else %}1rem{% endif %};">
+        {% if q %}
+        <a href="{% url 'dashboard:stock' %}{% if low_only %}?low={{ low_only }}{% endif %}" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);color:var(--color-text-muted);font-size:.75rem;text-decoration:none;" title="Limpiar">✕</a>
+        {% endif %}
+      </div>
+      <div id="ac-list"></div>
+    </div>
+  </form>
+</div>
+
+{# ══════════ MODO BÚSQUEDA ══════════ #}
+{% if search_mode %}
+<div style="margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;">
+  <span style="font-size:.8125rem;color:var(--color-text-muted);">{{ total }} resultado{{ total|pluralize:"s" }} para "<strong style="color:var(--color-text-primary);">{{ q }}</strong>"</span>
+  <a href="{% url 'dashboard:stock' %}{% if low_only %}?low={{ low_only }}{% endif %}" style="font-size:.75rem;color:var(--color-primary);">← Ver categorías</a>
+</div>
+
+<div class="da-card" style="overflow:hidden;">
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--color-border);background:var(--color-bg-alt);">
+        <th style="padding:.5rem 1rem;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Producto</th>
+        <th style="padding:.5rem .75rem;text-align:center;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Stock</th>
+        <th style="padding:.5rem 1rem;text-align:center;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Movimiento rápido</th>
+        <th style="padding:.5rem .625rem;text-align:center;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">Hist.</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in consumables %}
+      {% include "dashboard/stock/_item_row.html" %}
+      {% empty %}
+      <tr><td colspan="4" style="padding:3rem;text-align:center;color:var(--color-text-muted);">Sin resultados para "{{ q }}"</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ══════════ MODO CATEGORÍAS ══════════ #}
+{% else %}
+<div style="display:flex;flex-direction:column;gap:.625rem;">
+  {% for cat in categories %}
+  <div class="cat-card {% if cat.open %}open{% endif %}" id="cat-{{ cat.code }}">
+
+    <div class="cat-header" onclick="toggleCat('{{ cat.code }}', this)">
+      <div class="cat-title">
+        <span style="font-size:.875rem;font-weight:700;color:var(--color-text-primary);">{{ cat.label }}</span>
+        <span style="background:color-mix(in srgb,var(--color-primary) 12%,transparent);color:var(--color-primary);font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:9999px;">{{ cat.count }}</span>
+        {% if cat.zero_count > 0 %}
+        <span class="stk-badge stk-zero">{{ cat.zero_count }} agotado{{ cat.zero_count|pluralize:"s" }}</span>
+        {% elif cat.low_count > 0 %}
+        <span class="stk-badge stk-low">{{ cat.low_count }} stock bajo</span>
+        {% else %}
+        <span class="stk-badge stk-ok">Todo en stock</span>
+        {% endif %}
+      </div>
+      <svg class="cat-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+    </div>
+
+    <div class="cat-body" id="body-{{ cat.code }}">
+      {% if cat.items %}
+      <table style="width:100%;border-collapse:collapse;">
+        <tbody>
+          {% for item in cat.items %}
+          {% include "dashboard/stock/_item_row.html" %}
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="padding:1rem 1.125rem;font-size:.78rem;color:var(--color-text-muted);">Haz clic para cargar los {{ cat.count }} productos…</div>
+      {% endif %}
+    </div>
+
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ── Include parcial (fila de tabla) ── #}
+{% comment %}Partial _item_row.html is included in both modes{% endcomment %}
+
+<script>
+const AC_URL = "{% url 'dashboard:stock_autocomplete' %}";
+const input  = document.getElementById('stock-q');
+const list   = document.getElementById('ac-list');
+const form   = document.getElementById('stock-form');
+let timer;
+
+if (input) {
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const q = input.value.trim();
+    if (q.length < 2) { list.innerHTML = ''; list.style.display = 'none'; return; }
+    timer = setTimeout(() => {
+      fetch(`${AC_URL}?q=${encodeURIComponent(q)}`)
+        .then(r => r.json())
+        .then(data => {
+          if (!data.length) {
+            list.innerHTML = '<div class="ac-empty">Sin coincidencias</div>';
+            list.style.display = 'block';
+            return;
+          }
+          list.innerHTML = data.map(d => {
+            let cls, lbl;
+            if (d.stock_quantity > 5)      { cls = 'ac-stk-ok';   lbl = d.stock_quantity + ' uds'; }
+            else if (d.stock_quantity > 0)  { cls = 'ac-stk-low';  lbl = d.stock_quantity + ' uds'; }
+            else                            { cls = 'ac-stk-zero'; lbl = 'Agotado'; }
+            const sub = [d.brand, d.part_number].filter(Boolean).join(' · ');
+            return `<div class="ac-item" onmousedown="selectAC(event,'${escQ(d.name)}')">
+              <div class="ac-main">
+                <div class="ac-name">${d.name}</div>
+                ${sub ? `<div class="ac-sub">${sub}</div>` : ''}
+              </div>
+              <div class="ac-type">${d.type_label}</div>
+              <span class="ac-stk ${cls}">${lbl}</span>
+            </div>`;
+          }).join('');
+          list.style.display = 'block';
+        })
+        .catch(() => { list.style.display = 'none'; });
+    }, 200);
+  });
+  input.addEventListener('blur',  () => { setTimeout(() => { list.style.display = 'none'; }, 180); });
+  input.addEventListener('focus', () => { if (list.innerHTML && input.value.trim().length >= 2) list.style.display = 'block'; });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') list.style.display = 'none';
+    if (e.key === 'Enter')  list.style.display = 'none';
+  });
+}
+
+function escQ(s) { return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function selectAC(e, name) {
+  e.preventDefault();
+  input.value = name;
+  list.style.display = 'none';
+  form.submit();
+}
+
+// ── Acordeón de categorías ──
+function toggleCat(code, headerEl) {
+  const card = document.getElementById('cat-' + code);
+  const body = document.getElementById('body-' + code);
+  if (card.classList.contains('open')) {
+    card.classList.remove('open');
+  } else {
+    if (!body.querySelector('tr')) {
+      window.location.href = "{% url 'dashboard:stock' %}?cat=" + code + "{% if low_only %}&low={{ low_only }}{% endif %}";
+      return;
+    }
+    card.classList.add('open');
+  }
+}
+</script>
+{% endblock %}

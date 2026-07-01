@@ -1,0 +1,162 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}KPIs de empleados{% endblock %}
+
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">KPIs de empleados</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">KPIs de empleados</h1>
+    <div style="font-size:.78rem;color:var(--color-text-muted);margin-top:.2rem;">Rendimiento comercial · {{ month_label }}</div>
+  </div>
+  <a href="{% url 'dashboard:employees' %}" class="da-btn da-btn-secondary">← Empleados</a>
+</div>
+
+{% if not kpis %}
+<div class="da-card" style="text-align:center;padding:3rem;">
+  <div style="font-size:.875rem;color:var(--color-text-muted);">No hay empleados activos registrados.</div>
+  <a href="{% url 'dashboard:employee_create' %}" class="da-btn da-btn-primary" style="display:inline-flex;margin-top:1rem;">+ Crear primer empleado</a>
+</div>
+{% else %}
+
+{# ── Resumen del mes ── #}
+{% with total_won=0 total_acts=0 %}
+<div class="da-stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:1.75rem;">
+  {% for k in kpis %}
+  {% endfor %}
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,var(--color-primary) 12%,transparent);color:var(--color-primary);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </div>
+    <div class="da-stat-val">{{ kpis|length }}</div>
+    <div class="da-stat-lbl">Empleados activos</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,var(--color-success) 12%,transparent);color:var(--color-success);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:var(--color-success);">
+      {% with total=0 %}{% for k in kpis %}{% endfor %}
+      {{ kpis|length|add:0 }}{% endwith %}
+      {% comment %}JS calc below{% endcomment %}
+      <span id="stat-total-won">—</span>
+    </div>
+    <div class="da-stat-lbl">Ganadas este mes</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,#D97706 12%,transparent);color:#D97706;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:#D97706;"><span id="stat-total-acts">—</span></div>
+    <div class="da-stat-lbl">Actividades esta semana</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,var(--color-danger) 12%,transparent);color:var(--color-danger);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:var(--color-danger);"><span id="stat-overdue">—</span></div>
+    <div class="da-stat-lbl">Tareas vencidas (total)</div>
+    <div class="da-stat-bar"></div>
+  </div>
+</div>
+{% endwith %}
+
+{# ── Tabla de KPIs ── #}
+<div class="da-card">
+  <div class="da-card-header" style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;border-bottom:1px solid var(--color-border);">
+    <span style="font-weight:700;font-size:.875rem;">Rendimiento individual · {{ month_label }}</span>
+    <span style="font-size:.72rem;color:var(--color-text-muted);">Ordenado por cotizaciones ganadas</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;" id="kpis-table">
+      <thead>
+        <tr style="border-bottom:1px solid var(--color-border);">
+          <th style="text-align:left;padding:.625rem 1.25rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);font-weight:600;">#</th>
+          <th style="text-align:left;padding:.625rem 1.25rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);font-weight:600;">Empleado</th>
+          <th style="text-align:right;padding:.625rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);font-weight:600;">En curso</th>
+          <th style="text-align:right;padding:.625rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-success);font-weight:600;">Ganadas</th>
+          <th style="text-align:right;padding:.625rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-danger);font-weight:600;">Perdidas</th>
+          <th style="text-align:right;padding:.625rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);font-weight:600;">Conversión</th>
+          <th style="text-align:right;padding:.625rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-primary);font-weight:600;">Valor ganado</th>
+          <th style="text-align:right;padding:.625rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);font-weight:600;">Acts. semana</th>
+          <th style="text-align:right;padding:.625rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);font-weight:600;">Acts. mes</th>
+          <th style="text-align:right;padding:.625rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-danger);font-weight:600;">Vencidas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for k in kpis %}
+        <tr style="border-bottom:1px solid var(--color-border);transition:background .15s;"
+            onmouseover="this.style.background='rgba(14,165,233,.03)'" onmouseout="this.style.background=''">
+          <td style="padding:.75rem 1.25rem;font-size:.78rem;color:var(--color-text-muted);font-weight:700;">{{ forloop.counter }}</td>
+          <td style="padding:.75rem 1.25rem;">
+            <div style="display:flex;align-items:center;gap:.625rem;">
+              <div style="width:2rem;height:2rem;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:.75rem;font-weight:800;flex-shrink:0;">
+                {{ k.user.get_full_name|first|upper|default:k.user.username|first|upper }}
+              </div>
+              <div>
+                <div style="font-size:.875rem;font-weight:600;color:var(--color-text-primary);">{{ k.user.get_full_name|default:k.user.username }}</div>
+                <div style="font-size:.68rem;color:var(--color-text-muted);">{{ k.assigned_total }} cotizaciones asignadas en total</div>
+              </div>
+            </div>
+          </td>
+          <td style="padding:.75rem 1rem;text-align:right;font-variant-numeric:tabular-nums;">
+            <span style="font-size:.9rem;font-weight:700;color:var(--color-primary);">{{ k.active_quotes }}</span>
+          </td>
+          <td style="padding:.75rem 1rem;text-align:right;font-variant-numeric:tabular-nums;">
+            <span style="font-size:.9rem;font-weight:700;color:var(--color-success);">{{ k.won_month }}</span>
+          </td>
+          <td style="padding:.75rem 1rem;text-align:right;font-variant-numeric:tabular-nums;">
+            <span style="font-size:.9rem;color:{% if k.lost_month > 0 %}var(--color-danger){% else %}var(--color-text-muted){% endif %};">{{ k.lost_month }}</span>
+          </td>
+          <td style="padding:.75rem 1rem;text-align:right;">
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:.5rem;">
+              <div style="width:60px;height:6px;border-radius:9999px;background:var(--color-border);overflow:hidden;">
+                <div style="height:100%;border-radius:9999px;background:{% if k.conversion >= 60 %}var(--color-success){% elif k.conversion >= 30 %}#D97706{% else %}var(--color-danger){% endif %};width:{{ k.conversion }}%;transition:width .4s;"></div>
+              </div>
+              <span style="font-size:.875rem;font-weight:700;color:{% if k.conversion >= 60 %}var(--color-success){% elif k.conversion >= 30 %}#D97706{% else %}var(--color-text-secondary){% endif %};">{{ k.conversion }}%</span>
+            </div>
+          </td>
+          <td style="padding:.75rem 1rem;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--color-primary);">
+            {% if k.won_value %}${{ k.won_value|floatformat:0 }}{% else %}<span style="color:var(--color-text-muted);">—</span>{% endif %}
+          </td>
+          <td style="padding:.75rem 1rem;text-align:right;">
+            <span style="font-size:.875rem;{% if k.acts_week == 0 %}color:var(--color-text-muted){% endif %}">{{ k.acts_week }}</span>
+          </td>
+          <td style="padding:.75rem 1rem;text-align:right;">
+            <span style="font-size:.875rem;">{{ k.acts_month }}</span>
+          </td>
+          <td style="padding:.75rem 1rem;text-align:right;">
+            {% if k.overdue_tasks > 0 %}
+            <span style="background:rgba(239,68,68,.1);color:#EF4444;font-size:.75rem;font-weight:700;padding:.2rem .5rem;border-radius:9999px;border:1px solid rgba(239,68,68,.25);">{{ k.overdue_tasks }}</span>
+            {% else %}
+            <span style="color:var(--color-success);">✓</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const rows = document.querySelectorAll('#kpis-table tbody tr');
+  let totalWon = 0, totalActs = 0, totalOverdue = 0;
+  const data = [
+    {% for k in kpis %}{"won":{{ k.won_month }},"acts":{{ k.acts_week }},"overdue":{{ k.overdue_tasks }}},{% endfor %}
+  ];
+  data.forEach(d => { totalWon += d.won; totalActs += d.acts; totalOverdue += d.overdue; });
+  document.getElementById('stat-total-won').textContent   = totalWon;
+  document.getElementById('stat-total-acts').textContent  = totalActs;
+  document.getElementById('stat-overdue').textContent     = totalOverdue;
+});
+</script>
+{% endif %}
+{% endblock %}

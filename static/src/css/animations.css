@@ -1,0 +1,302 @@
+/* ===========================================================================
+   ANIMACIONES Y EFECTOS
+   =========================================================================== */
+
+/* Elementos con animación de entrada — ocultos por defecto */
+[data-anim] {
+  opacity: 0;
+}
+
+.js-failed [data-anim] {
+  opacity: 1;
+}
+
+[data-anim-stagger] > * {
+  opacity: 0;
+}
+
+/* Scroll-reveal — ocultar antes de animar */
+[data-reveal] {
+  opacity: 0;
+}
+.js-failed [data-reveal] {
+  opacity: 1;
+}
+
+[data-reveal-group] > * {
+  opacity: 0;
+}
+.js-failed [data-reveal-group] > * {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* CURSOR MAGNÉTICO                                                    */
+/* ------------------------------------------------------------------ */
+.cursor-magnetic {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ------------------------------------------------------------------ */
+/* GRID PATTERN — Fondo de cuadrícula para hero                        */
+/* ------------------------------------------------------------------ */
+.bg-grid-pattern {
+  background-image:
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: -1px -1px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent);
+}
+
+/* ------------------------------------------------------------------ */
+/* GLOW Y GRADIENTES DECORATIVOS                                       */
+/* ------------------------------------------------------------------ */
+.glow-accent {
+  box-shadow: 0 0 80px -20px var(--color-accent);
+}
+
+.glow-primary {
+  box-shadow: 0 0 80px -20px var(--color-primary);
+}
+
+/* Orb decorativo animado para hero */
+.hero-orb {
+  border-radius: 9999px;
+  filter: blur(72px);
+  animation: orb-drift 8s ease-in-out infinite;
+}
+
+.hero-orb-secondary {
+  border-radius: 9999px;
+  filter: blur(60px);
+  animation: orb-drift 12s ease-in-out infinite reverse;
+}
+
+/* ------------------------------------------------------------------ */
+/* GRADIENT BORDER                                                     */
+/* ------------------------------------------------------------------ */
+.gradient-border {
+  position: relative;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg,
+    var(--color-primary),
+    var(--color-accent),
+    var(--color-primary-light)
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* HIGHLIGHT STRIP — Para secciones con línea decorativa               */
+/* ------------------------------------------------------------------ */
+.highlight-strip {
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+.highlight-strip::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--color-primary), var(--color-accent));
+}
+
+/* ------------------------------------------------------------------ */
+/* FLOATING BADGE — Para indicadores sobre imágenes                    */
+/* ------------------------------------------------------------------ */
+.floating-badge {
+  @apply absolute flex items-center gap-2 px-3 py-2
+         text-xs font-semibold rounded-full text-white;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.12);
+  animation: badge-float 3s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* KEYFRAMES                                                           */
+/* ------------------------------------------------------------------ */
+
+/* Shimmer de loading */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* Pulso del botón de WhatsApp */
+@keyframes wa-pulse {
+  0%   { transform: scale(0.9);  opacity: 0.8; }
+  60%  { transform: scale(1.25); opacity: 0;   }
+  100% { transform: scale(1.25); opacity: 0;   }
+}
+
+/* Pulsación de punto de estado */
+@keyframes status-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-success) 40%, transparent); }
+  50%       { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-success) 0%, transparent); }
+}
+
+/* Orbs flotantes en el hero */
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -20px) scale(1.05); }
+  66%       { transform: translate(-20px, 15px) scale(0.96); }
+}
+
+/* Badge flotante */
+@keyframes badge-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* Fade in con slide */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Spin para loaders */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Pulse suave */
+@keyframes pulse {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.4; }
+}
+
+/* ------------------------------------------------------------------ */
+/* CURSOR PERSONALIZADO                                                */
+/* ------------------------------------------------------------------ */
+#cursor-dot {
+  position: fixed;
+  top: 0; left: 0;
+  width: 6px; height: 6px;
+  background: var(--color-primary);
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: difference;
+}
+
+#cursor-ring {
+  position: fixed;
+  top: 0; left: 0;
+  width: 36px; height: 36px;
+  border: 1.5px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s cubic-bezier(0.16,1,0.3,1),
+              height 0.3s cubic-bezier(0.16,1,0.3,1),
+              border-color 0.3s;
+}
+
+#cursor-dot.cursor-hover {
+  width: 10px; height: 10px;
+  background: var(--color-accent);
+}
+
+#cursor-ring.cursor-hover {
+  width: 56px; height: 56px;
+  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+/* Ocultar cursor nativo cuando está activo */
+body:has(#cursor-dot) * {
+  cursor: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* PAGE LOADER                                                         */
+/* ------------------------------------------------------------------ */
+#page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--color-surface, #fff);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.loader-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.loader-bar-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-border, #eee);
+  overflow: hidden;
+}
+
+.loader-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary, #C4121A), var(--color-accent, #E03030));
+  transform-origin: left center;
+}
+
+/* ------------------------------------------------------------------ */
+/* KEYFRAMES NUEVOS                                                    */
+/* ------------------------------------------------------------------ */
+
+/* Shimmer sweep para botones */
+@keyframes btn-shimmer {
+  0%   { transform: translateX(-100%) skewX(-20deg); }
+  100% { transform: translateX(220%)  skewX(-20deg); }
+}
+
+/* Gradiente de fondo animado para secciones CTA */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+/* Entrada desde abajo con blur */
+@keyframes blur-up {
+  from { opacity: 0; transform: translateY(32px); filter: blur(8px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+}
+
+/* Ping expandido para badges */
+@keyframes ping-expand {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(2.2); opacity: 0;   }
+}

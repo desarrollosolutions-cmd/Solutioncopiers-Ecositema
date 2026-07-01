@@ -1,0 +1,190 @@
+{% extends "panel/_base.html" %}
+{% block title %}Nueva Factura{% endblock %}
+{% block nav_invoices %}active{% endblock %}
+
+{% block breadcrumb %}
+<span class="pn-breadcrumb-sep">›</span>
+<a href="{% url 'panel:invoices' %}">Facturas</a>
+<span class="pn-breadcrumb-sep">›</span>
+<span class="pn-breadcrumb-current">Nueva</span>
+{% endblock %}
+
+{% block content %}
+<div class="pn-page-header">
+  <h1 class="pn-page-title">Nueva Factura</h1>
+  <a href="{% url 'panel:invoices' %}" class="pn-btn pn-btn-secondary">Cancelar</a>
+</div>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="pn-alert pn-alert-{{ msg.tags|default:'info' }}">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  {{ msg }}
+</div>
+{% endfor %}
+{% endif %}
+
+<form method="post" id="invoice-form">
+{% csrf_token %}
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+
+  {# ── Datos del cliente ── #}
+  <div class="pn-card" style="grid-column:1/-1;">
+    <div class="pn-card-header">Datos del cliente</div>
+    <div class="pn-card-body">
+      {# Buscar cliente existente #}
+      <div class="pn-field" style="margin-bottom:1rem;">
+        <label for="lead-select">Vincular cliente CRM (opcional)</label>
+        <select id="lead-select" name="lead_id" class="pn-input" onchange="fillFromLead(this)">
+          <option value="">— Sin vincular —</option>
+          {% for lead in leads %}
+          <option value="{{ lead.pk }}"
+            data-name="{{ lead.full_name }}"
+            data-nit="{{ lead.nit|default:'' }}"
+            data-email="{{ lead.email|default:'' }}">
+            {{ lead.full_name }}{% if lead.company_name %} — {{ lead.company_name }}{% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="pn-form-grid">
+        <div class="pn-field">
+          <label for="id_client_name">Nombre / Razón social *</label>
+          <input type="text" id="id_client_name" name="client_name" required class="pn-input" placeholder="Nombre del cliente">
+        </div>
+        <div class="pn-field">
+          <label for="id_client_nit">NIT / Cédula</label>
+          <input type="text" id="id_client_nit" name="client_nit" class="pn-input" placeholder="900.123.456-1">
+        </div>
+        <div class="pn-field">
+          <label for="id_client_email">Correo</label>
+          <input type="email" id="id_client_email" name="client_email" class="pn-input" placeholder="correo@empresa.com">
+        </div>
+        <div class="pn-field">
+          <label for="id_client_phone">Teléfono</label>
+          <input type="text" id="id_client_phone" name="client_phone" class="pn-input" placeholder="310 000 0000">
+        </div>
+        <div class="pn-field">
+          <label for="id_client_address">Dirección</label>
+          <input type="text" id="id_client_address" name="client_address" class="pn-input" placeholder="Calle, carrera…">
+        </div>
+        <div class="pn-field">
+          <label for="id_client_city">Ciudad</label>
+          <input type="text" id="id_client_city" name="client_city" class="pn-input" placeholder="Bogotá">
+        </div>
+        <div class="pn-field">
+          <label for="id_payment_method">Método de pago</label>
+          <select id="id_payment_method" name="payment_method" class="pn-input">
+            {% for val, label in payment_methods %}
+            <option value="{{ val }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="pn-field pn-form-full">
+          <label for="id_notes">Notas / Observaciones</label>
+          <textarea id="id_notes" name="notes" rows="2" class="pn-input" placeholder="Opcional…"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Líneas de factura ── #}
+  <div class="pn-card" style="grid-column:1/-1;">
+    <div class="pn-card-header">
+      Ítems
+      <button type="button" class="pn-btn pn-btn-secondary pn-btn-sm" onclick="addLine()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Agregar línea
+      </button>
+    </div>
+    <div class="pn-card-body" style="padding:0;">
+      <table class="pn-table" id="lines-table">
+        <thead>
+          <tr>
+            <th style="width:50%;">Descripción</th>
+            <th style="width:15%;text-align:right;">Cant.</th>
+            <th style="width:20%;text-align:right;">Precio unit.</th>
+            <th style="width:12%;text-align:right;">Subtotal</th>
+            <th style="width:3%;"></th>
+          </tr>
+        </thead>
+        <tbody id="lines-body">
+          <tr class="line-row">
+            <td><input type="text" name="item_description" class="pn-input" required placeholder="Descripción del servicio o producto"></td>
+            <td><input type="number" name="item_quantity" class="pn-input line-qty" min="0.01" step="0.01" value="1" style="text-align:right;" onchange="recalc(this.closest('tr'))"></td>
+            <td><input type="number" name="item_price" class="pn-input line-price" min="0" step="100" value="0" style="text-align:right;" onchange="recalc(this.closest('tr'))"></td>
+            <td class="line-sub" style="text-align:right;font-weight:600;color:var(--color-text-primary);">$0</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:flex-end;padding:1rem 1.25rem;border-top:1px solid var(--color-border);gap:.5rem;align-items:center;">
+      <span style="font-size:.8rem;color:var(--color-text-muted);">Total estimado (sin IVA):</span>
+      <span id="grand-total" style="font-size:1.25rem;font-weight:800;color:var(--color-text-primary);">$0</span>
+    </div>
+  </div>
+
+</div>
+
+<div style="display:flex;justify-content:flex-end;margin-top:1rem;gap:.75rem;">
+  <a href="{% url 'panel:invoices' %}" class="pn-btn pn-btn-secondary">Cancelar</a>
+  <button type="submit" class="pn-btn pn-btn-primary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+    Crear Factura
+  </button>
+</div>
+</form>
+
+<script>
+function fillFromLead(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('id_client_name').value  = opt.dataset.name  || '';
+  document.getElementById('id_client_nit').value   = opt.dataset.nit   || '';
+  document.getElementById('id_client_email').value = opt.dataset.email || '';
+}
+
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString('es-CO');
+}
+
+function recalc(row) {
+  const qty   = parseFloat(row.querySelector('.line-qty').value)   || 0;
+  const price = parseFloat(row.querySelector('.line-price').value) || 0;
+  row.querySelector('.line-sub').textContent = fmt(qty * price);
+  updateGrand();
+}
+
+function updateGrand() {
+  let total = 0;
+  document.querySelectorAll('.line-row').forEach(row => {
+    const qty   = parseFloat(row.querySelector('.line-qty').value)   || 0;
+    const price = parseFloat(row.querySelector('.line-price').value) || 0;
+    total += qty * price;
+  });
+  document.getElementById('grand-total').textContent = fmt(total);
+}
+
+function addLine() {
+  const tbody = document.getElementById('lines-body');
+  const first = tbody.querySelector('.line-row');
+  const clone = first.cloneNode(true);
+  clone.querySelector('[name="item_description"]').value = '';
+  clone.querySelector('.line-qty').value   = '1';
+  clone.querySelector('.line-price').value = '0';
+  clone.querySelector('.line-sub').textContent = '$0';
+  // Botón eliminar
+  const delTd = clone.querySelector('td:last-child');
+  delTd.innerHTML = '<button type="button" onclick="removeLine(this)" style="background:none;border:none;cursor:pointer;color:var(--color-danger);padding:.25rem;line-height:1;" title="Eliminar"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>';
+  tbody.appendChild(clone);
+}
+
+function removeLine(btn) {
+  const tbody = document.getElementById('lines-body');
+  if (tbody.querySelectorAll('.line-row').length <= 1) return;
+  btn.closest('.line-row').remove();
+  updateGrand();
+}
+</script>
+{% endblock %}

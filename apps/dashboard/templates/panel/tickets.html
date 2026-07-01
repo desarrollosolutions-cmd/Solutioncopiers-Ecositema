@@ -1,0 +1,65 @@
+{% extends "panel/_base.html" %}
+{% block title %}Tickets de servicio{% endblock %}
+{% block nav_tickets %}active{% endblock %}
+{% block breadcrumb %}<span class="pn-breadcrumb-sep">/</span><span class="pn-breadcrumb-current">Tickets</span>{% endblock %}
+
+{% block content %}
+<div class="pn-page-header">
+  <h1 class="pn-page-title">Tickets de servicio</h1>
+  <a href="{% url 'panel:ticket_create' %}" class="pn-btn pn-btn-primary pn-btn-sm">+ Nuevo ticket</a>
+</div>
+
+{# Filtros #}
+<div style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center;">
+  <div class="pn-search-wrap" style="flex:1;min-width:200px;">
+    <span class="pn-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></span>
+    <form method="get" id="search-form">
+      <input type="text" name="q" value="{{ q }}" class="pn-input pn-input-search" placeholder="N° ticket, cliente, descripción…" onchange="document.getElementById('search-form').submit()">
+      <input type="hidden" name="status" value="{{ status }}">
+      <input type="hidden" name="mine" value="{{ mine }}">
+    </form>
+  </div>
+  <div style="display:flex;gap:.375rem;flex-wrap:wrap;">
+    <a href="?mine=1&status=&q={{ q }}" class="pn-btn pn-btn-sm {% if mine == '1' and not status %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">Mis tickets</a>
+    <a href="?mine=0&status=&q={{ q }}" class="pn-btn pn-btn-sm {% if mine == '0' %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">Todos</a>
+    {% for val, lbl in status_choices %}
+    <a href="?mine={{ mine }}&status={{ val }}&q={{ q }}" class="pn-btn pn-btn-sm {% if status == val %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">{{ lbl }}</a>
+    {% endfor %}
+  </div>
+  <span style="font-size:.75rem;color:var(--color-text-muted);">{{ total }} resultado{{ total|pluralize:"s" }}</span>
+</div>
+
+<div class="pn-table-wrap">
+  <table class="pn-table">
+    <thead>
+      <tr><th>N° Ticket</th><th>Cliente</th><th>Tipo</th><th>Prioridad</th><th>Estado</th><th>Asignado a</th><th>Fecha</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for t in tickets %}
+      <tr>
+        <td style="font-family:monospace;font-size:.75rem;font-weight:600;">{{ t.ticket_number }}</td>
+        <td>
+          <div class="pn-name">{{ t.lead.full_name }}</div>
+          {% if t.contract %}<div style="font-size:.68rem;color:var(--color-text-muted);font-family:monospace;">{{ t.contract.contract_number }}</div>{% endif %}
+        </td>
+        <td style="font-size:.75rem;">{{ t.get_issue_type_display }}</td>
+        <td>
+          <span class="pn-badge {% if t.priority == 'urgent' %}pn-badge-urgent{% elif t.priority == 'high' %}pn-badge-high{% elif t.priority == 'low' %}pn-badge-low{% else %}pn-badge-medium{% endif %}">
+            {{ t.get_priority_display }}
+          </span>
+        </td>
+        <td><span class="pn-badge pn-badge-{{ t.status }}">{{ t.get_status_display }}</span></td>
+        <td style="font-size:.75rem;color:var(--color-text-muted);">
+          {% if t.assigned_to %}{{ t.assigned_to.get_full_name|default:t.assigned_to.username }}
+          {% else %}<span style="color:var(--color-warning);">Sin asignar</span>{% endif %}
+        </td>
+        <td style="font-size:.72rem;color:var(--color-text-muted);white-space:nowrap;">{{ t.created_at|date:"d/m/Y" }}</td>
+        <td><a href="{% url 'panel:ticket_detail' t.pk %}">Ver →</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" style="text-align:center;color:var(--color-text-muted);padding:2.5rem;">Sin tickets</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

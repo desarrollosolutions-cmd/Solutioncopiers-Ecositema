@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<script id="wizard-context" type="application/json" data-wizard-context>
+{
+  "copiers": {{ available_copiers|safe }},
+  "session": {{ wizard_session|safe }}
+}
+</script>
+
+{# Fondo decorativo #}
+<div class="wizard-bg-decoration" aria-hidden="true">
+    <div class="wizard-bg-orb wizard-bg-orb--1"></div>
+    <div class="wizard-bg-orb wizard-bg-orb--2"></div>
+</div>
+
+<div class="container-custom section-tight">
+
+    <div class="max-w-2xl mb-10">
+        <div class="silo-label hardware mb-4">Cotizador inteligente</div>
+        <h1 class="font-display text-display-xl mb-3 text-balance">
+            Cotiza tu solución en <em class="text-primary not-italic" style="font-style: italic">60 segundos</em>
+        </h1>
+        <p class="text-lg text-text-secondary text-pretty">
+            Tres pasos. Cálculo en vivo. Propuesta personalizada en menos de 24 h.
+        </p>
+    </div>
+
+    <div class="wizard-shell"
+         x-data="quoteWizard()"
+         x-init="init()"
+         @keydown.window.escape="prevStep()">
+
+        <div class="wizard-main">
+
+            <div class="wizard-card">
+                {% include "leads/partials/_progress_bar.html" %}
+
+                <div x-show="errorMessage" x-transition class="wizard-error-banner mb-6" x-cloak>
+                    <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span x-text="errorMessage"></span>
+                </div>
+
+                <div class="relative min-h-[400px]">
+                    <div x-show="currentStep === 1" data-step="1">
+                        {% include "leads/partials/_step_interest.html" %}
+                    </div>
+
+                    <div x-show="currentStep === 2" data-step="2" x-cloak>
+                        <template x-if="interestArea === 'rental' || interestArea === 'sale'">
+                            <div>{% include "leads/partials/_step_details_rental.html" %}</div>
+                        </template>
+                        <template x-if="interestArea === 'cabling'">
+                            <div>{% include "leads/partials/_step_details_cabling.html" %}</div>
+                        </template>
+                        <template x-if="interestArea === 'consumables'">
+                            <div>{% include "leads/partials/_step_details_consumables.html" %}</div>
+                        </template>
+                        <template x-if="isSoftwareFlow || interestArea === 'full_office'">
+                            <div>{% include "leads/partials/_step_details_software.html" %}</div>
+                        </template>
+                    </div>
+
+                    <div x-show="currentStep === 3" data-step="3" x-cloak>
+                        {% include "leads/partials/_step_contact.html" %}
+                    </div>
+                </div>
+
+                <div class="wizard-nav">
+                    <button type="button" class="wizard-nav-back" @click="prevStep()" x-show="currentStep > 1" x-cloak>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Anterior
+                    </button>
+                    <div x-show="currentStep === 1"></div>
+
+                    <template x-if="currentStep < totalSteps">
+                        <button type="button" class="wizard-nav-primary" @click="nextStep()">
+                            Continuar
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </button>
+                    </template>
+
+                    <template x-if="currentStep === totalSteps">
+                        <button type="button" class="wizard-nav-primary" @click="submit()" :disabled="isSubmitting">
+                            <span x-show="!isSubmitting">Enviar cotización</span>
+                            <span x-show="isSubmitting" x-cloak class="flex items-center gap-2">
+                                <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                Enviando...
+                            </span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+        </div>
+
+        <aside class="wizard-sidebar">
+            {% include "leads/partials/_live_estimate.html" %}
+        </aside>
+    </div>
+</div>
+{% endblock %}

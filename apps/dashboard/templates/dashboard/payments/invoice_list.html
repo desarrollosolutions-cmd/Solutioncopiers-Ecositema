@@ -1,0 +1,96 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Facturas{% endblock %}
+{% block nav_billing %}active{% endblock %}
+{% block breadcrumb %}<span class="da-breadcrumb-sep">/</span><a href="{% url 'dashboard:ar_dashboard' %}" class="da-breadcrumb-link">Facturación</a><span class="da-breadcrumb-sep">/</span><span class="da-breadcrumb-current">Facturas</span>{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">Facturas</h1>
+  <a href="{% url 'dashboard:invoice_create' %}" class="da-btn da-btn-primary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+    Nueva factura
+  </a>
+</div>
+
+<!-- Filtros -->
+<form method="get" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-bottom:1.25rem;">
+  <div class="da-search-wrap">
+    <div class="da-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
+    <input type="text" name="q" value="{{ q_actual }}" placeholder="Cliente, NIT o número…" class="da-input da-input-search">
+  </div>
+  <select name="estado" class="da-input" style="width:auto;padding:.5rem .875rem;">
+    <option value="">Todos los estados</option>
+    {% for val, lbl in status_choices %}<option value="{{ val }}" {% if estado_actual == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
+  {% if q_actual or estado_actual %}<a href="{% url 'dashboard:invoice_list' %}" class="da-btn da-btn-secondary">Limpiar</a>{% endif %}
+</form>
+
+<!-- Resumen rápido -->
+<div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;font-size:.8rem;">
+  <span style="color:var(--color-text-muted)">Por cobrar: <strong style="color:var(--color-warning)">${{ total_issued|floatformat:0 }}</strong></span>
+  <span style="color:var(--color-text-muted)">Vencidas: <strong style="color:var(--color-danger)">${{ total_overdue|floatformat:0 }}</strong></span>
+  <span style="color:var(--color-text-muted)">Pagadas: <strong style="color:var(--color-success)">${{ total_paid|floatformat:0 }}</strong></span>
+</div>
+
+<div class="da-table-wrap">
+  <div class="da-table-header">
+    <span class="da-table-title">{{ paginator.count }} factura{{ paginator.count|pluralize:"s" }}</span>
+  </div>
+  <table class="da-table">
+    <thead>
+      <tr>
+        <th>Número</th><th>Cliente</th><th>NIT</th><th>Fecha</th><th>Vence</th><th>Total</th><th>Estado</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inv in invoices %}
+      <tr>
+        <td style="font-family:var(--font-mono);font-size:.78rem;">
+          <a href="{% url 'dashboard:invoice_detail' pk=inv.pk %}" style="color:var(--color-primary);">{{ inv.invoice_number }}</a>
+        </td>
+        <td>
+          <div class="da-name">{{ inv.client_name|truncatechars:35 }}</div>
+          {% if inv.lead %}<div style="font-size:.7rem;color:var(--color-text-muted);">Lead CRM</div>{% endif %}
+        </td>
+        <td style="font-size:.78rem;color:var(--color-text-muted);">{{ inv.client_nit|default:"—" }}</td>
+        <td style="font-size:.8rem;">{{ inv.issue_date }}</td>
+        <td style="font-size:.8rem;{% if inv.is_overdue %}color:var(--color-danger);{% endif %}">{{ inv.due_date|default:"—" }}</td>
+        <td style="font-weight:600;color:var(--color-text-primary)">${{ inv.total|floatformat:0 }}</td>
+        <td>
+          {% if inv.status == 'paid' %}
+          <span class="da-badge da-badge-stock">Pagada</span>
+          {% elif inv.status == 'overdue' or inv.is_overdue %}
+          <span class="da-badge" style="background:color-mix(in srgb,var(--color-danger) 15%,transparent);color:var(--color-danger)">Vencida</span>
+          {% elif inv.status == 'issued' or inv.status == 'sent' %}
+          <span class="da-badge" style="background:color-mix(in srgb,var(--color-warning) 15%,transparent);color:var(--color-warning)">Por cobrar</span>
+          {% elif inv.status == 'draft' %}
+          <span class="da-badge">Borrador</span>
+          {% elif inv.status == 'voided' %}
+          <span class="da-badge da-badge-nostock">Anulada</span>
+          {% else %}
+          <span class="da-badge">{{ inv.get_status_display }}</span>
+          {% endif %}
+        </td>
+        <td><a href="{% url 'dashboard:invoice_detail' pk=inv.pk %}" class="da-btn da-btn-secondary" style="font-size:.72rem;padding:.25rem .65rem;">Ver</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-muted);">No se encontraron facturas</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Paginación -->
+{% if is_paginated %}
+<div style="display:flex;justify-content:center;gap:.5rem;margin-top:1.25rem;flex-wrap:wrap;">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}{% if q_actual %}&q={{ q_actual }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}" class="da-btn da-btn-secondary" style="padding:.4rem .75rem;">← Anterior</a>
+  {% endif %}
+  <span style="padding:.4rem .75rem;color:var(--color-text-muted);font-size:.85rem;">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}{% if q_actual %}&q={{ q_actual }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}" class="da-btn da-btn-secondary" style="padding:.4rem .75rem;">Siguiente →</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

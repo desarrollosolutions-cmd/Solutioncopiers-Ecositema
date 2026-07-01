@@ -1,0 +1,337 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}{% if is_edit %}Editar empleado{% else %}Nuevo empleado{% endif %}{% endblock %}
+{% block nav_employees %}active{% endblock %}
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <a href="{% url 'dashboard:employees' %}">Empleados</a>
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">{% if is_edit %}{{ employee.get_full_name|default:employee.username }}{% else %}Nueva{% endif %}</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">{% if is_edit %}Editar perfil{% else %}Nuevo empleado{% endif %}</h1>
+  <a href="{% url 'dashboard:employees' %}" class="da-btn da-btn-secondary">Volver a la lista</a>
+</div>
+
+{% if error %}
+<div class="da-alert-warning" style="margin-bottom:1.25rem;">{{ error }}</div>
+{% endif %}
+
+<div x-data="permManager()" style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;">
+
+  {# ── Columna izquierda ── #}
+  <div style="display:flex;flex-direction:column;gap:1.125rem;">
+
+    {# Datos del perfil #}
+    <div class="da-card" style="padding:1.5rem;">
+      <div style="font-size:.875rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1.25rem;">Datos del perfil</div>
+      <form method="post" id="main-form">
+        {% csrf_token %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
+
+          <div class="da-field">
+            <label>Nombre *</label>
+            <input type="text" name="first_name" class="da-input" required
+              value="{% if is_edit %}{{ employee.first_name }}{% elif data %}{{ data.first_name }}{% endif %}"
+              placeholder="Nombre">
+          </div>
+
+          <div class="da-field">
+            <label>Apellido</label>
+            <input type="text" name="last_name" class="da-input"
+              value="{% if is_edit %}{{ employee.last_name }}{% elif data %}{{ data.last_name }}{% endif %}"
+              placeholder="Apellido">
+          </div>
+
+          <div class="da-field">
+            <label>Email</label>
+            <input type="email" name="email" class="da-input"
+              value="{% if is_edit %}{{ employee.email }}{% elif data %}{{ data.email }}{% endif %}"
+              placeholder="correo@empresa.com">
+          </div>
+
+          <div class="da-field">
+            <label>Usuario *{% if is_edit %} <span style="font-weight:400;font-size:.65rem;color:var(--color-text-muted);">(no editable)</span>{% endif %}</label>
+            {% if is_edit %}
+            <input type="text" class="da-input" value="{{ employee.username }}" readonly style="opacity:.6;cursor:default;">
+            {% else %}
+            <input type="text" name="username" class="da-input" required
+              value="{% if data %}{{ data.username }}{% endif %}"
+              placeholder="nombre_usuario" autocomplete="off">
+            {% endif %}
+          </div>
+
+          <div class="da-field" style="grid-column:1/-1;">
+            <label>{% if is_edit %}Nueva contraseña{% else %}Contraseña *{% endif %}</label>
+            <input type="password" name="password" class="da-input"
+              {% if not is_edit %}required{% endif %}
+              placeholder="{% if is_edit %}Dejar vacío para no cambiar{% else %}Contraseña segura{% endif %}"
+              autocomplete="new-password">
+          </div>
+
+        </div>
+
+        {# ── Roles predefinidos ── #}
+        <input type="hidden" name="campo_role" :value="campoRole">
+        <div style="margin-top:1.75rem;padding-top:1.5rem;border-top:1px solid var(--color-border);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+            <div>
+              <div style="font-size:.875rem;font-weight:700;color:var(--color-text-primary);">Tipo de acceso</div>
+              <div style="font-size:.75rem;color:var(--color-text-muted);margin-top:.125rem;">Elige si el empleado accede al portal de ventas (/panel/) o al portal de campo (/campo/).</div>
+            </div>
+            <button type="button" @click="clearAll()" style="font-size:.72rem;color:var(--color-text-muted);background:none;border:none;cursor:pointer;padding:.25rem .5rem;border-radius:.375rem;transition:background .15s;" onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='none'">Limpiar todo</button>
+          </div>
+
+          {# Portal de campo #}
+          <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.5rem;">Equipo de campo — portal /campo/</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;margin-bottom:1rem;">
+            <button
+              type="button"
+              @click="selectCampo('mensajero')"
+              :class="campoRole === 'mensajero' ? 'role-btn role-btn-active' : 'role-btn'"
+              :style="campoRole === 'mensajero' ? 'border-color:#F59E0B;background:color-mix(in srgb,#F59E0B 8%,var(--color-surface));' : ''"
+            >
+              <div style="display:flex;align-items:center;gap:.4rem;">
+                <svg fill="none" stroke="#F59E0B" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span style="font-size:.8125rem;font-weight:700;color:#F59E0B;">Mensajero</span>
+              </div>
+              <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;line-height:1.3;">Sin permisos del panel. Solo GPS en /campo/.</div>
+            </button>
+            <button
+              type="button"
+              @click="selectCampo('tecnico')"
+              :class="campoRole === 'tecnico' ? 'role-btn role-btn-active' : 'role-btn'"
+              :style="campoRole === 'tecnico' ? 'border-color:#10B981;background:color-mix(in srgb,#10B981 8%,var(--color-surface));' : ''"
+            >
+              <div style="display:flex;align-items:center;gap:.4rem;">
+                <svg fill="none" stroke="#10B981" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span style="font-size:.8125rem;font-weight:700;color:#10B981;">Técnico</span>
+              </div>
+              <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;line-height:1.3;">GPS + turno en /campo/ · tickets, contratos y clientes en /panel/.</div>
+            </button>
+          </div>
+
+          {# Mensaje para mensajero #}
+          <div x-show="campoRole === 'mensajero'" x-transition
+            style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:.75rem;padding:.75rem 1rem;margin-bottom:1rem;font-size:.78rem;color:var(--color-text-secondary);">
+            <strong style="color:#D97706;">Solo portal de campo.</strong>
+            Accede en <code style="font-family:monospace;background:rgba(245,158,11,.1);padding:.1rem .3rem;border-radius:.25rem;">/campo/</code> · GPS y entregas. Sin acceso al panel de ventas.
+            Teléfono editable en <a href="{% url 'dashboard:campo_users' %}" style="color:#D97706;">Equipo de campo</a>.
+          </div>
+          {# Mensaje para técnico #}
+          <div x-show="campoRole === 'tecnico'" x-transition
+            style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.25);border-radius:.75rem;padding:.75rem 1rem;margin-bottom:1rem;font-size:.78rem;color:var(--color-text-secondary);">
+            <strong style="color:#10B981;">Técnico unificado.</strong>
+            Accede a <code style="font-family:monospace;background:rgba(16,185,129,.1);padding:.1rem .3rem;border-radius:.25rem;">/campo/</code> para GPS y turno, y a
+            <code style="font-family:monospace;background:rgba(16,185,129,.1);padding:.1rem .3rem;border-radius:.25rem;">/panel/</code> para gestionar tickets. Puedes ajustar sus permisos abajo.
+          </div>
+
+          {# Portal del panel #}
+          <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.5rem;margin-top:.25rem;">Portal de ventas — /panel/</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.625rem;margin-bottom:1.25rem;">
+            {% for role in panel_roles %}
+            <button
+              type="button"
+              @click="applyRole({{ role.perms|safe }})"
+              :class="activeRole === JSON.stringify({{ role.perms|safe }}) ? 'role-btn role-btn-active' : 'role-btn'"
+              :style="activeRole === JSON.stringify({{ role.perms|safe }}) ? 'border-color:{{ role.color }};background:color-mix(in srgb,{{ role.color }} 8%,var(--color-surface));' : ''"
+            >
+              <div style="font-size:.8125rem;font-weight:700;color:{{ role.color }};">{{ role.label }}</div>
+              <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.25rem;line-height:1.3;">{{ role.description }}</div>
+            </button>
+            {% endfor %}
+          </div>
+
+          {# ── Permisos agrupados ── #}
+          <div :style="campoRole === 'mensajero' ? 'opacity:.35;pointer-events:none;' : ''">
+          {% for group in panel_groups %}
+          <div style="margin-bottom:1.25rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.625rem;">
+              <div style="width:.375rem;height:1.125rem;border-radius:9999px;background:{{ group.color }};flex-shrink:0;"></div>
+              <span style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">{{ group.label }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+              {% for p in group.items %}
+              <label
+                x-bind:style="selected.has('{{ p.codename }}') ? 'border-color:{{ group.color }};background:color-mix(in srgb,{{ group.color }} 5%,var(--color-bg-alt));' : ''"
+                style="display:flex;align-items:flex-start;gap:.625rem;padding:.75rem .875rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.75rem;cursor:pointer;transition:all .15s;"
+              >
+                <input
+                  type="checkbox"
+                  name="panel_perms"
+                  value="{{ p.codename }}"
+                  x-model="selected"
+                  {% if employee_perm_codes and p.codename in employee_perm_codes %}checked{% endif %}
+                  style="margin-top:.15rem;accent-color:{{ group.color }};width:.9rem;height:.9rem;flex-shrink:0;cursor:pointer;"
+                >
+                <div>
+                  <div style="font-size:.8rem;font-weight:600;color:var(--color-text-primary);">{{ p.label }}</div>
+                  <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.15rem;line-height:1.35;">{{ p.description }}</div>
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+          </div>{# /permisos wrapper #}
+
+        </div>
+
+        <div style="margin-top:1.25rem;display:flex;gap:.625rem;">
+          <button type="submit" class="da-btn da-btn-primary">
+            {% if is_edit %}Guardar cambios{% else %}Crear empleado{% endif %}
+          </button>
+          <a href="{% url 'dashboard:employees' %}" class="da-btn da-btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {# ── Columna derecha ── #}
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+
+    {# Resumen de permisos activos #}
+    <div class="da-card" style="padding:1.25rem;">
+      <div style="font-size:.875rem;font-weight:700;color:var(--color-text-primary);margin-bottom:.875rem;">
+        Accesos activos
+        <span x-text="`(${selected.size} de {{ panel_perms|length }})`" style="font-weight:400;font-size:.75rem;color:var(--color-text-muted);margin-left:.375rem;"></span>
+      </div>
+
+      {# Barra de progreso #}
+      <div style="height:.375rem;background:var(--color-bg-alt);border-radius:9999px;margin-bottom:1rem;overflow:hidden;">
+        <div :style="`width:${(selected.size / {{ panel_perms|length }}) * 100}%;background:var(--color-primary);height:100%;border-radius:9999px;transition:width .3s;`"></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:.375rem;">
+        {% for p in panel_perms %}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.35rem 0;">
+          <span style="font-size:.78rem;color:var(--color-text-secondary);">{{ p.label }}</span>
+          <template x-if="selected.has('{{ p.codename }}')">
+            <span style="font-size:.68rem;font-weight:700;color:var(--color-success);background:color-mix(in srgb,var(--color-success) 10%,transparent);padding:.15rem .5rem;border-radius:9999px;">Activo</span>
+          </template>
+          <template x-if="!selected.has('{{ p.codename }}')">
+            <span style="font-size:.68rem;color:var(--color-text-muted);background:var(--color-bg-alt);padding:.15rem .5rem;border-radius:9999px;">Sin acceso</span>
+          </template>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if is_edit %}
+    {# Estado de cuenta #}
+    <div class="da-card" style="padding:1.25rem;">
+      <div style="font-size:.875rem;font-weight:700;margin-bottom:1rem;">Estado de cuenta</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:.625rem;">
+          <div style="width:2.25rem;height:2.25rem;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;font-weight:800;">
+            {{ employee.get_full_name|first|upper|default:employee.username|first|upper }}
+          </div>
+          <div>
+            <div style="font-size:.8rem;font-weight:600;">{{ employee.get_full_name|default:employee.username }}</div>
+            <div style="font-size:.68rem;color:var(--color-text-muted);">@{{ employee.username }}</div>
+          </div>
+        </div>
+        {% if employee.is_active %}
+        <span style="background:color-mix(in srgb,#10B981 12%,transparent);color:#10B981;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:9999px;border:1px solid color-mix(in srgb,#10B981 25%,transparent);">Activo</span>
+        {% else %}
+        <span style="background:rgba(239,68,68,.1);color:#EF4444;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:9999px;border:1px solid rgba(239,68,68,.25);">Inactivo</span>
+        {% endif %}
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="toggle_active">
+        <button type="submit" class="da-btn {% if employee.is_active %}da-btn-secondary{% else %}da-btn-primary{% endif %}" style="width:100%;justify-content:center;font-size:.8rem;">
+          {% if employee.is_active %}Desactivar acceso{% else %}Activar acceso{% endif %}
+        </button>
+      </form>
+    </div>
+
+    {# Info #}
+    <div class="da-card" style="padding:1.25rem;">
+      <div style="font-size:.875rem;font-weight:700;margin-bottom:.75rem;">Información</div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;font-size:.78rem;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Registro</span>
+          <span>{{ employee.date_joined|date:"d/m/Y" }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Último acceso</span>
+          <span>{% if employee.last_login %}{{ employee.last_login|date:"d/m/Y H:i" }}{% else %}Nunca{% endif %}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Portal</span>
+          <a href="/panel/" target="_blank" style="color:var(--color-primary);font-family:monospace;font-size:.72rem;">/panel/</a>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="da-card" style="padding:1.25rem;"
+      :style="campoRole === 'mensajero' ? 'background:color-mix(in srgb,#F59E0B 4%,var(--color-surface));border-color:color-mix(in srgb,#F59E0B 20%,var(--color-border));' : campoRole === 'tecnico' ? 'background:color-mix(in srgb,#10B981 4%,var(--color-surface));border-color:color-mix(in srgb,#10B981 20%,var(--color-border));' : 'background:color-mix(in srgb,var(--color-primary) 4%,var(--color-surface));border-color:color-mix(in srgb,var(--color-primary) 20%,var(--color-border));'">
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:.5rem;"
+        :style="campoRole === 'mensajero' ? 'color:#D97706;' : campoRole === 'tecnico' ? 'color:#10B981;' : 'color:var(--color-primary);'"
+        x-text="campoRole === 'mensajero' ? 'Solo campo' : campoRole === 'tecnico' ? 'Campo + Panel' : 'Portal de ventas'"></div>
+      <div style="font-size:.75rem;color:var(--color-text-muted);line-height:1.6;">
+        <span x-show="campoRole === ''">Accede en <strong style="color:var(--color-primary);">/panel/</strong>. Solo verá las secciones activadas.</span>
+        <span x-show="campoRole === 'mensajero'">Accede en <strong style="color:#D97706;">/campo/</strong> — turno y GPS. Sin acceso al panel.</span>
+        <span x-show="campoRole === 'tecnico'">Accede en <strong style="color:#10B981;">/campo/</strong> (GPS + turno) y en <strong style="color:#10B981;">/panel/</strong> (tickets + contratos).</span>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<style>
+.role-btn {
+  padding: .75rem;
+  background: var(--color-bg-alt);
+  border: 2px solid var(--color-border);
+  border-radius: .75rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all .18s;
+}
+.role-btn:hover { border-color: var(--color-text-muted); }
+.role-btn-active { border-color: var(--color-primary); }
+</style>
+
+<script>
+function permManager() {
+  const initial = new Set([
+    {% if employee_perm_codes %}
+      {% for code in employee_perm_codes %}'{{ code }}',{% endfor %}
+    {% endif %}
+  ]);
+
+  return {
+    selected:   initial,
+    activeRole: null,
+    campoRole:  '{% if field_user %}{{ field_user.role }}{% endif %}',
+
+    applyRole(perms) {
+      this.selected   = new Set(perms);
+      this.activeRole = JSON.stringify(perms);
+      this.campoRole  = '';
+    },
+
+    selectCampo(role) {
+      this.campoRole  = role;
+      this.activeRole = null;
+      if (role === 'tecnico') {
+        // técnico de campo = GPS + solo ver/gestionar sus tickets
+        this.selected = new Set(['panel_tickets']);
+      } else {
+        this.selected = new Set();
+      }
+    },
+
+    clearAll() {
+      this.selected   = new Set();
+      this.activeRole = null;
+      this.campoRole  = '';
+    },
+  };
+}
+</script>
+{% endblock %}

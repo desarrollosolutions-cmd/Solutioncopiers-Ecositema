@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+{# ── HERO ── #}
+<section class="section">
+  <div class="container-custom max-w-5xl">
+    <div class="max-w-3xl mb-16">
+      <div class="silo-label software mb-4">Integrador Tecnológico B2B · Medellín</div>
+      <h1 class="font-display text-display-xl mb-6 text-balance">
+        Soluciones Empresariales Integrales
+      </h1>
+      <p class="text-lg text-text-secondary text-pretty mb-8">
+        Somos el único aliado en Medellín que une <strong>hardware de impresión</strong>,
+        <strong>infraestructura de red</strong> y <strong>software a la medida</strong> en una sola propuesta.
+        Menos proveedores, más control, mejor precio.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="{% url 'leads:wizard' %}" class="btn-primary">Solicitar propuesta integral</a>
+        <a href="{% url 'core:contact' %}" class="btn-outline">Hablar con un asesor</a>
+      </div>
+    </div>
+
+    {# ── 3 PILARES ── #}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      {# Pilar 1 — Impresión #}
+      <div class="card-padded group">
+        <div class="w-12 h-12 rounded-base bg-primary/10 text-primary flex items-center justify-center mb-5">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+        </div>
+        <h2 class="font-display text-xl mb-2">Impresión Corporativa</h2>
+        <p class="text-sm text-text-secondary mb-5">
+          Alquiler y venta de fotocopiadoras Ricoh con servicio técnico, consumibles
+          y repuestos originales incluidos. Todo incluido, sin sorpresas.
+        </p>
+        <ul class="space-y-2 text-sm text-text-muted mb-6">
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+            Alquiler de impresoras en Medellín
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+            Servicio técnico multifuncionales
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+            Tóner e insumos originales
+          </li>
+        </ul>
+        <a href="{% url 'catalog:rental_list' %}" class="link-underline text-sm font-medium">
+          Ver equipos disponibles →
+        </a>
+      </div>
+
+      {# Pilar 2 — Infraestructura #}
+      <div class="card-padded group">
+        <div class="w-12 h-12 rounded-base bg-primary/10 text-primary flex items-center justify-center mb-5">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+          </svg>
+        </div>
+        <h2 class="font-display text-xl mb-2">Infraestructura de Red</h2>
+        <p class="text-sm text-text-secondary mb-5">
+          Diseño, instalación y certificación de cableado estructurado Cat6/6A,
+          puntos de red y eléctricos bajo estándares TIA/EIA y NEC.
+        </p>
+        <ul class="space-y-2 text-sm text-text-muted mb-6">
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+            Cableado estructurado Cat6A
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+            Puntos de red y eléctricos
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+            Certificación con equipos Fluke
+          </li>
+        </ul>
+        <a href="{% url 'catalog:structured_cabling' %}" class="link-underline text-sm font-medium">
+          Ver servicios de red →
+        </a>
+      </div>
+
+      {# Pilar 3 — Software #}
+      <div class="card-padded group">
+        <div class="w-12 h-12 rounded-base bg-primary/10 text-primary flex items-center justify-center mb-5">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
+          </svg>
+        </div>
+        <h2 class="font-display text-xl mb-2">Software a la Medida</h2>
+        <p class="text-sm text-text-secondary mb-5">
+          Aplicaciones web corporativas, ERPs, CRMs, apps móviles y bases
+          de datos empresariales desarrolladas con metodologías ágiles.
+        </p>
+        <ul class="space-y-2 text-sm text-text-muted mb-6">
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+            Desarrollo de software a la medida
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+            Aplicaciones web y móviles
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+            Bases de datos empresariales
+          </li>
+        </ul>
+        <a href="{% url 'services:software_development' %}" class="link-underline text-sm font-medium">
+          Ver servicios de software →
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# ── SOLUCIÓN ESTRELLA: OFICINA LLAVE EN MANO ── #}
+<section class="section bg-bg-alt">
+  <div class="container-custom max-w-5xl">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <div class="silo-label hardware mb-4">Solución Integral</div>
+        <h2 class="font-display text-display-md mb-4 text-balance">
+          Oficina lista para operar desde el día 1
+        </h2>
+        <p class="text-text-secondary mb-6 text-pretty">
+          Montamos tu oficina completa: red estructurada, puntos eléctricos regulados,
+          fotocopiadoras instaladas y software de gestión configurado. Un solo contrato,
+          un solo interlocutor, garantía integral.
+        </p>
+        <ul class="space-y-3 text-sm mb-8">
+          {% for item in "Diseño de red y plano eléctrico,Instalación Cat6A certificada,Fotocopiadoras Ricoh con tóner incluido,Software de gestión personalizado,Soporte técnico unificado post-instalación"|split:"," %}
+          <li class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-text-secondary">{{ item }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        <a href="{% url 'leads:wizard' %}" class="btn-primary">Cotizar oficina completa</a>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="card-padded text-center">
+          <div class="font-display text-4xl text-primary mb-2">+5</div>
+          <p class="text-sm text-text-secondary">años de experiencia B2B</p>
+        </div>
+        <div class="card-padded text-center">
+          <div class="font-display text-4xl text-primary mb-2">100%</div>
+          <p class="text-sm text-text-secondary">proyectos certificados</p>
+        </div>
+        <div class="card-padded text-center">
+          <div class="font-display text-4xl text-primary mb-2">4 h</div>
+          <p class="text-sm text-text-secondary">tiempo de respuesta técnica</p>
+        </div>
+        <div class="card-padded text-center">
+          <div class="font-display text-4xl text-primary mb-2">24 h</div>
+          <p class="text-sm text-text-secondary">propuesta comercial</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ── CASOS DE ÉXITO ── #}
+{% if case_studies %}
+<section class="section">
+  <div class="container-custom max-w-5xl">
+    <h2 class="font-display text-display-md mb-10 text-center">Casos de éxito</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {% for case in case_studies %}
+      <div class="card-padded">
+        {% if case.industry %}<div class="silo-label software mb-3">{{ case.industry }}</div>{% endif %}
+        <h3 class="font-display text-lg mb-2">{{ case.title }}</h3>
+        <p class="text-sm text-text-secondary">{{ case.summary|truncatewords:25 }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% include "components/_cta_section.html" %}
+{% endblock %}

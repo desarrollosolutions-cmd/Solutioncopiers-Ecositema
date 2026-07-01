@@ -1,0 +1,214 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Contabilidad{% endblock %}
+{% block nav_contabilidad %}active{% endblock %}
+{% block breadcrumb %}<span class="da-breadcrumb-sep">/</span><span class="da-breadcrumb-current">Contabilidad</span>{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Contabilidad</h1>
+    <div style="font-size:.8rem;color:var(--color-text-muted);margin-top:.2rem;">{{ periodo_label }} · Colombia (NIIF Pymes)</div>
+  </div>
+  <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+    <a href="{% url 'dashboard:libro_ventas' %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}" class="da-btn da-btn-secondary" style="font-size:.78rem;">Libro ventas</a>
+    <a href="{% url 'dashboard:iva_report' %}?year={{ year }}" class="da-btn da-btn-secondary" style="font-size:.78rem;">Declaración IVA</a>
+    <a href="{% url 'dashboard:retenciones' %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}" class="da-btn da-btn-secondary" style="font-size:.78rem;">Retenciones</a>
+  </div>
+</div>
+
+{# ── Filtro de período ── #}
+<form method="get" style="display:flex;flex-wrap:wrap;gap:.625rem;align-items:center;margin-bottom:1.5rem;">
+  <select name="year" class="da-input" style="width:auto;padding:.45rem .875rem;">
+    {% for y in años %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}
+  </select>
+  <select name="bimestre" class="da-input" style="width:auto;padding:.45rem .875rem;">
+    <option value="0" {% if bimestre == 0 %}selected{% endif %}>Año completo</option>
+    {% for num, lbl in bimestres %}<option value="{{ num }}" {% if bimestre == num %}selected{% endif %}>Bimestre {{ num }}: {{ lbl }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="da-btn da-btn-secondary">Ver período</button>
+</form>
+
+{# ── KPIs principales ── #}
+<div class="da-stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.5rem;">
+  <div class="da-stat">
+    <div class="da-stat-bar" style="background:var(--color-primary);"></div>
+    <div class="da-stat-label">Ingresos brutos</div>
+    <div class="da-stat-value">${{ agg.total_facturado|default:0|floatformat:0 }}</div>
+    <div class="da-stat-sub">{{ agg.n_facturas|default:0 }} factura{{ agg.n_facturas|default:0|pluralize:"s" }}</div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-bar" style="background:#F59E0B;"></div>
+    <div class="da-stat-label">IVA recaudado</div>
+    <div class="da-stat-value" style="color:#F59E0B">${{ agg.iva_generado|default:0|floatformat:0 }}</div>
+    <div class="da-stat-sub">A declarar: ${{ iva_declarar|floatformat:0 }}</div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-bar" style="background:var(--color-danger);"></div>
+    <div class="da-stat-label">Retenciones sufridas</div>
+    <div class="da-stat-value" style="color:var(--color-danger)">-${{ total_rte|floatformat:0 }}</div>
+    <div class="da-stat-sub">RteFte + RteICA + RteIVA</div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-bar" style="background:var(--color-success);"></div>
+    <div class="da-stat-label">Neto recibido</div>
+    <div class="da-stat-value" style="color:var(--color-success)">${{ agg.neto_recibido|default:0|floatformat:0 }}</div>
+    <div class="da-stat-sub">Después de retenciones</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;">
+
+  {# ── Resumen Estado de Resultados ── #}
+  <div class="da-card">
+    <div class="da-card-header">Estado de Resultados (período)</div>
+    <div class="da-card-body">
+      <table style="width:100%;font-size:.875rem;border-collapse:collapse;">
+        <tbody>
+          <tr style="border-bottom:1px solid var(--color-border);">
+            <td style="padding:.5rem 0;color:var(--color-text-muted);">Ingresos operacionales (ventas)</td>
+            <td style="text-align:right;color:var(--color-text-primary);font-weight:600;">${{ agg.subtotal|default:0|floatformat:0 }}</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--color-border);">
+            <td style="padding:.5rem 0;color:var(--color-text-muted);padding-left:1rem;">IVA generado (19%)</td>
+            <td style="text-align:right;color:#F59E0B;">${{ agg.iva_generado|default:0|floatformat:0 }}</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--color-border);">
+            <td style="padding:.5rem 0;color:var(--color-text-muted);">Total facturado</td>
+            <td style="text-align:right;color:var(--color-primary);font-weight:700;">${{ agg.total_facturado|default:0|floatformat:0 }}</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--color-border);">
+            <td style="padding:.5rem 0;color:var(--color-text-muted);">(-) RteFuente sufrida</td>
+            <td style="text-align:right;color:var(--color-danger);">-${{ agg.rte_fuente|default:0|floatformat:0 }}</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--color-border);">
+            <td style="padding:.5rem 0;color:var(--color-text-muted);">(-) ReteICA sufrida</td>
+            <td style="text-align:right;color:var(--color-danger);">-${{ agg.rte_ica|default:0|floatformat:0 }}</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--color-border);">
+            <td style="padding:.5rem 0;color:var(--color-text-muted);">(-) ReteIVA sufrida</td>
+            <td style="text-align:right;color:var(--color-danger);">-${{ agg.rte_iva|default:0|floatformat:0 }}</td>
+          </tr>
+          <tr>
+            <td style="padding:.75rem 0 0;color:var(--color-text-primary);font-weight:700;font-size:.95rem;">= Neto a recibir</td>
+            <td style="text-align:right;color:var(--color-success);font-weight:700;font-size:.95rem;padding-top:.75rem;">${{ agg.neto_recibido|default:0|floatformat:0 }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# ── Ventas online (pedidos carrito) ── #}
+  <div class="da-card">
+    <div class="da-card-header">
+      <span>Ventas online — Carrito web</span>
+      <a href="{% url 'dashboard:order_list' %}" class="da-btn da-btn-secondary" style="font-size:.72rem;padding:.25rem .65rem;">Ver todos</a>
+    </div>
+    <div class="da-card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;">
+        <div style="background:var(--color-bg-alt);border-radius:.75rem;padding:.875rem;text-align:center;">
+          <div style="font-size:.7rem;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:.25rem;">Pedidos pagados</div>
+          <div style="font-size:1.5rem;font-weight:800;color:var(--color-text-primary);">{{ orders_agg.n_pedidos|default:0 }}</div>
+        </div>
+        <div style="background:var(--color-bg-alt);border-radius:.75rem;padding:.875rem;text-align:center;">
+          <div style="font-size:.7rem;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:.25rem;">Ventas online</div>
+          <div style="font-size:1.3rem;font-weight:800;color:var(--color-primary);">${{ orders_agg.ventas_online|default:0|floatformat:0 }}</div>
+        </div>
+      </div>
+      <div style="font-size:.8rem;color:var(--color-text-muted);margin-bottom:.5rem;">Últimas compras del carrito:</div>
+      {% for pedido in pedidos_recientes|slice:":5" %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--color-border);font-size:.82rem;">
+        <div>
+          <a href="{% url 'dashboard:order_detail' reference=pedido.reference %}" style="color:var(--color-primary);font-family:var(--font-mono);font-size:.75rem;">{{ pedido.reference }}</a>
+          <span style="color:var(--color-text-muted);margin-left:.5rem;">{{ pedido.buyer_name|truncatechars:20 }}</span>
+        </div>
+        <span style="font-weight:600;color:var(--color-text-primary);">${{ pedido.total|floatformat:0 }}</span>
+      </div>
+      {% empty %}
+      <div style="text-align:center;padding:1rem;color:var(--color-text-muted);font-size:.82rem;">Sin pedidos en el período</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+{# ── Gráfico ingresos por mes ── #}
+{% if ingresos_mes %}
+<div class="da-card" style="margin-bottom:1.25rem;">
+  <div class="da-card-header">Ingresos mensuales {{ year }}</div>
+  <div class="da-card-body">
+    {% with max_val=ingresos_mes.0.total %}
+    <div style="display:flex;align-items:flex-end;gap:.5rem;height:140px;padding-bottom:.5rem;">
+      {% for item in ingresos_mes %}
+      {% with pct=item.total|floatformat:0 %}
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;min-width:0;">
+        <div style="font-size:.65rem;color:var(--color-text-muted);writing-mode:horizontal-tb;">${{ item.total|floatformat:0 }}</div>
+        <div style="width:100%;background:var(--color-primary);border-radius:.375rem .375rem 0 0;min-height:4px;max-height:100px;height:calc({{ item.total|floatformat:0 }}px / 10000 * 100px);" title="${{ item.total|floatformat:0 }}"></div>
+        <div style="font-size:.65rem;color:var(--color-text-muted);">{{ item.mes|date:"M" }}</div>
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div>
+    {% endwith %}
+    <div style="display:flex;gap:1rem;margin-top:.75rem;font-size:.78rem;flex-wrap:wrap;">
+      {% for item in ingresos_mes %}
+      <span style="color:var(--color-text-muted);">{{ item.mes|date:"M" }}: <strong style="color:var(--color-text-secondary);">${{ item.total|floatformat:0 }}</strong> | IVA: ${{ item.iva|floatformat:0 }}</span>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ── Accesos rápidos contabilidad ── #}
+<div class="da-card">
+  <div class="da-card-header">Reportes y obligaciones tributarias</div>
+  <div class="da-card-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem;">
+
+      <a href="{% url 'dashboard:libro_ventas' %}?year={{ year }}" style="text-decoration:none;">
+        <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.875rem;padding:1rem;transition:border-color .18s;" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--color-border)'">
+          <div style="font-size:1.3rem;margin-bottom:.5rem;">📒</div>
+          <div style="font-weight:700;font-size:.875rem;color:var(--color-text-primary);margin-bottom:.25rem;">Libro Auxiliar de Ventas</div>
+          <div style="font-size:.75rem;color:var(--color-text-muted);">Registro de todas las facturas emitidas. Requerido por DIAN. Exportable CSV.</div>
+        </div>
+      </a>
+
+      <a href="{% url 'dashboard:iva_report' %}?year={{ year }}" style="text-decoration:none;">
+        <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.875rem;padding:1rem;transition:border-color .18s;" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--color-border)'">
+          <div style="font-size:1.3rem;margin-bottom:.5rem;">🧾</div>
+          <div style="font-weight:700;font-size:.875rem;color:var(--color-text-primary);margin-bottom:.25rem;">Declaración de IVA Bimestral</div>
+          <div style="font-size:.75rem;color:var(--color-text-muted);">IVA generado por bimestre. Formulario 300 DIAN. Responsables de IVA.</div>
+        </div>
+      </a>
+
+      <a href="{% url 'dashboard:retenciones' %}?year={{ year }}" style="text-decoration:none;">
+        <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.875rem;padding:1rem;transition:border-color .18s;" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--color-border)'">
+          <div style="font-size:1.3rem;margin-bottom:.5rem;">✂️</div>
+          <div style="font-weight:700;font-size:.875rem;color:var(--color-text-primary);margin-bottom:.25rem;">Retenciones Sufridas</div>
+          <div style="font-size:.75rem;color:var(--color-text-muted);">RteFuente, RteICA y RteIVA aplicadas por clientes. Exportable CSV.</div>
+        </div>
+      </a>
+
+      <a href="{% url 'dashboard:invoice_create' %}" style="text-decoration:none;">
+        <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.875rem;padding:1rem;transition:border-color .18s;" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--color-border)'">
+          <div style="font-size:1.3rem;margin-bottom:.5rem;">➕</div>
+          <div style="font-weight:700;font-size:.875rem;color:var(--color-text-primary);margin-bottom:.25rem;">Nueva Factura Manual</div>
+          <div style="font-size:.75rem;color:var(--color-text-muted);">Emitir factura de venta, nota crédito o nota débito manualmente.</div>
+        </div>
+      </a>
+
+    </div>
+
+    <div style="margin-top:1.25rem;padding:1rem;background:color-mix(in srgb,var(--color-primary) 6%,transparent);border-radius:.75rem;border:1px solid color-mix(in srgb,var(--color-primary) 15%,transparent);">
+      <div style="font-size:.8rem;font-weight:700;color:var(--color-primary);margin-bottom:.5rem;">Recordatorios tributarios Colombia</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.375rem;font-size:.78rem;color:var(--color-text-muted);">
+        <div>📅 <strong style="color:var(--color-text-secondary);">IVA bimestral:</strong> Ene-Feb, Mar-Abr, May-Jun, Jul-Ago, Sep-Oct, Nov-Dic</div>
+        <div>📅 <strong style="color:var(--color-text-secondary);">RteICA:</strong> Medellín comercio ≈ 9.66‰ sobre base sin IVA</div>
+        <div>📅 <strong style="color:var(--color-text-secondary);">RteFuente productos:</strong> 2.5% declarantes / 3.5% no declarantes</div>
+        <div>📅 <strong style="color:var(--color-text-secondary);">ReteIVA:</strong> 15% del IVA (solo grandes contribuyentes)</div>
+        <div>📅 <strong style="color:var(--color-text-secondary);">Renta anual:</strong> Formulario 110 (personas jurídicas)</div>
+        <div>📅 <strong style="color:var(--color-text-secondary);">Medios magnéticos:</strong> Información exógena anual (DIAN)</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

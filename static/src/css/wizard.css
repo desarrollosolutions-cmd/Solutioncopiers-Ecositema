@@ -1,0 +1,412 @@
+/* ===========================================================================
+   WIZARD — Cotizador
+   =========================================================================== */
+
+/* Fondo decorativo */
+.wizard-bg-decoration {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.wizard-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.08;
+}
+
+.wizard-bg-orb--1 {
+  width: 600px;
+  height: 600px;
+  top: -200px;
+  right: -100px;
+  background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
+}
+
+.wizard-bg-orb--2 {
+  width: 400px;
+  height: 400px;
+  bottom: -100px;
+  left: -80px;
+  background: radial-gradient(circle, var(--color-accent) 0%, transparent 70%);
+}
+
+.wizard-shell {
+  @apply relative z-10 flex flex-col lg:flex-row gap-8 lg:gap-12;
+  min-height: calc(100vh - 12rem);
+}
+
+.wizard-main {
+  @apply flex-1 max-w-3xl;
+}
+
+/* Card principal del wizard */
+.wizard-card {
+  @apply rounded-2xl p-8 md:p-10;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.04),
+    0 8px 32px rgba(0,0,0,0.08),
+    0 0 0 1px rgba(255,255,255,0.6) inset;
+}
+
+[data-theme="dark"] .wizard-card {
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.3),
+    0 8px 32px rgba(0,0,0,0.4);
+}
+
+.wizard-sidebar {
+  @apply lg:w-96 lg:sticky lg:top-28 lg:self-start;
+}
+
+/* ------------------------------------------------------------------ */
+/* STEPPER — Barra de progreso                                         */
+/* ------------------------------------------------------------------ */
+.stepper {
+  @apply relative flex items-center justify-between mb-10;
+}
+
+.stepper-track {
+  @apply absolute top-5 left-0 right-0 h-0.5 z-0;
+  background: var(--color-border);
+}
+
+.stepper-track-fill {
+  @apply absolute top-5 left-0 h-0.5 z-10;
+  background: linear-gradient(90deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 70%, var(--color-accent)) 100%);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
+.stepper-node {
+  @apply relative z-20 flex flex-col items-center gap-2 cursor-pointer select-none;
+}
+
+.stepper-circle {
+  @apply w-10 h-10 rounded-full flex items-center justify-center
+         font-display font-semibold text-sm
+         transition-all duration-300;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.stepper-node.is-active .stepper-circle {
+  @apply text-white scale-110;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-color: var(--color-primary);
+  box-shadow:
+    0 4px 14px color-mix(in srgb, var(--color-primary) 40%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.stepper-node.is-completed .stepper-circle {
+  @apply text-white;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.stepper-label {
+  @apply text-xs font-medium text-text-muted whitespace-nowrap
+         transition-colors duration-300;
+}
+
+.stepper-node.is-active .stepper-label {
+  @apply text-primary font-semibold;
+}
+
+.stepper-node.is-completed .stepper-label {
+  color: var(--color-text-secondary);
+}
+
+.stepper-percentage {
+  @apply flex items-center justify-between text-sm mb-5;
+}
+
+.stepper-percentage-text {
+  @apply font-display text-text-primary font-semibold;
+}
+
+.stepper-percentage-sub {
+  @apply text-text-muted;
+}
+
+/* ------------------------------------------------------------------ */
+/* INTEREST CARDS                                                      */
+/* ------------------------------------------------------------------ */
+.interest-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-3;
+}
+
+.interest-card {
+  @apply relative flex items-center gap-4 p-4 rounded-xl cursor-pointer;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.interest-card:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  background: color-mix(in srgb, var(--color-primary) 2%, var(--color-surface));
+}
+
+.interest-card.is-selected {
+  border-color: var(--color-primary);
+  border-width: 2px;
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.06),
+    0 0 0 4px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.interest-card-radio {
+  @apply absolute top-3.5 right-3.5 w-4 h-4 rounded-full border-2
+         border-border bg-bg-surface transition-all duration-200;
+}
+
+.interest-card.is-selected .interest-card-radio {
+  @apply border-primary;
+  background: var(--color-primary);
+  box-shadow: inset 0 0 0 2px white;
+}
+
+.interest-card-icon {
+  @apply w-11 h-11 rounded-xl text-primary
+         flex items-center justify-center shrink-0
+         transition-all duration-200;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+.interest-card.is-selected .interest-card-icon {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+
+/* Badge de silo (Hardware / Software / Integral) */
+.interest-card-silo {
+  @apply absolute bottom-2 right-9 text-xs font-medium px-1.5 py-0.5 rounded-full opacity-0
+         transition-opacity duration-200;
+}
+
+.interest-card:hover .interest-card-silo,
+.interest-card.is-selected .interest-card-silo {
+  @apply opacity-100;
+}
+
+.interest-card-silo.silo-hw {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.interest-card-silo.silo-sw {
+  color: #3B82F6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.interest-card-silo.silo-hyb {
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+/* ------------------------------------------------------------------ */
+/* FORM ELEMENTS                                                       */
+/* ------------------------------------------------------------------ */
+.wizard-input {
+  @apply form-input;
+}
+
+.wizard-input.has-error {
+  @apply border-danger ring-2;
+  --tw-ring-color: color-mix(in srgb, var(--color-danger) 20%, transparent);
+}
+
+.wizard-counter {
+  @apply inline-flex items-center gap-0 rounded-xl border border-border overflow-hidden;
+  background: var(--color-surface);
+}
+
+.wizard-counter-btn {
+  @apply w-10 h-10 flex items-center justify-center text-lg font-medium
+         text-text-primary hover:bg-bg-alt active:bg-border
+         transition-colors duration-100
+         disabled:opacity-40 disabled:cursor-not-allowed;
+}
+
+.wizard-counter-value {
+  @apply min-w-[3.5rem] text-center font-display text-xl border-x border-border
+         h-10 flex items-center justify-center;
+}
+
+.wizard-radio-group {
+  @apply grid grid-cols-2 md:grid-cols-4 gap-3;
+}
+
+.wizard-radio-option {
+  @apply relative flex flex-col items-center text-center gap-2 p-4 rounded-xl cursor-pointer;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.wizard-radio-option:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+}
+
+.wizard-radio-option.is-selected {
+  border-color: var(--color-primary);
+  border-width: 2px;
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+/* Slider de rango mejorado */
+.wizard-range-wrap {
+  @apply relative;
+}
+
+.wizard-range-labels {
+  @apply flex justify-between text-xs text-text-muted mt-1.5 font-mono;
+}
+
+.wizard-range-value {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold font-display mb-3;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+/* ------------------------------------------------------------------ */
+/* LIVE ESTIMATE CARD — Sidebar                                        */
+/* ------------------------------------------------------------------ */
+.estimate-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.05),
+    0 8px 32px rgba(0,0,0,0.06);
+}
+
+.estimate-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 60%, var(--color-accent)) 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.estimate-card-header {
+  @apply flex items-center gap-2 text-xs font-mono uppercase tracking-wider
+         text-text-muted mb-4;
+}
+
+.estimate-card-header::before {
+  content: "";
+  @apply w-2 h-2 rounded-full bg-success shrink-0;
+  animation: status-pulse 2.5s ease-in-out infinite;
+}
+
+.estimate-card-value {
+  @apply font-display text-display-md text-text-primary transition-all duration-500;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.estimate-card-range {
+  @apply text-sm text-text-secondary mt-2;
+}
+
+.estimate-card-loading {
+  @apply absolute top-4 right-4 w-5 h-5 rounded-full border-2 border-primary
+         border-t-transparent animate-spin opacity-0 transition-opacity;
+}
+
+.estimate-card-loading.is-visible {
+  @apply opacity-100;
+}
+
+.estimate-breakdown {
+  @apply mt-5 pt-5 border-t border-border space-y-2.5 text-sm;
+}
+
+.estimate-breakdown-row {
+  @apply flex justify-between;
+  color: var(--color-text-secondary);
+}
+
+.estimate-breakdown-row strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* Trust bullets */
+.wizard-trust-item {
+  @apply flex items-center gap-3 text-sm text-text-secondary;
+}
+
+.wizard-trust-icon {
+  @apply w-7 h-7 rounded-full text-success flex items-center justify-center shrink-0;
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+}
+
+@keyframes status-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-success) 45%, transparent); }
+  60%       { box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-success) 0%, transparent); }
+}
+
+/* ------------------------------------------------------------------ */
+/* WIZARD NAV                                                          */
+/* ------------------------------------------------------------------ */
+.wizard-nav {
+  @apply flex flex-wrap items-center justify-between gap-4 mt-10 pt-7
+         border-t border-border;
+}
+
+.wizard-nav-primary {
+  @apply btn-primary px-8 gap-2;
+}
+
+.wizard-nav-back {
+  @apply btn-ghost gap-2;
+}
+
+/* ------------------------------------------------------------------ */
+/* ERROR / SUCCESS STATES                                              */
+/* ------------------------------------------------------------------ */
+.wizard-error-banner {
+  @apply p-4 rounded-xl border text-danger text-sm flex items-start gap-3;
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-danger) 25%, transparent);
+}
+
+.wizard-success {
+  @apply text-center py-12;
+}
+
+.wizard-success-icon {
+  @apply w-20 h-20 rounded-full text-success
+         flex items-center justify-center mx-auto mb-6;
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  border: 2px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-success) 6%, transparent);
+}

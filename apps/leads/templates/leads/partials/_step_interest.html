@@ -1,0 +1,33 @@
+<div>
+    <h2 class="font-display text-display-md mb-2">¿Qué necesitas?</h2>
+    <p class="text-text-secondary mb-8">Selecciona el área donde podemos ayudarte.</p>
+
+    <div class="interest-grid">
+        <template x-for="area in interestAreas" :key="area.id">
+            <div class="interest-card"
+                 :class="{ 'is-selected': interestArea === area.id }"
+                 @click="interestArea = area.id; errors.interestArea = null">
+
+                <div class="interest-card-radio"></div>
+
+                <div class="interest-card-icon" x-html="area.iconSvg"></div>
+
+                <div class="flex-1 min-w-0">
+                    <div class="font-semibold text-sm mb-0.5 leading-snug" x-text="area.label"></div>
+                    <div class="text-xs text-text-muted leading-relaxed" x-text="area.description"></div>
+                </div>
+
+                <div class="interest-card-silo"
+                     :class="{
+                       'silo-hw':  area.silo === 'hardware',
+                       'silo-sw':  area.silo === 'software',
+                       'silo-hyb': area.silo === 'hybrid'
+                     }"
+                     x-text="area.silo === 'hardware' ? 'Hardware' : area.silo === 'software' ? 'Software' : 'Integral'">
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <div x-show="errors.interestArea" class="form-error mt-4" x-text="errors.interestArea" x-cloak></div>
+</div>

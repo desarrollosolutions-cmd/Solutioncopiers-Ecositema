@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="section">
+    <div class="container-custom">
+        <div class="mb-10 max-w-3xl">
+            <div class="silo-label hardware mb-4">Infraestructura de Red</div>
+            <h1 class="font-display text-display-xl mb-4 text-balance">Instalación de Cableado Estructurado en Medellín</h1>
+            <p class="text-lg text-text-secondary text-pretty mb-4">
+                La <strong>instalación de cableado estructurado en Medellín</strong> requiere un socio tecnológico
+                certificado que garantice rendimiento, cumplimiento normativo y escalabilidad. Diseñamos, instalamos
+                y certificamos infraestructuras de red de datos para oficinas, bodegas, colegios y edificios
+                empresariales en toda Antioquia bajo estándares TIA/EIA 568.
+            </p>
+            <p class="text-base text-text-muted text-pretty">
+                Nuestros proyectos incluyen <strong>puntos de red y eléctricos en Medellín</strong> bajo normativa NEC,
+                cableado Cat 6, Cat 6A y fibra óptica, configuración de racks y patch panels.
+                Realizamos la <strong>certificación de redes de datos</strong> con equipos Fluke certificados,
+                entregando informe técnico AS-BUILT que garantiza rendimiento a 10 Gbps. Solicita visita técnica
+                sin costo y recibe propuesta integral en menos de 48 horas.
+            </p>
+        </div>
+
+        <div class="w-full aspect-video rounded-2xl overflow-hidden mb-12">
+            <img src="{% static 'images/img-hero-cableado.jpg' %}"
+                 alt="Cableado estructurado Cat6A instalación patch panel"
+                 class="w-full h-full object-cover object-center" loading="lazy">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for service in cabling_services %}
+            <a href="{{ service.get_absolute_url }}" class="card-padded hover:border-primary transition">
+                <h3 class="font-display text-xl mb-3">{{ service.name }}</h3>
+                <p class="text-sm text-text-secondary mb-4">{{ service.short_description }}</p>
+                {% if service.base_price %}
+                <div class="font-display text-lg text-primary">Desde ${{ service.base_price|floatformat:0 }} <span class="text-sm text-text-muted">COP/punto</span></div>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% include "components/_cta_section.html" with primary_url="/cotizador/?servicio=cabling" primary_text="Cotizar cableado ahora" %}
+{% endblock %}

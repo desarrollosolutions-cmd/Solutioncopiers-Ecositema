@@ -1,0 +1,38 @@
+<div class="stepper-percentage">
+    <span class="stepper-percentage-text" x-text="['Elige tu servicio', 'Cuéntanos los detalles', 'Tus datos de contacto'][currentStep - 1]"></span>
+    <span class="stepper-percentage-sub" x-text="`Paso ${currentStep} / ${totalSteps}`"></span>
+</div>
+
+<div class="stepper" role="progressbar" :aria-valuenow="progressPercentage" aria-valuemin="0" aria-valuemax="100">
+    <div class="stepper-track"></div>
+    <div class="stepper-track-fill" :style="`width: ${progressPercentage}%`"></div>
+
+    <div class="stepper-node" :class="{ 'is-active': currentStep === 1, 'is-completed': currentStep > 1 }" @click="goToStep(1)">
+        <div class="stepper-circle">
+            <template x-if="currentStep > 1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+            </template>
+            <template x-if="currentStep <= 1"><span>1</span></template>
+        </div>
+        <span class="stepper-label">Interés</span>
+    </div>
+
+    <div class="stepper-node" :class="{ 'is-active': currentStep === 2, 'is-completed': currentStep > 2 }" @click="goToStep(2)">
+        <div class="stepper-circle">
+            <template x-if="currentStep > 2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+            </template>
+            <template x-if="currentStep <= 2"><span>2</span></template>
+        </div>
+        <span class="stepper-label">Detalles</span>
+    </div>
+
+    <div class="stepper-node" :class="{ 'is-active': currentStep === 3 }">
+        <div class="stepper-circle"><span>3</span></div>
+        <span class="stepper-label">Contacto</span>
+    </div>
+</div>

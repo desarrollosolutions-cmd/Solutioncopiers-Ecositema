@@ -1,0 +1,51 @@
+{% extends "leads/emails/base_email.html" %}
+{% block subject %}⭐ ¿Cómo fue tu experiencia? — Ticket {{ ticket.ticket_number }}{% endblock %}
+{% block header_subtitle %}Encuesta de satisfacción — Servicio técnico{% endblock %}
+
+{% block body %}
+<span class="badge badge-success">Servicio completado</span>
+<h2 class="title" style="margin-top:12px;">¡Tu servicio fue completado!</h2>
+<p class="subtitle" style="margin-bottom:20px;">Hola <strong>{{ ticket.lead.full_name }}</strong>, nos alegra informarte que tu solicitud de servicio fue atendida. ¿Nos puedes contar cómo fue tu experiencia?</p>
+
+<div style="background:#f8fafc;border-radius:8px;padding:14px 16px;border:1px solid #e8edf2;margin-bottom:20px;">
+  <div style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;margin-bottom:8px;">Detalle del servicio</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+    <div><span style="color:#9ca3af;">Ticket:</span> <strong style="font-family:monospace;">{{ ticket.ticket_number }}</strong></div>
+    <div><span style="color:#9ca3af;">Tipo:</span> {{ ticket.get_issue_type_display }}</div>
+    {% if ticket.resolved_at %}<div style="grid-column:1/-1;"><span style="color:#9ca3af;">Resuelto el:</span> {{ ticket.resolved_at|date:"d/m/Y" }}</div>{% endif %}
+    {% if ticket.assigned_to %}<div style="grid-column:1/-1;"><span style="color:#9ca3af;">Técnico:</span> {{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.username }}</div>{% endif %}
+  </div>
+</div>
+
+<p style="font-size:15px;font-weight:600;color:#1a2332;margin-bottom:16px;text-align:center;">¿Qué tan satisfecho quedaste con el servicio?</p>
+
+<div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:24px;">
+  <a href="{{ survey_url }}?rating=5&ticket={{ ticket.pk }}" style="text-decoration:none;">
+    <div style="width:56px;height:56px;border-radius:12px;background:#F0FDF4;border:2px solid #BBF7D0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;cursor:pointer;">
+      😊<span style="font-size:10px;font-weight:700;color:#16A34A;margin-top:1px;">5</span>
+    </div>
+  </a>
+  <a href="{{ survey_url }}?rating=4&ticket={{ ticket.pk }}" style="text-decoration:none;">
+    <div style="width:56px;height:56px;border-radius:12px;background:#EFF6FF;border:2px solid #BFDBFE;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;cursor:pointer;">
+      🙂<span style="font-size:10px;font-weight:700;color:#1D4ED8;margin-top:1px;">4</span>
+    </div>
+  </a>
+  <a href="{{ survey_url }}?rating=3&ticket={{ ticket.pk }}" style="text-decoration:none;">
+    <div style="width:56px;height:56px;border-radius:12px;background:#FFFBEB;border:2px solid #FDE68A;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;cursor:pointer;">
+      😐<span style="font-size:10px;font-weight:700;color:#B45309;margin-top:1px;">3</span>
+    </div>
+  </a>
+  <a href="{{ survey_url }}?rating=2&ticket={{ ticket.pk }}" style="text-decoration:none;">
+    <div style="width:56px;height:56px;border-radius:12px;background:#FFF7ED;border:2px solid #FDBA74;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;cursor:pointer;">
+      😕<span style="font-size:10px;font-weight:700;color:#C2410C;margin-top:1px;">2</span>
+    </div>
+  </a>
+  <a href="{{ survey_url }}?rating=1&ticket={{ ticket.pk }}" style="text-decoration:none;">
+    <div style="width:56px;height:56px;border-radius:12px;background:#FEF2F2;border:2px solid #FECACA;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;cursor:pointer;">
+      😞<span style="font-size:10px;font-weight:700;color:#DC2626;margin-top:1px;">1</span>
+    </div>
+  </a>
+</div>
+
+<p style="text-align:center;font-size:13px;color:#6b7a8d;">Tu opinión nos ayuda a mejorar. Solo toma 10 segundos. 🙏</p>
+{% endblock %}

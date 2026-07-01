@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- ─── HERO ─────────────────────────────────────────── -->
+<section class="section" style="padding-bottom:0;">
+  <div class="container-custom max-w-5xl">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+      <div>
+        <div class="silo-label hardware mb-5">Distribuidor Autorizado Ricoh · Medellín</div>
+        <h1 class="font-display text-display-xl mb-6 text-balance" style="line-height:1.08;">
+          Quiénes<br>
+          <em class="gradient-text not-italic">somos</em>
+        </h1>
+        <p class="text-lg text-text-secondary mb-8 text-pretty leading-relaxed" style="max-width:34ch;">
+          Integrador tecnológico B2B con sede en Medellín.
+          Más de <strong class="text-text-primary">15 años</strong> entregando
+          soluciones de impresión, redes y software a empresas de toda Colombia.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="#mision" class="btn-primary">Nuestra misión</a>
+          <a href="#equipo" class="btn-secondary">Conocer el equipo</a>
+        </div>
+      </div>
+
+      <div style="position:relative;">
+        <div class="w-full rounded-2xl overflow-hidden" style="aspect-ratio:4/3;">
+          <img src="{% static 'images/img-about-team.jpg' %}"
+               alt="Equipo Solution Copiers Medellín"
+               class="w-full h-full object-cover object-center"
+               loading="eager">
+        </div>
+        <!-- Stat badge flotante -->
+        <div style="position:absolute;bottom:-1.25rem;left:-1rem;background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:.875rem 1.25rem;box-shadow:0 8px 32px rgba(0,0,0,.12);">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--color-primary);font-variant-numeric:tabular-nums;line-height:1;">+500</div>
+          <div style="font-size:.7rem;font-weight:600;color:var(--color-text-muted);margin-top:.2rem;text-transform:uppercase;letter-spacing:.06em;">Empresas atendidas</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── MÉTRICAS ──────────────────────────────────────── -->
+<section style="padding:4rem 0;background:var(--color-primary);margin-top:3.5rem;">
+  <div class="container-custom max-w-5xl">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-0">
+      <div style="text-align:center;padding:0 1.5rem;border-right:1px solid rgba(255,255,255,.15);">
+        <div style="font-size:2.5rem;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums;">+15</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.08em;margin-top:.5rem;">Años de experiencia</div>
+      </div>
+      <div style="text-align:center;padding:0 1.5rem;border-right:1px solid rgba(255,255,255,.15);">
+        <div style="font-size:2.5rem;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums;">+500</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.08em;margin-top:.5rem;">Empresas atendidas</div>
+      </div>
+      <div style="text-align:center;padding:0 1.5rem;border-right:1px solid rgba(255,255,255,.15);">
+        <div style="font-size:2.5rem;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums;">12</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.08em;margin-top:.5rem;">Marcas certificadas</div>
+      </div>
+      <div style="text-align:center;padding:0 1.5rem;">
+        <div style="font-size:2.5rem;font-weight:800;color:#fff;line-height:1;">&lt;24h</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.08em;margin-top:.5rem;">Tiempo de respuesta</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── MISIÓN / VISIÓN ───────────────────────────────── -->
+<section class="section bg-bg-alt" id="mision">
+  <div class="container-custom max-w-5xl">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <div class="silo-label mb-3">Propósito</div>
+      <h2 class="font-display text-display-md">Lo que nos <em class="gradient-text not-italic">mueve</em></h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Misión -->
+      <div style="background:linear-gradient(135deg,rgba(14,165,233,.06) 0%,var(--color-surface) 60%);border:1px solid rgba(14,165,233,.25);border-radius:1.5rem;padding:2.25rem;">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+          <div style="width:3rem;height:3rem;border-radius:1rem;background:#0EA5E9;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(14,165,233,.35);">
+            <svg style="width:1.375rem;height:1.375rem;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#0EA5E9;">Misión</div>
+            <h3 class="font-display text-xl" style="line-height:1.15;margin-top:.1rem;">Nuestra razón de ser</h3>
+          </div>
+        </div>
+        <p class="text-text-secondary leading-relaxed">
+          Ser el aliado tecnológico de confianza para empresas colombianas, entregando soluciones
+          de impresión, conectividad y software que maximicen la productividad y reduzcan costos
+          operativos con atención personalizada, ágil y transparente.
+        </p>
+      </div>
+
+      <!-- Visión -->
+      <div style="background:linear-gradient(135deg,rgba(16,185,129,.06) 0%,var(--color-surface) 60%);border:1px solid rgba(16,185,129,.25);border-radius:1.5rem;padding:2.25rem;">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+          <div style="width:3rem;height:3rem;border-radius:1rem;background:#10B981;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(16,185,129,.35);">
+            <svg style="width:1.375rem;height:1.375rem;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#10B981;">Visión 2030</div>
+            <h3 class="font-display text-xl" style="line-height:1.15;margin-top:.1rem;">Hacia dónde vamos</h3>
+          </div>
+        </div>
+        <p class="text-text-secondary leading-relaxed">
+          Consolidarnos como la empresa tecnológica integral líder en Antioquia y de mayor
+          crecimiento en Colombia, reconocida por transformar digitalmente PYMES y grandes
+          organizaciones con soluciones de hardware, redes y software de clase mundial.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── VALORES ──────────────────────────────────────── -->
+<section class="section">
+  <div class="container-custom max-w-5xl">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <div class="silo-label mb-3">ADN corporativo</div>
+      <h2 class="font-display text-display-md">Nuestros <em class="gradient-text not-italic">valores</em></h2>
+      <p class="mt-3 text-text-secondary" style="max-width:40ch;margin-left:auto;margin-right:auto;">Los principios que guían cada decisión, cada visita técnica y cada línea de código.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;padding:1.75rem;position:relative;overflow:hidden;transition:box-shadow .2s;">
+        <div style="position:absolute;top:-.5rem;right:.75rem;font-size:4rem;font-weight:900;color:rgba(14,165,233,.07);line-height:1;user-select:none;">01</div>
+        <div style="width:2.75rem;height:2.75rem;border-radius:.875rem;background:rgba(14,165,233,.1);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+          <svg style="width:1.25rem;height:1.25rem;color:#0EA5E9;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-base mb-2">Calidad y garantía</h3>
+        <p class="text-sm text-text-secondary leading-relaxed">Cada equipo sale revisado y configurado; el servicio técnico llega en menos de 24 horas.</p>
+      </div>
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;padding:1.75rem;position:relative;overflow:hidden;transition:box-shadow .2s;">
+        <div style="position:absolute;top:-.5rem;right:.75rem;font-size:4rem;font-weight:900;color:rgba(124,58,237,.07);line-height:1;user-select:none;">02</div>
+        <div style="width:2.75rem;height:2.75rem;border-radius:.875rem;background:rgba(124,58,237,.1);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+          <svg style="width:1.25rem;height:1.25rem;color:#7C3AED;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-base mb-2">Responsabilidad</h3>
+        <p class="text-sm text-text-secondary leading-relaxed">Cumplimos los tiempos prometidos y resolvemos sin excusas ni demoras innecesarias.</p>
+      </div>
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;padding:1.75rem;position:relative;overflow:hidden;transition:box-shadow .2s;">
+        <div style="position:absolute;top:-.5rem;right:.75rem;font-size:4rem;font-weight:900;color:rgba(245,158,11,.07);line-height:1;user-select:none;">03</div>
+        <div style="width:2.75rem;height:2.75rem;border-radius:.875rem;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+          <svg style="width:1.25rem;height:1.25rem;color:#F59E0B;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-base mb-2">Transparencia total</h3>
+        <p class="text-sm text-text-secondary leading-relaxed">Sin costos ocultos, sin letras pequeñas, sin sorpresas al cierre del mes.</p>
+      </div>
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;padding:1.75rem;position:relative;overflow:hidden;transition:box-shadow .2s;">
+        <div style="position:absolute;top:-.5rem;right:.75rem;font-size:4rem;font-weight:900;color:rgba(16,185,129,.07);line-height:1;user-select:none;">04</div>
+        <div style="width:2.75rem;height:2.75rem;border-radius:.875rem;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+          <svg style="width:1.25rem;height:1.25rem;color:#10B981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12.75 3.03v.568c0 .334.148.65.405.864l1.068.89c.442.369.535 1.01.216 1.49l-.51.766a2.25 2.25 0 01-1.161.886l-.143.048a1.107 1.107 0 00-.57 1.664c.369.555.169 1.307-.427 1.605L9 13.125l.423 1.059a.956.956 0 01-1.652.928l-.679-.906a1.125 1.125 0 00-1.906.172L4.5 15.75l-.612.153M12.75 3.031a9 9 0 00-8.862 12.872M12.75 3.031a9 9 0 016.69 14.036m0 0l-.177-.529A2.25 2.25 0 0017.128 15H16.5l-.324-.324a1.453 1.453 0 00-2.328.377l-.036.073a1.586 1.586 0 01-.982.816l-.99.282c-.55.157-.894.702-.8 1.267l.073.438c.08.474.49.821.97.821.846 0 1.598.542 1.865 1.345l.215.643"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-base mb-2">Compromiso ambiental</h3>
+        <p class="text-sm text-text-secondary leading-relaxed">Manejo responsable de consumibles y equipos al final de su vida útil.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── EQUIPO ───────────────────────────────────────── -->
+<section class="section bg-bg-alt" id="equipo">
+  <div class="container-custom max-w-5xl">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <div class="silo-label mb-3">Las personas detrás</div>
+      <h2 class="font-display text-display-md">Nuestro <em class="gradient-text not-italic">equipo</em></h2>
+      <p class="mt-3 text-text-secondary" style="max-width:44ch;margin-left:auto;margin-right:auto;">Especialistas en tecnología, infraestructura y servicio que trabajan cada día para que tu empresa no pare.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;overflow:hidden;">
+        <div style="height:4px;background:#0EA5E9;"></div>
+        <div style="padding:1.5rem;display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:3rem;height:3rem;border-radius:.875rem;background:rgba(14,165,233,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.125rem;">
+            <svg style="width:1.375rem;height:1.375rem;color:#0EA5E9;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-display text-base mb-1">Gerencia Comercial</h3>
+            <p style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.625rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Dirección estratégica · B2B</p>
+            <p style="font-size:.78rem;color:var(--color-text-secondary);line-height:1.6;">Consultoría tecnológica con más de una década de experiencia en el sector empresarial colombiano.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;overflow:hidden;">
+        <div style="height:4px;background:#F59E0B;"></div>
+        <div style="padding:1.5rem;display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:3rem;height:3rem;border-radius:.875rem;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.125rem;">
+            <svg style="width:1.375rem;height:1.375rem;color:#F59E0B;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-display text-base mb-1">Técnicos Certificados</h3>
+            <p style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.625rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Soporte · Mantenimiento</p>
+            <p style="font-size:.78rem;color:var(--color-text-secondary);line-height:1.6;">Certificación en Ricoh, Canon, Kyocera y Xerox. Atención preventiva y correctiva en toda el área metropolitana.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;overflow:hidden;">
+        <div style="height:4px;background:#7C3AED;"></div>
+        <div style="padding:1.5rem;display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:3rem;height:3rem;border-radius:.875rem;background:rgba(124,58,237,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.125rem;">
+            <svg style="width:1.375rem;height:1.375rem;color:#7C3AED;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-display text-base mb-1">Desarrollo de Software</h3>
+            <p style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.625rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Ingeniería · Sistemas</p>
+            <p style="font-size:.78rem;color:var(--color-text-secondary);line-height:1.6;">Desarrolladores full-stack: ERPs, portales web, apps móviles y bases de datos corporativas.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;overflow:hidden;">
+        <div style="height:4px;background:#06B6D4;"></div>
+        <div style="padding:1.5rem;display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:3rem;height:3rem;border-radius:.875rem;background:rgba(6,182,212,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.125rem;">
+            <svg style="width:1.375rem;height:1.375rem;color:#06B6D4;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-display text-base mb-1">Infraestructura de Redes</h3>
+            <p style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.625rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Cableado · Conectividad</p>
+            <p style="font-size:.78rem;color:var(--color-text-secondary);line-height:1.6;">Ingenieros en Cat6A, fibra óptica y cableado eléctrico para entornos corporativos e industriales.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;overflow:hidden;">
+        <div style="height:4px;background:#10B981;"></div>
+        <div style="padding:1.5rem;display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:3rem;height:3rem;border-radius:.875rem;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.125rem;">
+            <svg style="width:1.375rem;height:1.375rem;color:#10B981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-display text-base mb-1">Atención al Cliente</h3>
+            <p style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.625rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Soporte · Posventa</p>
+            <p style="font-size:.78rem;color:var(--color-text-secondary);line-height:1.6;">Acompañamos cada cliente en toda la vigencia del contrato: seguimiento, renovaciones y resolución ágil.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;overflow:hidden;">
+        <div style="height:4px;background:#EC4899;"></div>
+        <div style="padding:1.5rem;display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:3rem;height:3rem;border-radius:.875rem;background:rgba(236,72,153,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.125rem;">
+            <svg style="width:1.375rem;height:1.375rem;color:#EC4899;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-display text-base mb-1">Logística e Inventario</h3>
+            <p style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.625rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Bodega · Distribución</p>
+            <p style="font-size:.78rem;color:var(--color-text-secondary);line-height:1.6;">Disponibilidad inmediata de repuestos y reemplazos en todo el país gracias a un inventario siempre activo.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── ESPECIALIDAD + MARCAS ─────────────────────────── -->
+<section class="section">
+  <div class="container-custom max-w-5xl">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-14 items-start">
+
+      <div>
+        <div class="silo-label mb-3">Lo que hacemos</div>
+        <h2 class="font-display text-display-md mb-5">Nuestra <em class="gradient-text not-italic">especialidad</em></h2>
+        <ul style="display:flex;flex-direction:column;gap:.75rem;">
+          {% for item in specialties %}
+          <li style="display:flex;align-items:flex-start;gap:.875rem;">
+            <span style="width:1.375rem;height:1.375rem;border-radius:50%;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;">
+              <svg style="width:.75rem;height:.75rem;color:#10B981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </span>
+            <span style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.6;">{{ item }}</span>
+          </li>
+          {% empty %}
+          <li style="display:flex;align-items:flex-start;gap:.875rem;"><span style="width:1.375rem;height:1.375rem;border-radius:50%;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;"><svg style="width:.75rem;height:.75rem;color:#10B981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span><span style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.6;">Venta y renta de fotocopiadoras multifuncionales láser</span></li>
+          <li style="display:flex;align-items:flex-start;gap:.875rem;"><span style="width:1.375rem;height:1.375rem;border-radius:50%;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;"><svg style="width:.75rem;height:.75rem;color:#10B981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span><span style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.6;">Suministros — repuestos originales y genéricos de alta calidad</span></li>
+          <li style="display:flex;align-items:flex-start;gap:.875rem;"><span style="width:1.375rem;height:1.375rem;border-radius:50%;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;"><svg style="width:.75rem;height:.75rem;color:#10B981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span><span style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.6;">Mantenimiento preventivo y correctivo con técnicos certificados</span></li>
+          <li style="display:flex;align-items:flex-start;gap:.875rem;"><span style="width:1.375rem;height:1.375rem;border-radius:50%;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;"><svg style="width:.75rem;height:.75rem;color:#10B981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span><span style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.6;">Instalación y configuración sin costo adicional en Medellín</span></li>
+          <li style="display:flex;align-items:flex-start;gap:.875rem;"><span style="width:1.375rem;height:1.375rem;border-radius:50%;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;"><svg style="width:.75rem;height:.75rem;color:#10B981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span><span style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.6;">Cableado estructurado Cat6A certificado para redes empresariales</span></li>
+          <li style="display:flex;align-items:flex-start;gap:.875rem;"><span style="width:1.375rem;height:1.375rem;border-radius:50%;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;"><svg style="width:.75rem;height:.75rem;color:#10B981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span><span style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.6;">Desarrollo de software y aplicaciones web a la medida</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div>
+        <div class="silo-label mb-3">Marcas con las que trabajamos</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.625rem;">
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Ricoh</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Canon</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Xerox</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Kyocera</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Brother</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Sharp</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Lexmark</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">HP</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Samsung</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Minolta</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Toshiba</div>
+          <div style="background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.75rem;padding:.75rem;text-align:center;font-size:.8125rem;font-weight:600;color:var(--color-text-secondary);">Epson</div>
+        </div>
+        <div style="margin-top:1.5rem;padding:1.25rem;background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:1rem;display:flex;align-items:center;gap:.875rem;">
+          <div style="width:2.5rem;height:2.5rem;border-radius:.75rem;background:rgba(14,165,233,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg style="width:1.125rem;height:1.125rem;color:#0EA5E9;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+          </div>
+          <div>
+            <div style="font-size:.78rem;font-weight:700;color:var(--color-text-primary);">Cobertura en toda Colombia</div>
+            <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.125rem;">Medellín, Bogotá, Barranquilla, Cali y más de 15 ciudades</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── TESTIMONIOS ──────────────────────────────────── -->
+<section class="section bg-bg-alt">
+  <div class="container-custom max-w-5xl">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <div class="silo-label mb-3">Clientes satisfechos</div>
+      <h2 class="font-display text-display-md">Lo que dicen <em class="gradient-text not-italic">nuestros clientes</em></h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;padding:1.75rem;display:flex;flex-direction:column;">
+        <div style="font-size:3rem;line-height:.8;color:var(--color-primary);opacity:.25;font-family:Georgia,serif;margin-bottom:.75rem;">"</div>
+        <div style="display:flex;gap:.2rem;margin-bottom:1rem;">
+          {% for i in "12345" %}<svg style="width:1rem;height:1rem;color:#F59E0B;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>{% endfor %}
+        </div>
+        <p style="font-size:.8125rem;color:var(--color-text-secondary);line-height:1.75;flex:1;">"Llevamos 3 años con Solution Copiers y no hemos tenido ni un solo día de paro por fallas. El técnico llega siempre antes de las 24 horas prometidas."</p>
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--color-border);display:flex;align-items:center;gap:.75rem;">
+          <div style="width:2.25rem;height:2.25rem;border-radius:50%;background:rgba(14,165,233,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg style="width:1rem;height:1rem;color:#0EA5E9;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+          </div>
+          <div>
+            <div style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);">Administración</div>
+            <div style="font-size:.7rem;color:var(--color-text-muted);">Colegio Privado — Medellín</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;padding:1.75rem;display:flex;flex-direction:column;">
+        <div style="font-size:3rem;line-height:.8;color:var(--color-primary);opacity:.25;font-family:Georgia,serif;margin-bottom:.75rem;">"</div>
+        <div style="display:flex;gap:.2rem;margin-bottom:1rem;">
+          {% for i in "12345" %}<svg style="width:1rem;height:1rem;color:#F59E0B;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>{% endfor %}
+        </div>
+        <p style="font-size:.8125rem;color:var(--color-text-secondary);line-height:1.75;flex:1;">"Nos instalaron toda la red de datos del nuevo piso en dos días. Trabajo limpio, certificado y sin interrumpir la operación. Totalmente recomendados."</p>
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--color-border);display:flex;align-items:center;gap:.75rem;">
+          <div style="width:2.25rem;height:2.25rem;border-radius:50%;background:rgba(6,182,212,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg style="width:1rem;height:1rem;color:#06B6D4;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+          </div>
+          <div>
+            <div style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);">Director de TI</div>
+            <div style="font-size:.7rem;color:var(--color-text-muted);">Empresa de logística — Sabaneta</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem;padding:1.75rem;display:flex;flex-direction:column;">
+        <div style="font-size:3rem;line-height:.8;color:var(--color-primary);opacity:.25;font-family:Georgia,serif;margin-bottom:.75rem;">"</div>
+        <div style="display:flex;gap:.2rem;margin-bottom:1rem;">
+          {% for i in "12345" %}<svg style="width:1rem;height:1rem;color:#F59E0B;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>{% endfor %}
+        </div>
+        <p style="font-size:.8125rem;color:var(--color-text-secondary);line-height:1.75;flex:1;">"El sistema de gestión que nos desarrollaron redujo los tiempos de facturación a la mitad. Excelente comunicación y sin costos sorpresa en todo el proyecto."</p>
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--color-border);display:flex;align-items:center;gap:.75rem;">
+          <div style="width:2.25rem;height:2.25rem;border-radius:50%;background:rgba(124,58,237,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg style="width:1rem;height:1rem;color:#7C3AED;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+          </div>
+          <div>
+            <div style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);">Gerente General</div>
+            <div style="font-size:.7rem;color:var(--color-text-muted);">Distribuidora comercial — Envigado</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% include "components/_cta_section.html" with title="¿Listo para optimizar tu empresa?" description="Más de 500 empresas ya confían en nosotros. Cuéntanos qué necesitas y te respondemos en menos de 24 horas." primary_text="Solicitar cotización gratis" primary_url="/cotizador/" secondary_text="Hablar con un asesor" secondary_url="/contacto/" %}
+{% endblock %}

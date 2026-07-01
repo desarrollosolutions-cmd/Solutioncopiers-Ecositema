@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "batisteo.vscode-django",
+        "bradlc.vscode-tailwindcss",
+        "adrianwilczynski.alpine-js-intellisense",
+        "EditorConfig.EditorConfig",
+        "esbenp.prettier-vscode"
+    ]
+}

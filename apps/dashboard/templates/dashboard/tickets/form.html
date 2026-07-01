@@ -1,0 +1,195 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}{% if is_edit %}{{ ticket.ticket_number }}{% else %}Nuevo ticket{% endif %}{% endblock %}
+{% block nav_tickets %}active{% endblock %}
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <a href="{% url 'dashboard:tickets' %}">Servicio técnico</a>
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">{% if is_edit %}{{ ticket.ticket_number }}{% else %}Nuevo ticket{% endif %}</span>
+{% endblock %}
+
+{% block content %}
+<style>
+  .tkt-priority-badge {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .25rem .75rem; border-radius: 9999px;
+    font-size: .75rem; font-weight: 700;
+  }
+  .urgent { background:color-mix(in srgb,var(--color-danger) 12%,transparent); color:var(--color-danger); }
+  .high   { background:color-mix(in srgb,#D97706 12%,transparent); color:#D97706; }
+  .medium { background:color-mix(in srgb,#2563EB 10%,transparent); color:#2563EB; }
+  .low    { background:color-mix(in srgb,var(--color-text-muted) 10%,transparent); color:var(--color-text-muted); }
+</style>
+
+<div class="da-page-header">
+  <div style="display:flex;align-items:center;gap:1rem;">
+    {% if is_edit %}
+    <div style="width:2.75rem;height:2.75rem;border-radius:.625rem;background:color-mix(in srgb,var(--color-primary) 12%,transparent);border:1px solid color-mix(in srgb,var(--color-primary) 20%,transparent);display:flex;align-items:center;justify-content:center;color:var(--color-primary);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1.125rem;height:1.125rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </div>
+    <div>
+      <h1 class="da-page-title" style="margin:0;">{{ ticket.ticket_number }}</h1>
+      <div style="font-size:.78rem;color:var(--color-text-muted);margin-top:.1rem;">
+        {{ ticket.get_issue_type_display }} ·
+        <span class="tkt-priority-badge {{ ticket.priority }}">{{ ticket.get_priority_display }}</span>
+      </div>
+    </div>
+    {% else %}
+    <h1 class="da-page-title">Nuevo ticket de servicio</h1>
+    {% endif %}
+  </div>
+  <a href="{% url 'dashboard:tickets' %}" class="da-btn da-btn-secondary">← Volver</a>
+</div>
+
+{% if error %}
+<div class="da-alert da-alert-error"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Error: {{ error }}</div>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:1.25rem;">
+
+    {# ── Columna principal ── #}
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <div class="da-card">
+        <div class="da-card-header">Datos del ticket</div>
+        <div class="da-card-body">
+          <div class="da-form-grid">
+            <div class="da-field">
+              <label>N° de ticket</label>
+              <input type="text" name="ticket_number" value="{% if is_edit %}{{ ticket.ticket_number }}{% else %}{{ next_number }}{% endif %}" class="da-input" required>
+            </div>
+            <div class="da-field">
+              <label>Tipo de servicio</label>
+              <select name="issue_type" class="da-input">
+                {% for val, lbl in issue_choices %}<option value="{{ val }}" {% if is_edit and ticket.issue_type == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="da-field">
+              <label>Prioridad</label>
+              <select name="priority" class="da-input">
+                {% for val, lbl in priority_choices %}<option value="{{ val }}" {% if is_edit and ticket.priority == val %}selected{% elif not is_edit and val == "medium" %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="da-field">
+              <label>Estado</label>
+              <select name="status" class="da-input">
+                {% for val, lbl in status_choices %}<option value="{{ val }}" {% if is_edit and ticket.status == val %}selected{% elif not is_edit and val == "open" %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="da-field da-form-full">
+              <label>Equipo / Serial <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+              <input type="text" name="equipment_description" value="{% if is_edit %}{{ ticket.equipment_description }}{% endif %}" class="da-input" placeholder="Ej: Ricoh MP 2555SP — S/N: X12345">
+            </div>
+            <div class="da-field da-form-full">
+              <label>Descripción del problema</label>
+              <textarea name="description" class="da-input" rows="4" required style="resize:vertical;">{% if is_edit %}{{ ticket.description }}{% endif %}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="da-card">
+        <div class="da-card-header">Resolución</div>
+        <div class="da-card-body">
+          <div style="display:flex;flex-direction:column;gap:.875rem;">
+            <div class="da-field">
+              <label>Visita programada <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+              <input type="datetime-local" name="scheduled_for" value="{% if is_edit and ticket.scheduled_for %}{{ ticket.scheduled_for|date:'Y-m-d' }}T{{ ticket.scheduled_for|time:'H:i' }}{% endif %}" class="da-input">
+            </div>
+            <div class="da-field">
+              <label>Notas de resolución / trabajo realizado</label>
+              <textarea name="resolution_notes" class="da-input" rows="5" placeholder="Describe qué se hizo, repuestos usados, estado final del equipo…" style="resize:vertical;">{% if is_edit %}{{ ticket.resolution_notes }}{% endif %}</textarea>
+            </div>
+            {% if is_edit and ticket.resolved_at %}
+            <div style="font-size:.78rem;color:var(--color-text-muted);">
+              Resuelto el: <strong style="color:var(--color-success);">{{ ticket.resolved_at|date:"d/m/Y H:i" }}</strong>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    {# ── Columna lateral ── #}
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <div class="da-card">
+        <div class="da-card-header">Cliente</div>
+        <div class="da-card-body" style="display:flex;flex-direction:column;gap:.75rem;">
+          <div class="da-field">
+            <label>Seleccionar cliente</label>
+            <select name="lead" class="da-input" required>
+              <option value="">— Buscar cliente —</option>
+              {% for l in lead_list %}<option value="{{ l.pk }}" {% if is_edit and ticket.lead_id == l.pk %}selected{% endif %}>{{ l.full_name }}{% if l.company_name %} · {{ l.company_name }}{% endif %}</option>{% endfor %}
+            </select>
+          </div>
+          {% if is_edit %}
+          <div style="padding:.625rem .875rem;border-radius:.5rem;background:var(--color-bg-alt);border:1px solid var(--color-border);font-size:.78rem;">
+            <a href="mailto:{{ ticket.lead.email }}" style="color:var(--color-primary);">{{ ticket.lead.email }}</a>
+            <div style="margin-top:.375rem;color:var(--color-text-secondary);">{{ ticket.lead.phone }}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.375rem;">
+            <a href="tel:{{ ticket.lead.phone }}" class="da-btn da-btn-secondary da-btn-sm" style="justify-content:center;">Llamar</a>
+            <a href="https://wa.me/{{ ticket.lead.phone|cut:' '|cut:'+'|cut:'-' }}" target="_blank" class="da-btn da-btn-secondary da-btn-sm" style="justify-content:center;">WhatsApp</a>
+          </div>
+          {% endif %}
+          <div class="da-field">
+            <label>Contrato relacionado <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+            <select name="contract" class="da-input">
+              <option value="">— Sin contrato —</option>
+              {% for con in contract_list %}<option value="{{ con.pk }}" {% if is_edit and ticket.contract_id == con.pk %}selected{% endif %}>{{ con.contract_number }} · {{ con.lead.full_name }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="da-card">
+        <div class="da-card-header">Técnico asignado</div>
+        <div class="da-card-body">
+          {% if request.user.is_superuser %}
+          <div class="da-field">
+            <select name="assigned_to" class="da-input">
+              <option value="">— Sin asignar —</option>
+              {% for tech in technician_list %}<option value="{{ tech.pk }}" {% if is_edit and ticket.assigned_to_id == tech.pk %}selected{% endif %}>{{ tech.get_full_name|default:tech.username }}</option>{% endfor %}
+            </select>
+          </div>
+          {% else %}
+          <div style="font-size:.8125rem;color:var(--color-text-muted);padding:.25rem 0;">
+            {% if is_edit and ticket.assigned_to %}
+              <span style="font-weight:600;color:var(--color-text-primary);">{{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.username }}</span>
+            {% else %}
+              Sin asignar
+            {% endif %}
+            <div style="font-size:.72rem;margin-top:.25rem;opacity:.7;">Solo superadmins pueden asignar técnico.</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <button type="submit" class="da-btn da-btn-primary" style="width:100%;padding:.875rem;justify-content:center;font-size:.9375rem;">
+        {% if is_edit %}Guardar cambios{% else %}Crear ticket{% endif %}
+      </button>
+
+      {% if is_edit %}
+      {# Acceso rápido de estado ── cambio sin recargar #}
+      <div class="da-card">
+        <div class="da-card-header" style="font-size:.78rem;">Cambio rápido de estado</div>
+        <div class="da-card-body" style="display:flex;flex-direction:column;gap:.375rem;padding:.75rem;">
+          {% for val, lbl in status_choices %}
+          <button type="submit" name="status" value="{{ val }}"
+            class="da-btn {% if ticket.status == val %}da-btn-primary{% else %}da-btn-secondary{% endif %}"
+            style="justify-content:center;font-size:.78rem;">
+            {{ lbl }}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</form>
+{% endblock %}

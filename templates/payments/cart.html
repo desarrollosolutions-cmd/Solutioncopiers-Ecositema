@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Carrito de Compra — Solution Copiers{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-10" x-data>
+  <h1 class="text-2xl font-bold mb-2" style="color:var(--color-text-primary)">Tu Carrito</h1>
+  <p class="text-sm mb-8" style="color:var(--color-text-muted)">Revisa los productos antes de proceder al pago</p>
+
+  {% if cart_items %}
+  <div class="grid lg:grid-cols-3 gap-8">
+
+    <!-- Tabla de ítems -->
+    <div class="lg:col-span-2">
+      <div class="rounded-2xl overflow-hidden" style="background:var(--color-surface);border:1px solid var(--color-border)">
+        <table class="w-full text-sm">
+          <thead>
+            <tr style="background:var(--color-bg-alt);border-bottom:1px solid var(--color-border)">
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider" style="color:var(--color-text-muted)">Producto</th>
+              <th class="text-center px-3 py-3 font-semibold text-xs uppercase tracking-wider" style="color:var(--color-text-muted)">Cant.</th>
+              <th class="text-right px-4 py-3 font-semibold text-xs uppercase tracking-wider" style="color:var(--color-text-muted)">Subtotal</th>
+              <th class="px-3 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in cart_items %}
+            <tr style="border-bottom:1px solid var(--color-border)">
+              <td class="px-4 py-4">
+                {% if item.image_url %}
+                <div class="flex items-center gap-3">
+                  <img src="{{ item.image_url }}" alt="{{ item.name }}" class="w-12 h-12 object-contain rounded-lg" style="background:var(--color-bg-alt)">
+                  <div>
+                    <div class="font-medium" style="color:var(--color-text-primary)">{{ item.name|truncatechars:60 }}</div>
+                    {% if item.part_number %}<div class="text-xs mt-0.5" style="color:var(--color-text-muted)">Ref: {{ item.part_number }}</div>{% endif %}
+                    <div class="text-xs mt-0.5" style="color:var(--color-text-muted)">${{ item.unit_price|floatformat:0 }} c/u</div>
+                  </div>
+                </div>
+                {% else %}
+                <div>
+                  <div class="font-medium" style="color:var(--color-text-primary)">{{ item.name|truncatechars:60 }}</div>
+                  {% if item.part_number %}<div class="text-xs mt-0.5" style="color:var(--color-text-muted)">Ref: {{ item.part_number }}</div>{% endif %}
+                  <div class="text-xs mt-0.5" style="color:var(--color-text-muted)">${{ item.unit_price|floatformat:0 }} c/u</div>
+                </div>
+                {% endif %}
+              </td>
+              <td class="px-3 py-4 text-center">
+                <form method="post" action="{% url 'payments:cart_update' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="consumable_id" value="{{ item.consumable_id }}">
+                  <div class="flex items-center justify-center gap-1">
+                    <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}"
+                      class="w-7 h-7 rounded-full flex items-center justify-center text-lg font-bold transition"
+                      style="background:var(--color-bg-alt);color:var(--color-text-secondary);border:1px solid var(--color-border)">−</button>
+                    <span class="w-6 text-center font-semibold" style="color:var(--color-text-primary)">{{ item.quantity }}</span>
+                    <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}"
+                      class="w-7 h-7 rounded-full flex items-center justify-center text-lg font-bold transition"
+                      style="background:var(--color-bg-alt);color:var(--color-text-secondary);border:1px solid var(--color-border)">+</button>
+                  </div>
+                </form>
+              </td>
+              <td class="px-4 py-4 text-right font-semibold" style="color:var(--color-primary)">${{ item.line_total|floatformat:0 }}</td>
+              <td class="px-3 py-4 text-center">
+                <form method="post" action="{% url 'payments:cart_update' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="consumable_id" value="{{ item.consumable_id }}">
+                  <button type="submit" name="quantity" value="0" class="text-red-400 hover:text-red-300 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 flex gap-3">
+        <a href="{% url 'catalog:consumables_list' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition"
+           style="background:var(--color-surface);color:var(--color-text-secondary);border:1px solid var(--color-border)">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          Seguir comprando
+        </a>
+      </div>
+    </div>
+
+    <!-- Resumen de precio -->
+    <div>
+      <div class="rounded-2xl p-6 sticky top-24" style="background:var(--color-surface);border:1px solid var(--color-border)">
+        <h2 class="text-base font-bold mb-5" style="color:var(--color-text-primary)">Resumen del pedido</h2>
+
+        <div class="space-y-3 text-sm mb-5">
+          <div class="flex justify-between" style="color:var(--color-text-secondary)">
+            <span>Subtotal (sin IVA)</span>
+            <span>${{ subtotal|floatformat:0 }}</span>
+          </div>
+          <div class="flex justify-between" style="color:var(--color-text-secondary)">
+            <span>IVA (19%)</span>
+            <span>${{ iva|floatformat:0 }}</span>
+          </div>
+          <div class="border-t pt-3 flex justify-between font-bold text-base" style="border-color:var(--color-border);color:var(--color-text-primary)">
+            <span>Total</span>
+            <span style="color:var(--color-primary)">${{ total|floatformat:0 }} COP</span>
+          </div>
+        </div>
+
+        <a href="{% url 'payments:checkout' %}"
+           class="block w-full text-center py-3 rounded-xl font-bold text-base transition"
+           style="background:var(--color-primary);color:#fff">
+          Proceder al pago
+          <svg class="w-4 h-4 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+
+        <div class="mt-4 flex items-center justify-center gap-2 text-xs" style="color:var(--color-text-muted)">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          Pago seguro con Wompi
+        </div>
+      </div>
+    </div>
+
+  </div>
+  {% else %}
+  <div class="text-center py-24">
+    <svg class="w-16 h-16 mx-auto mb-5 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+    <p class="text-xl font-semibold mb-2" style="color:var(--color-text-primary)">Tu carrito está vacío</p>
+    <p class="mb-6 text-sm" style="color:var(--color-text-muted)">Agrega productos desde el catálogo de insumos</p>
+    <a href="{% url 'catalog:consumables_list' %}"
+       class="inline-block px-6 py-3 rounded-xl font-semibold text-sm transition"
+       style="background:var(--color-primary);color:#fff">
+      Ver catálogo de insumos
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% if breadcrumbs %}
+<nav class="container-custom" aria-label="Breadcrumb">
+    <ol class="breadcrumbs">
+        {% for label, url in breadcrumbs %}
+            {% if not forloop.last %}
+                <li><a href="{{ url }}" class="hover:text-primary transition">{{ label }}</a></li>
+                <li class="breadcrumbs-separator">/</li>
+            {% else %}
+                <li class="text-text-primary font-medium" aria-current="page">{{ label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}

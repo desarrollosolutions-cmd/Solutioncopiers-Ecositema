@@ -1,0 +1,49 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.Python
+
+# Django
+db.sqlite3
+*.log
+local_settings.py
+staticfiles/
+media/
+
+# Entorno (NUNCA commitear)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build de frontend
+static/dist/
+*.css.map
+*.js.map
+
+# Tests
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Misc
+.cache/
+*.bak
+*.tmp

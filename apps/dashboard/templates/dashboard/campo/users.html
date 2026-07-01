@@ -1,0 +1,113 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Equipo de campo{% endblock %}
+{% block nav_campo %}active{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Equipo de campo</h1>
+    <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">Mensajeros y técnicos con acceso al portal /campo/</p>
+  </div>
+  <div style="display:flex;gap:.75rem;">
+    <a href="{% url 'dashboard:campo_map' %}" class="da-btn da-btn-secondary">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+      Ver mapa
+    </a>
+    <a href="{% url 'dashboard:campo_user_create' %}" class="da-btn da-btn-primary">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      Agregar persona
+    </a>
+  </div>
+</div>
+
+{% if messages %}
+  {% for msg in messages %}
+  <div style="padding:.75rem 1rem;border-radius:.625rem;margin-bottom:1rem;
+    background:{% if msg.tags == 'success' %}rgba(16,185,129,.1){% else %}rgba(239,68,68,.1){% endif %};
+    color:{% if msg.tags == 'success' %}#10B981{% else %}#EF4444{% endif %};
+    border:1px solid {% if msg.tags == 'success' %}rgba(16,185,129,.2){% else %}rgba(239,68,68,.2){% endif %};
+    font-size:.8125rem;">{{ msg }}</div>
+  {% endfor %}
+{% endif %}
+
+<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid var(--color-border);">
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Persona</th>
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Rol</th>
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Teléfono</th>
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Estado</th>
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Última ubicación</th>
+        <th style="padding:.75rem 1.25rem;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fu in field_users %}
+      <tr style="border-bottom:1px solid var(--color-border);transition:background .15s;"
+          onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='transparent'">
+        <td style="padding:.875rem 1.25rem;">
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <div style="width:2rem;height:2rem;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;
+              background:{% if fu.role == 'mensajero' %}linear-gradient(135deg,#0EA5E9,#0284C7){% else %}linear-gradient(135deg,#10B981,#059669){% endif %};">
+              {{ fu.user.get_full_name|default:fu.user.username|slice:":1"|upper }}
+            </div>
+            <div>
+              <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">{{ fu.user.get_full_name|default:fu.user.username }}</div>
+              <div style="font-size:.68rem;color:var(--color-text-muted);">@{{ fu.user.username }}</div>
+            </div>
+          </div>
+        </td>
+        <td style="padding:.875rem 1.25rem;">
+          <span style="font-size:.72rem;font-weight:700;padding:.25rem .65rem;border-radius:9999px;
+            background:{% if fu.role == 'mensajero' %}rgba(14,165,233,.12){% else %}rgba(16,185,129,.12){% endif %};
+            color:{% if fu.role == 'mensajero' %}#0EA5E9{% else %}#10B981{% endif %};
+            border:1px solid {% if fu.role == 'mensajero' %}rgba(14,165,233,.2){% else %}rgba(16,185,129,.2){% endif %};">
+            {{ fu.get_role_display }}
+          </span>
+        </td>
+        <td style="padding:.875rem 1.25rem;font-size:.8rem;color:var(--color-text-secondary);">
+          {{ fu.phone|default:"—" }}
+        </td>
+        <td style="padding:.875rem 1.25rem;">
+          {% if fu.user.field_location and fu.user.field_location.is_on_shift %}
+          <span style="font-size:.72rem;font-weight:700;padding:.25rem .65rem;border-radius:9999px;background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);">
+            En turno
+          </span>
+          {% else %}
+          <span style="font-size:.72rem;font-weight:700;padding:.25rem .65rem;border-radius:9999px;background:rgba(107,114,128,.1);color:#6B7280;border:1px solid rgba(107,114,128,.15);">
+            Inactivo
+          </span>
+          {% endif %}
+        </td>
+        <td style="padding:.875rem 1.25rem;font-size:.72rem;color:var(--color-text-muted);">
+          {% if fu.user.field_location and fu.user.field_location.is_on_shift %}
+            Hace {{ fu.user.field_location.updated_at|timesince }}
+          {% elif fu.user.field_location %}
+            Último: {{ fu.user.field_location.updated_at|timesince }} atrás
+          {% else %}
+            Sin registro
+          {% endif %}
+        </td>
+        <td style="padding:.875rem 1.25rem;">
+          <a href="{% url 'dashboard:campo_user_detail' fu.pk %}"
+            style="font-size:.72rem;font-weight:600;color:var(--color-primary);text-decoration:none;padding:.3rem .7rem;border:1px solid var(--color-primary);border-radius:.4rem;transition:all .15s;"
+            onmouseover="this.style.background='var(--color-primary)';this.style.color='#fff'"
+            onmouseout="this.style.background='transparent';this.style.color='var(--color-primary)'">
+            Editar
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="padding:3rem;text-align:center;color:var(--color-text-muted);font-size:.875rem;">
+          No hay personal de campo registrado.
+          <br><br>
+          <a href="{% url 'dashboard:campo_user_create' %}" class="da-btn da-btn-primary">Agregar la primera persona</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

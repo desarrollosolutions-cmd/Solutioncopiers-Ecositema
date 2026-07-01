@@ -1,0 +1,113 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}{% if field_user %}Editar{% else %}Agregar{% endif %} personal de campo{% endblock %}
+{% block nav_campo %}active{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">{% if field_user %}Editar perfil de campo{% else %}Agregar persona al equipo{% endif %}</h1>
+    <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">
+      {% if field_user %}{{ field_user.user.get_full_name|default:field_user.user.username }}{% else %}Asignar acceso al portal /campo/ a un usuario existente{% endif %}
+    </p>
+  </div>
+  <a href="{% url 'dashboard:campo_users' %}" class="da-btn da-btn-secondary">Cancelar</a>
+</div>
+
+<div style="max-width:540px;">
+  <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.75rem;">
+
+    {% if field_user %}
+    {# EDITAR #}
+    <form method="post" action="{% url 'dashboard:campo_user_detail' field_user.pk %}">
+      {% csrf_token %}
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div>
+          <label style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.05em;">Usuario</label>
+          <div style="padding:.65rem 1rem;background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.625rem;font-size:.875rem;color:var(--color-text-secondary);">
+            {{ field_user.user.get_full_name|default:field_user.user.username }}
+          </div>
+        </div>
+        <div>
+          <label for="id_role" style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.05em;">Rol</label>
+          <select name="role" id="id_role" style="width:100%;padding:.65rem 1rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.625rem;font-size:.875rem;color:var(--color-text-primary);outline:none;appearance:none;font-family:inherit;">
+            {% for val, label in role_choices %}
+            <option value="{{ val }}" {% if field_user.role == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom:1.5rem;">
+        <label for="id_phone" style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.05em;">Teléfono (opcional)</label>
+        <input type="tel" name="phone" id="id_phone" value="{{ field_user.phone }}" placeholder="Ej: 3001234567"
+          style="width:100%;padding:.65rem 1rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.625rem;font-size:.875rem;color:var(--color-text-primary);outline:none;font-family:inherit;transition:border-color .15s;"
+          onfocus="this.style.borderColor='var(--color-primary)'" onblur="this.style.borderColor='var(--color-border)'">
+      </div>
+
+      <div style="display:flex;gap:.75rem;">
+        <button type="submit" class="da-btn da-btn-primary" style="flex:1;">Guardar cambios</button>
+        <button type="submit" name="action" value="delete" class="da-btn da-btn-secondary"
+          style="color:#EF4444;border-color:rgba(239,68,68,.3);"
+          onclick="return confirm('¿Eliminar a {{ field_user.user.get_full_name|default:field_user.user.username }} del equipo de campo?')">
+          Eliminar
+        </button>
+      </div>
+    </form>
+
+    {% else %}
+    {# CREAR #}
+    <form method="post" action="{% url 'dashboard:campo_user_create' %}">
+      {% csrf_token %}
+
+      <div style="margin-bottom:1rem;">
+        <label for="id_user_id" style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.05em;">Usuario</label>
+        {% if available_users %}
+        <select name="user_id" id="id_user_id" required style="width:100%;padding:.65rem 1rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.625rem;font-size:.875rem;color:var(--color-text-primary);outline:none;appearance:none;font-family:inherit;">
+          <option value="">— Seleccionar usuario —</option>
+          {% for u in available_users %}
+          <option value="{{ u.pk }}">{{ u.get_full_name|default:u.username }} ({{ u.username }})</option>
+          {% endfor %}
+        </select>
+        <p style="font-size:.68rem;color:var(--color-text-muted);margin-top:.35rem;">Solo usuarios activos sin perfil de campo</p>
+        {% else %}
+        <div style="padding:.875rem 1rem;background:rgba(14,165,233,.07);border:1px solid rgba(14,165,233,.2);border-radius:.625rem;font-size:.8rem;color:#0EA5E9;">
+          No hay usuarios disponibles para asignar. Todos los usuarios activos ya tienen perfil de campo,
+          o debes crear un nuevo usuario primero desde
+          <a href="{% url 'dashboard:employee_create' %}" style="color:#0EA5E9;font-weight:600;">Empleados</a>.
+        </div>
+        {% endif %}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div>
+          <label for="id_role" style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.05em;">Rol</label>
+          <select name="role" id="id_role" required style="width:100%;padding:.65rem 1rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.625rem;font-size:.875rem;color:var(--color-text-primary);outline:none;appearance:none;font-family:inherit;">
+            {% for val, label in role_choices %}
+            <option value="{{ val }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="id_phone" style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.05em;">Teléfono</label>
+          <input type="tel" name="phone" id="id_phone" placeholder="3001234567"
+            style="width:100%;padding:.65rem 1rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.625rem;font-size:.875rem;color:var(--color-text-primary);outline:none;font-family:inherit;transition:border-color .15s;"
+            onfocus="this.style.borderColor='var(--color-primary)'" onblur="this.style.borderColor='var(--color-border)'">
+        </div>
+      </div>
+
+      <div style="background:rgba(14,165,233,.06);border:1px solid rgba(14,165,233,.15);border-radius:.75rem;padding:.875rem 1rem;margin-bottom:1.5rem;font-size:.78rem;color:var(--color-text-secondary);">
+        <strong style="color:var(--color-text-primary);">Credenciales de acceso:</strong>
+        el usuario ingresará al portal <code style="font-family:monospace;font-size:.75rem;background:rgba(14,165,233,.1);padding:.1rem .3rem;border-radius:.25rem;">/campo/</code>
+        con su usuario y contraseña actuales.
+      </div>
+
+      <button type="submit" class="da-btn da-btn-primary" style="width:100%;" {% if not available_users %}disabled{% endif %}>
+        Agregar al equipo de campo
+      </button>
+    </form>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

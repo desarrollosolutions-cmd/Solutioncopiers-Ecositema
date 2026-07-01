@@ -1,0 +1,64 @@
+{% extends "panel/_base.html" %}
+{% block title %}Contratos{% endblock %}
+{% block nav_contracts %}active{% endblock %}
+{% block breadcrumb %}<span class="pn-breadcrumb-sep">/</span><span class="pn-breadcrumb-current">Contratos</span>{% endblock %}
+
+{% block content %}
+<div class="pn-page-header">
+  <h1 class="pn-page-title">Contratos de alquiler</h1>
+  <span style="font-size:.8125rem;color:var(--color-text-muted);">{{ total }} contrato{{ total|pluralize:"s" }}</span>
+</div>
+
+<div style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center;">
+  <div class="pn-search-wrap" style="flex:1;min-width:200px;">
+    <span class="pn-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></span>
+    <form method="get" id="search-form">
+      <input type="text" name="q" value="{{ q }}" class="pn-input pn-input-search" placeholder="Cliente, empresa, N° contrato…" onchange="document.getElementById('search-form').submit()">
+      <input type="hidden" name="status" value="{{ status }}">
+    </form>
+  </div>
+  <div style="display:flex;gap:.375rem;flex-wrap:wrap;">
+    {% for val, lbl in status_choices %}
+    <a href="?status={{ val }}&q={{ q }}" class="pn-btn pn-btn-sm {% if status == val %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">{{ lbl }}</a>
+    {% endfor %}
+    <a href="?status=&q={{ q }}" class="pn-btn pn-btn-sm {% if not status %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">Todos</a>
+  </div>
+</div>
+
+<div class="pn-table-wrap">
+  <table class="pn-table">
+    <thead>
+      <tr><th>N° Contrato</th><th>Cliente</th><th>Equipos</th><th>Estado</th><th>Renta mensual</th><th>Inicio</th><th>Vencimiento</th><th>Días restantes</th></tr>
+    </thead>
+    <tbody>
+      {% for c in contracts %}
+      <tr>
+        <td style="font-family:monospace;font-size:.78rem;font-weight:600;">{{ c.contract_number }}</td>
+        <td>
+          <div class="pn-name">{{ c.lead.full_name }}</div>
+          <div style="font-size:.68rem;color:var(--color-text-muted);">{{ c.lead.company_name|default:"" }}</div>
+        </td>
+        <td style="text-align:center;font-size:.8rem;font-weight:600;color:var(--color-text-secondary);">{{ c.copiers_count }}</td>
+        <td><span class="pn-badge pn-badge-{{ c.status }}">{{ c.get_status_display }}</span></td>
+        <td style="font-size:.8rem;font-weight:600;color:var(--color-primary);">${{ c.monthly_rent|floatformat:0 }}</td>
+        <td style="font-size:.72rem;color:var(--color-text-muted);">{{ c.start_date|date:"d/m/Y" }}</td>
+        <td style="font-size:.72rem;{% if c.days_until_expiry <= 30 and c.status == 'active' %}color:var(--color-warning);font-weight:600;{% else %}color:var(--color-text-muted);{% endif %}">{{ c.end_date|date:"d/m/Y" }}</td>
+        <td style="text-align:center;">
+          {% if c.status == 'active' %}
+            {% if c.days_until_expiry <= 7 %}
+              <span style="background:rgba(239,68,68,.15);color:#EF4444;font-size:.72rem;font-weight:700;padding:.2rem .5rem;border-radius:9999px;">{{ c.days_until_expiry }}d</span>
+            {% elif c.days_until_expiry <= 30 %}
+              <span style="background:color-mix(in srgb,var(--color-warning) 15%,transparent);color:var(--color-warning);font-size:.72rem;font-weight:700;padding:.2rem .5rem;border-radius:9999px;">{{ c.days_until_expiry }}d</span>
+            {% else %}
+              <span style="color:var(--color-text-muted);font-size:.72rem;">{{ c.days_until_expiry }}d</span>
+            {% endif %}
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" style="text-align:center;color:var(--color-text-muted);padding:2.5rem;">Sin contratos</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

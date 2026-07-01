@@ -1,0 +1,117 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Pedido {{ order.reference }}{% endblock %}
+{% block nav_billing %}active{% endblock %}
+{% block breadcrumb %}
+<span class="da-breadcrumb-sep">/</span>
+<a href="{% url 'dashboard:ar_dashboard' %}" class="da-breadcrumb-link">Facturación</a>
+<span class="da-breadcrumb-sep">/</span>
+<a href="{% url 'dashboard:order_list' %}" class="da-breadcrumb-link">Pedidos</a>
+<span class="da-breadcrumb-sep">/</span>
+<span class="da-breadcrumb-current">{{ order.reference }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Pedido {{ order.reference }}</h1>
+    <div style="font-size:.82rem;color:var(--color-text-muted);margin-top:.25rem;">{{ order.created_at|date:"d M Y H:i" }}</div>
+  </div>
+  <div style="display:flex;gap:.75rem;">
+    {% if order.invoice %}
+    <a href="{% url 'dashboard:invoice_detail' pk=order.invoice.pk %}" class="da-btn da-btn-secondary">Ver factura {{ order.invoice.invoice_number }}</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="da-grid-2" style="gap:1.25rem;">
+
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+    <!-- Estado -->
+    <div class="da-card">
+      <div class="da-card-header">Estado del pedido</div>
+      <div class="da-card-body">
+        {% if order.status == 'paid' %}
+        <span class="da-badge da-badge-stock" style="font-size:.85rem;padding:.35rem .9rem;">Pagado</span>
+        {% elif order.status == 'failed' %}
+        <span class="da-badge da-badge-nostock" style="font-size:.85rem;padding:.35rem .9rem;">Pago fallido</span>
+        {% elif order.status == 'pending' %}
+        <span class="da-badge" style="font-size:.85rem;padding:.35rem .9rem;background:color-mix(in srgb,var(--color-warning) 15%,transparent);color:var(--color-warning);">Pendiente de pago</span>
+        {% elif order.status == 'cancelled' %}
+        <span class="da-badge" style="font-size:.85rem;padding:.35rem .9rem;">Cancelado</span>
+        {% else %}
+        <span class="da-badge" style="font-size:.85rem;padding:.35rem .9rem;">{{ order.get_status_display }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Comprador -->
+    <div class="da-card">
+      <div class="da-card-header">Datos del comprador</div>
+      <div class="da-card-body">
+        <dl style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem 1rem;font-size:.83rem;">
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;">Nombre</dt><dd style="color:var(--color-text-primary);margin-top:.15rem;">{{ order.buyer_name }}</dd></div>
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;">Email</dt><dd style="margin-top:.15rem;"><a href="mailto:{{ order.buyer_email }}" style="color:var(--color-primary);">{{ order.buyer_email }}</a></dd></div>
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;">Teléfono</dt><dd style="color:var(--color-text-primary);margin-top:.15rem;">{{ order.buyer_phone|default:"—" }}</dd></div>
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;">NIT / Cédula</dt><dd style="color:var(--color-text-primary);margin-top:.15rem;">{{ order.buyer_nit|default:"—" }}</dd></div>
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;">Empresa</dt><dd style="color:var(--color-text-primary);margin-top:.15rem;">{{ order.buyer_company|default:"—" }}</dd></div>
+          <div><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;">Ciudad</dt><dd style="color:var(--color-text-primary);margin-top:.15rem;">{{ order.buyer_city }}</dd></div>
+          {% if order.buyer_address %}
+          <div style="grid-column:1/-1;"><dt style="color:var(--color-text-muted);font-size:.7rem;text-transform:uppercase;">Dirección</dt><dd style="color:var(--color-text-primary);margin-top:.15rem;">{{ order.buyer_address }}</dd></div>
+          {% endif %}
+        </dl>
+        {% if order.lead %}
+        <div style="margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--color-border);">
+          <a href="{% url 'dashboard:client_detail' pk=order.lead.pk %}" class="da-btn da-btn-secondary" style="font-size:.75rem;">Ver lead CRM → {{ order.lead.full_name }}</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if order.notes %}
+    <div class="da-card">
+      <div class="da-card-header">Notas</div>
+      <div class="da-card-body" style="font-size:.85rem;color:var(--color-text-secondary);">{{ order.notes }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Productos + totales -->
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+    <div class="da-card">
+      <div class="da-card-header">Productos</div>
+      <div class="da-card-body" style="padding:0">
+        <table class="da-table">
+          <thead><tr><th>Producto</th><th>Ref.</th><th>Cant.</th><th>Precio</th><th class="text-right">Total</th></tr></thead>
+          <tbody>
+            {% for item in order.items.all %}
+            <tr>
+              <td style="font-size:.83rem;">{{ item.product_name|truncatechars:40 }}</td>
+              <td style="font-family:var(--font-mono);font-size:.72rem;color:var(--color-text-muted);">{{ item.part_number|default:"—" }}</td>
+              <td style="text-align:center;">{{ item.quantity }}</td>
+              <td>${{ item.unit_price|floatformat:0 }}</td>
+              <td style="text-align:right;font-weight:600;">${{ item.line_total|floatformat:0 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="da-card">
+      <div class="da-card-header">Totales</div>
+      <div class="da-card-body">
+        <dl style="font-size:.9rem;display:flex;flex-direction:column;gap:.6rem;">
+          <div style="display:flex;justify-content:space-between;"><dt style="color:var(--color-text-muted);">Subtotal</dt><dd>${{ order.subtotal|floatformat:0 }}</dd></div>
+          <div style="display:flex;justify-content:space-between;"><dt style="color:var(--color-text-muted);">IVA 19%</dt><dd>${{ order.tax_amount|floatformat:0 }}</dd></div>
+          <div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:700;border-top:1px solid var(--color-border);padding-top:.6rem;">
+            <dt style="color:var(--color-text-primary);">Total</dt>
+            <dd style="color:var(--color-primary);">${{ order.total|floatformat:0 }} COP</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

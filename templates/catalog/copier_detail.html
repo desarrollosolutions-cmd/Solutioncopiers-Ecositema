@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+    <div class="container-custom max-w-6xl">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div>
+                {% if copier.image_hero %}
+                    <img src="{{ copier.image_hero.url }}" alt="{{ copier.main_image_alt|default:copier.name }}" class="rounded-lg w-full">
+                {% else %}
+                    <div class="aspect-square bg-bg-alt rounded-lg flex items-center justify-center">
+                        <svg class="w-32 h-32 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div>
+                <div class="silo-label hardware mb-3">{{ copier.brand }} · {{ copier.get_toner_type_display }}</div>
+                <h1 class="font-display text-display-lg mb-4 text-balance">{{ copier.name }}</h1>
+                <p class="text-lg text-text-secondary mb-8">{{ copier.short_description }}</p>
+
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="card-padded">
+                        <div class="text-xs text-text-muted uppercase">Velocidad</div>
+                        <div class="font-display text-2xl">{{ copier.speed_ppm }} ppm</div>
+                    </div>
+                    <div class="card-padded">
+                        <div class="text-xs text-text-muted uppercase">Papel</div>
+                        <div class="font-display text-2xl">{{ copier.get_paper_size_display }}</div>
+                    </div>
+                    <div class="card-padded">
+                        <div class="text-xs text-text-muted uppercase">Ciclo mensual</div>
+                        <div class="font-display text-2xl">{{ copier.monthly_duty_cycle|floatformat:0 }}</div>
+                    </div>
+                    <div class="card-padded">
+                        <div class="text-xs text-text-muted uppercase">Características</div>
+                        <div class="text-sm">
+                            {% if copier.has_scanner %}✓ Escáner{% endif %}
+                            {% if copier.has_duplex %} ✓ Dúplex{% endif %}
+                            {% if copier.has_wifi %} ✓ WiFi{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if copier.monthly_rental_price %}
+                <div class="card-padded bg-primary text-white mb-6">
+                    <div class="text-sm opacity-80">Plan de alquiler desde</div>
+                    <div class="font-display text-display-md">${{ copier.monthly_rental_price|floatformat:0 }} <span class="text-base opacity-70">COP/mes</span></div>
+                    {% if copier.pages_included_monthly %}
+                    <div class="text-sm opacity-80 mt-2">Incluye {{ copier.pages_included_monthly|floatformat:0 }} páginas/mes</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <a href="{% url 'leads:wizard' %}?servicio=rental" class="btn-primary w-full justify-center">Cotizar este equipo</a>
+
+                <div class="mt-8 prose prose-base">
+                    {{ copier.description|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if related_copiers %}
+<section class="section bg-bg-alt">
+    <div class="container-custom">
+        <h2 class="font-display text-display-md mb-8">Equipos relacionados</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for copier in related_copiers %}
+                {% include "components/_copier_card.html" with copier=copier %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% include "components/_cta_section.html" %}
+{% endblock %}

@@ -1,0 +1,50 @@
+<tr style="border-bottom:1px solid color-mix(in srgb,var(--color-border) 50%,transparent);transition:background .15s;" onmouseover="this.style.background='color-mix(in srgb,var(--color-primary) 3%,transparent)'" onmouseout="this.style.background=''">
+
+  {# Nombre + meta #}
+  <td style="padding:.5rem 1rem;">
+    <div style="font-size:.8rem;font-weight:600;color:var(--color-text-primary);line-height:1.3;">{{ item.name }}</div>
+    <div style="font-size:.67rem;color:var(--color-text-muted);margin-top:.1rem;">
+      {% if item.brand %}<span style="color:var(--color-primary);font-weight:600;">{{ item.brand }}</span>{% endif %}
+      {% if item.part_number %}<span style="font-family:monospace;"> · {{ item.part_number }}</span>{% endif %}
+      {% with models=item.compatible_models.all %}{% if models %} · {% for m in models %}{{ m.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% endwith %}
+    </div>
+  </td>
+
+  {# Stock actual #}
+  <td style="padding:.5rem .875rem;text-align:center;white-space:nowrap;">
+    {% if item.stock_quantity == 0 %}
+    <span class="stk-badge stk-zero">{{ item.stock_quantity }} — Agotado</span>
+    {% elif item.stock_quantity <= 5 %}
+    <span class="stk-badge stk-low">{{ item.stock_quantity }} — Bajo</span>
+    {% else %}
+    <span class="stk-badge stk-ok">{{ item.stock_quantity }}</span>
+    {% endif %}
+  </td>
+
+  {# Movimientos rápidos: entrada y salida en línea #}
+  <td style="padding:.5rem 1rem;">
+    <div style="display:flex;align-items:center;gap:.5rem;justify-content:center;flex-wrap:wrap;">
+      <form method="post" action="{% url 'dashboard:stock_adjust' item.pk %}" class="stk-form">
+        {% csrf_token %}
+        <input type="hidden" name="movement_type" value="in">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input type="number" name="quantity" value="1" min="1" max="9999" class="stk-qty" title="Cantidad">
+        <button type="submit" class="btn-in">+ Entrada</button>
+      </form>
+      <form method="post" action="{% url 'dashboard:stock_adjust' item.pk %}" class="stk-form">
+        {% csrf_token %}
+        <input type="hidden" name="movement_type" value="out">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input type="number" name="quantity" value="1" min="1" max="9999" class="stk-qty" title="Cantidad">
+        <button type="submit" class="btn-out">− Salida</button>
+      </form>
+    </div>
+  </td>
+
+  {# Historial #}
+  <td style="padding:.5rem .625rem;text-align:center;">
+    <a href="{% url 'dashboard:stock_history' item.pk %}" class="btn-hist" title="Ver historial">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.8rem;height:.8rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </a>
+  </td>
+</tr>

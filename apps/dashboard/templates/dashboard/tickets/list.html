@@ -1,0 +1,153 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Tickets{% endblock %}
+{% block nav_tickets %}active{% endblock %}
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">Servicio técnico</span>
+{% endblock %}
+
+{% block content %}
+<style>
+  .tkt-priority-urgent { background:color-mix(in srgb,var(--color-danger) 12%,transparent); color:var(--color-danger); border:1px solid color-mix(in srgb,var(--color-danger) 22%,transparent); }
+  .tkt-priority-high    { background:color-mix(in srgb,#D97706 12%,transparent); color:#D97706; border:1px solid color-mix(in srgb,#D97706 22%,transparent); }
+  .tkt-priority-medium  { background:color-mix(in srgb,#2563EB 10%,transparent); color:#2563EB; border:1px solid color-mix(in srgb,#2563EB 18%,transparent); }
+  .tkt-priority-low     { background:color-mix(in srgb,var(--color-text-muted) 10%,transparent); color:var(--color-text-muted); border:1px solid color-mix(in srgb,var(--color-text-muted) 18%,transparent); }
+</style>
+
+{# ── Stats ── #}
+<div class="da-stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:1.5rem;">
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,var(--color-danger) 12%,transparent);color:var(--color-danger);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:var(--color-danger);">{{ count_open }}</div>
+    <div class="da-stat-lbl">Abiertos</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,#D97706 12%,transparent);color:#D97706;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:#D97706;">{{ count_progress }}</div>
+    <div class="da-stat-lbl">En proceso</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,#8B5CF6 12%,transparent);color:#7C3AED;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:#7C3AED;">{{ count_waiting }}</div>
+    <div class="da-stat-lbl">Esperando repuesto</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,var(--color-success) 12%,transparent);color:var(--color-success);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:var(--color-success);">{{ count_resolved }}</div>
+    <div class="da-stat-lbl">Resueltos</div>
+    <div class="da-stat-bar"></div>
+  </div>
+</div>
+
+<div class="da-page-header">
+  <h1 class="da-page-title">Servicio técnico</h1>
+  <a href="{% url 'dashboard:ticket_create' %}" class="da-btn da-btn-primary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+    Nuevo ticket
+  </a>
+</div>
+
+<form method="get" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-bottom:1.25rem;">
+  <div class="da-search-wrap">
+    <div class="da-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
+    <input type="text" name="q" value="{{ current_q }}" placeholder="Cliente, N° ticket, descripción…" class="da-input da-input-search" style="width:260px;">
+  </div>
+  <select name="status" class="da-input" style="width:auto;padding:.5rem .875rem;">
+    <option value="">Todos los estados</option>
+    {% for val, lbl in status_choices %}<option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+  </select>
+  <select name="priority" class="da-input" style="width:auto;padding:.5rem .875rem;">
+    <option value="">Todas las prioridades</option>
+    {% for val, lbl in priority_choices %}<option value="{{ val }}" {% if current_priority == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
+  {% if current_q or current_status or current_priority %}
+  <a href="{% url 'dashboard:tickets' %}" class="da-btn da-btn-secondary">Limpiar</a>
+  {% endif %}
+</form>
+
+<div class="da-table-wrap">
+  <div class="da-table-header">
+    <span class="da-table-title">{{ paginator.count }} ticket{{ paginator.count|pluralize:"s" }}</span>
+  </div>
+  <table class="da-table">
+    <thead>
+      <tr>
+        <th>N° Ticket</th>
+        <th>Cliente</th>
+        <th>Tipo</th>
+        <th>Descripción</th>
+        <th>Técnico</th>
+        <th>Prioridad</th>
+        <th>Estado</th>
+        <th>Creado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tickets %}
+      <tr>
+        <td>
+          <span style="font-family:var(--font-mono,monospace);font-size:.78rem;font-weight:700;color:var(--color-primary);">{{ t.ticket_number }}</span>
+        </td>
+        <td>
+          <div class="da-name">{{ t.lead.full_name }}</div>
+          {% if t.lead.company_name %}<div style="font-size:.72rem;color:var(--color-text-muted);">{{ t.lead.company_name }}</div>{% endif %}
+        </td>
+        <td style="font-size:.78rem;">{{ t.get_issue_type_display }}</td>
+        <td style="max-width:220px;">
+          <div style="font-size:.8125rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.description }}</div>
+          {% if t.equipment_description %}<div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.equipment_description }}</div>{% endif %}
+        </td>
+        <td>
+          {% if t.assigned_to %}
+          <div style="display:flex;align-items:center;gap:.4rem;">
+            <div style="width:1.5rem;height:1.5rem;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:flex;align-items:center;justify-content:center;color:white;font-size:.6rem;font-weight:700;flex-shrink:0;">{{ t.assigned_to.username|first|upper }}</div>
+            <span style="font-size:.78rem;color:var(--color-text-secondary);">{{ t.assigned_to.get_full_name|default:t.assigned_to.username }}</span>
+          </div>
+          {% else %}<span style="font-size:.78rem;color:var(--color-text-muted);">Sin asignar</span>{% endif %}
+        </td>
+        <td>
+          <span class="da-badge tkt-priority-{{ t.priority }}">{{ t.get_priority_display }}</span>
+        </td>
+        <td>
+          <span class="da-badge
+            {% if t.status == 'open' %}da-badge-new
+            {% elif t.status == 'in_progress' %}da-badge-reviewing
+            {% elif t.status == 'waiting_parts' %}da-badge-sent
+            {% elif t.status == 'resolved' %}da-badge-published
+            {% else %}da-badge-draft{% endif %}">
+            {{ t.get_status_display }}
+          </span>
+        </td>
+        <td style="font-size:.75rem;white-space:nowrap;">{{ t.created_at|date:"d/m H:i" }}</td>
+        <td><a href="{% url 'dashboard:ticket_detail' t.pk %}" class="da-btn da-btn-secondary da-btn-sm">Ver</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" style="text-align:center;padding:3rem;color:var(--color-text-muted);">
+        No hay tickets.
+        <a href="{% url 'dashboard:ticket_create' %}" style="color:var(--color-primary);font-weight:600;"> Crear el primero →</a>
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if is_paginated %}
+  <div class="da-pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if current_q %}&q={{ current_q }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}" class="da-page-btn">← Anterior</a>{% endif %}
+    <span class="da-page-btn active">{{ page_obj.number }} / {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if current_q %}&q={{ current_q }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}" class="da-page-btn">Siguiente →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+<div>
+    <h2 class="font-display text-display-md mb-2">Detalles del proyecto</h2>
+    <p class="text-text-secondary mb-8">Cuéntanos sobre tu idea para darte una estimación inicial.</p>
+
+    <div class="space-y-8">
+        <div>
+            <label class="form-label">Complejidad estimada</label>
+            <div class="wizard-radio-group">
+                <label class="wizard-radio-option" :class="{ 'is-selected': details.complexity === 'low' }">
+                    <input type="radio" x-model="details.complexity" value="low" class="sr-only">
+                    <div>
+                        <div class="font-medium text-sm">Básico</div>
+                        <div class="text-xs text-text-muted mt-1">Landing o sitio simple</div>
+                    </div>
+                </label>
+                <label class="wizard-radio-option" :class="{ 'is-selected': details.complexity === 'medium' }">
+                    <input type="radio" x-model="details.complexity" value="medium" class="sr-only">
+                    <div>
+                        <div class="font-medium text-sm">Medio</div>
+                        <div class="text-xs text-text-muted mt-1">Plataforma con BD</div>
+                    </div>
+                </label>
+                <label class="wizard-radio-option" :class="{ 'is-selected': details.complexity === 'high' }">
+                    <input type="radio" x-model="details.complexity" value="high" class="sr-only">
+                    <div>
+                        <div class="font-medium text-sm">Alto</div>
+                        <div class="text-xs text-text-muted mt-1">Sistema con integraciones</div>
+                    </div>
+                </label>
+                <label class="wizard-radio-option" :class="{ 'is-selected': details.complexity === 'enterprise' }">
+                    <input type="radio" x-model="details.complexity" value="enterprise" class="sr-only">
+                    <div>
+                        <div class="font-medium text-sm">Enterprise</div>
+                        <div class="text-xs text-text-muted mt-1">Solución compleja</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div>
+            <label class="form-label">Describe brevemente tu proyecto</label>
+            <textarea x-model="details.project_description" rows="5"
+                      placeholder="Ej: Necesitamos un sistema ERP para gestionar inventario, ventas y nómina..."
+                      class="wizard-input" :class="{ 'has-error': errors.project_description }"></textarea>
+            <div class="flex justify-between text-xs text-text-muted mt-1">
+                <span x-show="errors.project_description" class="text-danger" x-text="errors.project_description"></span>
+                <span x-text="`${details.project_description.length} / 30 mínimo`"
+                      :class="{ 'text-success': details.project_description.length >= 30 }"></span>
+            </div>
+        </div>
+
+        <div>
+            <label class="form-label">Plazo deseado <span class="text-text-muted font-normal">(opcional)</span></label>
+            <input type="text" x-model="details.desired_timeline" placeholder="Ej: 3 meses, antes de fin de año..." class="wizard-input">
+        </div>
+    </div>
+</div>

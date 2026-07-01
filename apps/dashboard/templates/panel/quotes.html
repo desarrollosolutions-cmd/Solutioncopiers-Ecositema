@@ -1,0 +1,62 @@
+{% extends "panel/_base.html" %}
+{% block title %}Cotizaciones{% endblock %}
+{% block nav_quotes %}active{% endblock %}
+{% block breadcrumb %}<span class="pn-breadcrumb-sep">/</span><span class="pn-breadcrumb-current">Cotizaciones</span>{% endblock %}
+
+{% block content %}
+<div class="pn-page-header">
+  <h1 class="pn-page-title">Cotizaciones</h1>
+  <span style="font-size:.8125rem;color:var(--color-text-muted);">{{ total }} resultado{{ total|pluralize:"s" }}</span>
+</div>
+
+{# Filtros #}
+<div style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center;">
+  <div class="pn-search-wrap" style="flex:1;min-width:200px;">
+    <span class="pn-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></span>
+    <form method="get" id="search-form">
+      <input type="text" name="q" value="{{ q }}" class="pn-input pn-input-search" placeholder="Buscar cliente, empresa, teléfono…" onchange="document.getElementById('search-form').submit()">
+      <input type="hidden" name="status" value="{{ status }}">
+      <input type="hidden" name="mine" value="{{ mine }}">
+    </form>
+  </div>
+  <div style="display:flex;gap:.375rem;flex-wrap:wrap;">
+    <a href="?mine=&status=&q={{ q }}" class="pn-btn pn-btn-sm {% if not mine and not status %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">Todas</a>
+    <a href="?mine=0&status=new&q={{ q }}" class="pn-btn pn-btn-sm {% if mine == '0' and status == 'new' %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">Sin asignar</a>
+    <a href="?mine=1&q={{ q }}" class="pn-btn pn-btn-sm {% if mine == '1' %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">Mis cotizaciones</a>
+    {% for val, lbl in status_choices %}
+    <a href="?status={{ val }}&q={{ q }}" class="pn-btn pn-btn-sm {% if status == val %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">{{ lbl }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="pn-table-wrap">
+  <table class="pn-table">
+    <thead><tr><th>Cliente</th><th>Servicio</th><th>Estado</th><th>Asignada a</th><th>Fecha</th><th></th></tr></thead>
+    <tbody>
+      {% for q in quotes %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:.5rem;">
+            <div style="width:1.875rem;height:1.875rem;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:.68rem;font-weight:800;flex-shrink:0;">{{ q.lead.full_name|first|upper }}</div>
+            <div>
+              <div class="pn-name">{{ q.lead.full_name }}</div>
+              <div style="font-size:.68rem;color:var(--color-text-muted);">{{ q.lead.phone }}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-size:.78rem;">{{ q.get_interest_area_display }}</td>
+        <td><span class="pn-badge pn-badge-{{ q.status }}">{{ q.get_status_display }}</span></td>
+        <td style="font-size:.75rem;color:var(--color-text-muted);">
+          {% if q.assigned_to %}{{ q.assigned_to.get_full_name|default:q.assigned_to.username }}
+          {% else %}<span style="color:var(--color-warning);">Sin asignar</span>{% endif %}
+        </td>
+        <td style="font-size:.72rem;color:var(--color-text-muted);white-space:nowrap;">{{ q.created_at|date:"d/m/Y" }}</td>
+        <td><a href="{% url 'panel:quote_detail' q.pk %}">Ver →</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:var(--color-text-muted);padding:2.5rem;">Sin resultados</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

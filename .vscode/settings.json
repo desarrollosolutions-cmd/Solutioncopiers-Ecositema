@@ -1,0 +1,36 @@
+{
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "python.linting.enabled": true,
+    "python.formatting.provider": "none",
+    "[python]": {
+        "editor.formatOnSave": false,
+        "editor.tabSize": 4
+    },
+    "[html]": {
+        "editor.formatOnSave": false,
+        "editor.tabSize": 4
+    },
+    "[javascript]": {
+        "editor.tabSize": 2
+    },
+    "[css]": {
+        "editor.tabSize": 2
+    },
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/node_modules": true,
+        "**/.coverage": true,
+        "**/htmlcov": true
+    },
+    "files.associations": {
+        "*.html": "django-html"
+    },
+    "emmet.includeLanguages": {
+        "django-html": "html"
+    },
+    "tailwindCSS.includeLanguages": {
+        "django-html": "html"
+    }
+}

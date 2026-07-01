@@ -1,0 +1,9 @@
+{# Placeholder visual para productos sin imagen. Variables opcionales: aspect, label #}
+<div class="w-full {% if aspect %}{{ aspect }}{% else %}aspect-video{% endif %} rounded-2xl bg-bg-alt border border-border flex flex-col items-center justify-center gap-3">
+  <svg class="w-16 h-16 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+    <circle cx="8.5" cy="8.5" r="1.5"/>
+    <polyline points="21 15 16 10 5 21"/>
+  </svg>
+  {% if label %}<p class="text-sm text-text-muted">{{ label }}</p>{% endif %}
+</div>

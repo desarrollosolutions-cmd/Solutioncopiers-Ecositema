@@ -1,0 +1,6 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Eliminar fotocopiadora{% endblock %}
+{% block nav_copiers %}active{% endblock %}
+{% block content %}
+<div style="max-width:480px;margin:3rem auto;"><div class="da-card"><div class="da-card-header" style="color:var(--color-danger);">⚠️ Confirmar eliminación</div><div class="da-card-body"><p style="color:var(--color-text-secondary);margin-bottom:1.5rem;">¿Seguro que deseas eliminar <strong style="color:var(--color-text-primary);">{{ object.name }}</strong>?</p><div style="display:flex;gap:.75rem;"><form method="post">{% csrf_token %}<button type="submit" class="da-btn da-btn-danger">Sí, eliminar</button></form><a href="{% url 'dashboard:copiers' %}" class="da-btn da-btn-secondary">Cancelar</a></div></div></div></div>
+{% endblock %}

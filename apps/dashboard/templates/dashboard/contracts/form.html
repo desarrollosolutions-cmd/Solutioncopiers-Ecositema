@@ -1,0 +1,464 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}{% if is_edit %}Contrato {{ contract.contract_number }}{% else %}Nuevo contrato{% endif %}{% endblock %}
+{% block nav_contracts %}active{% endblock %}
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <a href="{% url 'dashboard:contracts' %}">Contratos</a>
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">{% if is_edit %}{{ contract.contract_number }}{% else %}Nuevo{% endif %}</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">{% if is_edit %}Contrato {{ contract.contract_number }}{% else %}Nuevo contrato de alquiler{% endif %}</h1>
+  <a href="{% url 'dashboard:contracts' %}" class="da-btn da-btn-secondary">← Volver</a>
+</div>
+
+{% if error %}
+<div class="da-alert da-alert-error">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  Error al guardar: {{ error }}
+</div>
+{% endif %}
+
+{# ── Alerta de vencimiento ── #}
+{% if is_edit and contract.is_expiring_soon %}
+<div class="da-alert da-alert-info" style="margin-bottom:1.25rem;">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+  Este contrato vence en <strong>{{ contract.days_until_expiry }} días</strong>. Considera renovarlo.
+</div>
+{% endif %}
+{% if is_edit and contract.is_overdue %}
+<div class="da-alert da-alert-error" style="margin-bottom:1.25rem;">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  Este contrato <strong>venció</strong> hace {{ contract.days_until_expiry|cut:"-" }} días.
+</div>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;">
+
+    {# ── Columna principal ── #}
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <div class="da-card">
+        <div class="da-card-header">Datos del contrato</div>
+        <div class="da-card-body">
+          <div class="da-form-grid">
+            <div class="da-field">
+              <label>N° de contrato</label>
+              <input type="text" name="contract_number" value="{% if is_edit %}{{ contract.contract_number }}{% else %}{{ next_number }}{% endif %}" class="da-input" required>
+            </div>
+            <div class="da-field">
+              <label>Estado</label>
+              <select name="status" class="da-input">
+                {% for val, lbl in status_choices %}
+                <option value="{{ val }}" {% if is_edit and contract.status == val %}selected{% elif not is_edit and val == "active" %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="da-field">
+              <label>Fecha de inicio</label>
+              <input type="date" name="start_date" value="{% if is_edit %}{{ contract.start_date|date:'Y-m-d' }}{% endif %}" class="da-input" required>
+            </div>
+            <div class="da-field">
+              <label>Fecha de vencimiento <span style="color:var(--color-text-muted);font-weight:400;">(dejar vacío = indefinido)</span></label>
+              <input type="date" name="end_date" value="{% if is_edit and contract.end_date %}{{ contract.end_date|date:'Y-m-d' }}{% endif %}" class="da-input">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="da-card">
+        <div class="da-card-header">Equipo entregado</div>
+        <div class="da-card-body">
+          <div style="display:flex;flex-direction:column;gap:.875rem;">
+            <div class="da-field">
+              <label>Fotocopiadora del catálogo <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+              <select name="copier" class="da-input">
+                <option value="">— Seleccionar del catálogo —</option>
+                {% for cop in copier_list %}
+                <option value="{{ cop.pk }}" {% if is_edit and contract.copier_id == cop.pk %}selected{% endif %}>
+                  {{ cop.brand }} {{ cop.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="da-field">
+              <label>Descripción completa del equipo (marca, modelo, serial)</label>
+              <input type="text" name="equipment_description" value="{% if is_edit %}{{ contract.equipment_description }}{% endif %}" class="da-input" placeholder="Ej: Ricoh MP 2555SP — S/N: X12345678" required>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="da-card">
+        <div class="da-card-header">Condiciones económicas</div>
+        <div class="da-card-body">
+          <div class="da-form-grid">
+            <div class="da-field">
+              <label>Cuota mensual ($)</label>
+              <input type="number" name="monthly_rate" step="0.01" min="0" value="{% if is_edit %}{{ contract.monthly_rate }}{% endif %}" class="da-input" required placeholder="850000">
+            </div>
+            <div class="da-field">
+              <label>Copias incluidas / mes</label>
+              <input type="number" name="copies_included" min="0" value="{% if is_edit %}{{ contract.copies_included }}{% else %}0{% endif %}" class="da-input" placeholder="2000">
+            </div>
+            <div class="da-field da-form-full">
+              <label>Precio por copia excedente ($) <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+              <input type="number" name="copy_overage_rate" step="0.0001" min="0" value="{% if is_edit and contract.copy_overage_rate %}{{ contract.copy_overage_rate }}{% endif %}" class="da-input" placeholder="0.0050">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    {# ── Columna lateral ── #}
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <div class="da-card">
+        <div class="da-card-header">Cliente</div>
+        <div class="da-card-body">
+          <div class="da-field">
+            <label>Seleccionar cliente</label>
+            <select name="lead" class="da-input" required>
+              <option value="">— Buscar cliente —</option>
+              {% for l in lead_list %}
+              <option value="{{ l.pk }}" {% if is_edit and contract.lead_id == l.pk %}selected{% endif %}>
+                {{ l.full_name }}{% if l.company_name %} · {{ l.company_name }}{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% if is_edit %}
+          <div style="margin-top:.75rem;padding:.625rem .875rem;border-radius:.5rem;background:var(--color-bg-alt);border:1px solid var(--color-border);font-size:.78rem;">
+            <div style="color:var(--color-text-muted);">Email</div>
+            <div style="color:var(--color-text-primary);margin-top:.15rem;">{{ contract.lead.email }}</div>
+            <div style="color:var(--color-text-muted);margin-top:.5rem;">Teléfono</div>
+            <div style="color:var(--color-text-primary);margin-top:.15rem;">{{ contract.lead.phone }}</div>
+            <a href="{% url 'dashboard:client_detail' contract.lead.pk %}" class="da-btn da-btn-secondary da-btn-sm" style="margin-top:.75rem;width:100%;justify-content:center;">Ver perfil del cliente</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="da-card">
+        <div class="da-card-header">Notas / Condiciones</div>
+        <div class="da-card-body">
+          <textarea name="notes" class="da-input" rows="6" placeholder="Condiciones especiales, observaciones, cláusulas adicionales…" style="resize:vertical;">{% if is_edit %}{{ contract.notes }}{% endif %}</textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="da-btn da-btn-primary" style="width:100%;padding:.875rem;justify-content:center;font-size:.9375rem;">
+        {% if is_edit %}Guardar cambios{% else %}Crear contrato{% endif %}
+      </button>
+
+      {% if is_edit %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+        <a href="tel:{{ contract.lead.phone }}" class="da-btn da-btn-secondary" style="justify-content:center;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          Llamar
+        </a>
+        <a href="https://wa.me/{{ contract.lead.phone|cut:' '|cut:'+'|cut:'-' }}" target="_blank" class="da-btn da-btn-secondary" style="justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:.875rem;height:.875rem;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </a>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</form>
+
+{% if is_edit %}
+{# ══════════════════════════════════════════════════
+    SECCIÓN DE MEDIDORES
+══════════════════════════════════════════════════ #}
+<div style="margin-top:2.5rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+    <div>
+      <h2 style="font-size:1rem;font-weight:700;color:var(--color-text-primary);margin:0 0 .2rem;">Medidor de páginas</h2>
+      <span style="font-size:.75rem;color:var(--color-text-muted);">
+        {{ copies_included|default:0 }} pág. incluidas/mes
+        {% if contract.copy_overage_rate %} · ${{ contract.copy_overage_rate }}/excedente{% endif %}
+      </span>
+    </div>
+    <a href="{% url 'dashboard:meter_dashboard' %}" style="font-size:.72rem;color:var(--color-primary);text-decoration:none;">Ver todos los medidores →</a>
+  </div>
+
+  {# ── KPI cards ── #}
+  {% if meter_readings %}
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem;margin-bottom:1.5rem;">
+
+    {# Último periodo #}
+    <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:.875rem;padding:1rem 1.125rem;">
+      <div style="font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:.5rem;">Último periodo</div>
+      <div style="font-size:1.5rem;font-weight:800;color:var(--color-text-primary);font-variant-numeric:tabular-nums;">
+        {{ last_reading.pages_printed|floatformat:0 }}
+      </div>
+      <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;">páginas · {{ last_reading.reading_date|date:"d M Y" }}</div>
+      {% if copies_included and last_reading.pages_printed %}
+      <div style="margin-top:.625rem;">
+        <div style="height:.25rem;background:var(--color-bg-alt);border-radius:9999px;overflow:hidden;">
+          <div style="height:100%;width:{% if last_reading.quota_pct %}{{ last_reading.quota_pct }}{% else %}0{% endif %}%;background:{% if last_reading.overage_pages > 0 %}#EF4444{% elif last_reading.quota_pct >= 80 %}#F59E0B{% else %}#10B981{% endif %};border-radius:9999px;"></div>
+        </div>
+        <div style="font-size:.65rem;color:var(--color-text-muted);margin-top:.25rem;">{{ last_reading.quota_pct }}% de cuota usada</div>
+      </div>
+      {% endif %}
+    </div>
+
+    {# Promedio mensual #}
+    <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:.875rem;padding:1rem 1.125rem;">
+      <div style="font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:.5rem;">Promedio mensual</div>
+      <div style="font-size:1.5rem;font-weight:800;color:var(--color-primary);font-variant-numeric:tabular-nums;">{{ avg_pages|floatformat:0 }}</div>
+      <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;">páginas/mes (últimas {{ meter_readings|length }} lecturas)</div>
+      {% if copies_included and avg_pages %}
+      <div style="font-size:.72rem;margin-top:.5rem;">
+        {% widthratio avg_pages copies_included 100 as avg_pct %}
+        <span style="color:{% if avg_pct|add:0 > 100 %}#EF4444{% elif avg_pct|add:0 > 80 %}#F59E0B{% else %}#10B981{% endif %};">
+          {{ avg_pct }}% del plan promedio
+        </span>
+      </div>
+      {% endif %}
+    </div>
+
+    {# Tendencia #}
+    <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:.875rem;padding:1rem 1.125rem;">
+      <div style="font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:.5rem;">Tendencia</div>
+      {% if trend_pct is not None %}
+      <div style="font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;
+        color:{% if trend_pct > 10 %}#EF4444{% elif trend_pct > 0 %}#F59E0B{% else %}#10B981{% endif %};">
+        {% if trend_pct > 0 %}↑{% elif trend_pct < 0 %}↓{% else %}={% endif %} {{ trend_pct|cut:"-" }}%
+      </div>
+      <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;">
+        vs. periodo anterior
+        ({% if trend_pct > 0 %}+{% endif %}{{ meter_readings.0.pages_printed|add:0|floatformat:0 }} vs {{ meter_readings.1.pages_printed|floatformat:0 }} pág.)
+      </div>
+      {% else %}
+      <div style="font-size:1.5rem;font-weight:800;color:var(--color-text-muted);">—</div>
+      <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;">Necesitas al menos 2 lecturas</div>
+      {% endif %}
+    </div>
+
+    {# Excedente acumulado #}
+    <div style="background:var(--color-surface);border:1px solid {% if total_overage > 0 %}rgba(239,68,68,.3){% else %}var(--color-border){% endif %};border-radius:.875rem;padding:1rem 1.125rem;">
+      <div style="font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:.5rem;">Excedente acumulado</div>
+      <div style="font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;
+        color:{% if total_overage > 0 %}#EF4444{% else %}#10B981{% endif %};">
+        ${{ total_overage|floatformat:0 }}
+      </div>
+      <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;">
+        en {{ meter_readings|length }} periodo{{ meter_readings|length|pluralize:"s" }} registrado{{ meter_readings|length|pluralize:"s" }}
+      </div>
+    </div>
+  </div>
+
+  {# ── Gráfica de barras (JavaScript) ── #}
+  <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:.875rem;padding:1.25rem;margin-bottom:1.25rem;">
+    <div style="font-size:.78rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1rem;">Consumo mensual — últimos 6 periodos</div>
+    <div id="meter-chart" style="display:flex;align-items:flex-end;gap:.75rem;height:120px;padding-bottom:1.75rem;position:relative;"></div>
+    <div style="display:flex;gap:1rem;margin-top:.5rem;font-size:.68rem;color:var(--color-text-muted);">
+      <span style="display:flex;align-items:center;gap:.3rem;"><span style="width:.625rem;height:.625rem;border-radius:.2rem;background:var(--color-primary);display:inline-block;"></span> Dentro del plan</span>
+      <span style="display:flex;align-items:center;gap:.3rem;"><span style="width:.625rem;height:.625rem;border-radius:.2rem;background:#EF4444;display:inline-block;"></span> Con excedente</span>
+      {% if copies_included %}
+      <span style="display:flex;align-items:center;gap:.3rem;"><span style="width:1rem;height:1px;background:#F59E0B;border-top:2px dashed #F59E0B;display:inline-block;"></span> Cuota incluida</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Grid: historial + formulario ── #}
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;align-items:start;">
+
+    {# Historial mejorado #}
+    <div class="da-card">
+      <div class="da-card-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Historial de lecturas</span>
+        <span style="font-size:.72rem;font-weight:400;color:var(--color-text-muted);">{{ meter_readings|length }} registros</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="da-table">
+          <thead>
+            <tr>
+              <th>Periodo</th>
+              <th style="text-align:right;">Lectura</th>
+              <th style="text-align:right;">Páginas</th>
+              <th style="min-width:110px;">Uso vs cuota</th>
+              <th style="text-align:right;">Excedente</th>
+              <th style="text-align:right;">Cargo</th>
+              <th>Notas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in meter_readings %}
+            <tr style="{% if r.overage_pages > 0 %}background:rgba(239,68,68,.03);{% endif %}">
+              <td style="white-space:nowrap;">
+                <div style="font-size:.8rem;font-weight:600;color:var(--color-text-primary);">{{ r.reading_date|date:"M Y" }}</div>
+                <div style="font-size:.68rem;color:var(--color-text-muted);">{{ r.reading_date|date:"d/m/Y" }}</div>
+              </td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-size:.8rem;">
+                <div style="font-weight:700;">{{ r.current_reading|floatformat:0 }}</div>
+                <div style="font-size:.65rem;color:var(--color-text-muted);">ant. {{ r.previous_reading|floatformat:0 }}</div>
+              </td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-size:.875rem;font-weight:700;
+                color:{% if r.overage_pages > 0 %}#EF4444{% else %}var(--color-text-primary){% endif %};">
+                {{ r.pages_printed|floatformat:0 }}
+              </td>
+              <td style="min-width:110px;padding-right:1rem;">
+                {% if copies_included %}
+                <div style="display:flex;align-items:center;gap:.5rem;">
+                  <div style="flex:1;height:.375rem;background:var(--color-bg-alt);border-radius:9999px;overflow:hidden;">
+                    <div style="height:100%;width:{{ r.quota_pct }}%;border-radius:9999px;
+                      background:{% if r.overage_pages > 0 %}#EF4444{% elif r.quota_pct >= 80 %}#F59E0B{% else %}#10B981{% endif %};transition:width .3s;"></div>
+                  </div>
+                  <span style="font-size:.68rem;font-weight:700;color:var(--color-text-muted);white-space:nowrap;">{{ r.quota_pct }}%</span>
+                </div>
+                {% else %}—{% endif %}
+              </td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-size:.8rem;">
+                {% if r.overage_pages > 0 %}
+                <span style="color:#EF4444;font-weight:700;">+{{ r.overage_pages|floatformat:0 }}</span>
+                {% else %}<span style="color:#10B981;font-size:.75rem;">✓ Ok</span>{% endif %}
+              </td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-size:.8rem;font-weight:700;">
+                {% if r.overage_charge > 0 %}
+                <span style="color:#EF4444">${{ r.overage_charge|floatformat:0 }}</span>
+                {% else %}<span style="color:var(--color-text-muted);">—</span>{% endif %}
+              </td>
+              <td style="font-size:.72rem;color:var(--color-text-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.notes|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" style="text-align:center;padding:2.5rem;color:var(--color-text-muted);font-size:.8rem;">
+                Aún no hay lecturas registradas.<br>Usa el formulario de la derecha para registrar la primera.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {# Formulario nueva lectura #}
+    <div class="da-card" style="position:sticky;top:5rem;">
+      <div class="da-card-header">Registrar nueva lectura</div>
+      <div class="da-card-body">
+        <form method="post" action="{% url 'dashboard:meter_reading_create' contract.pk %}">
+          {% csrf_token %}
+          <div style="display:flex;flex-direction:column;gap:.875rem;">
+            <div class="da-field">
+              <label>Fecha de lectura</label>
+              <input type="date" name="reading_date" class="da-input" required id="read-date">
+            </div>
+            <div class="da-field">
+              <label>Lectura anterior</label>
+              <input type="number" name="previous_reading" min="0" class="da-input"
+                id="prev-reading" placeholder="Lectura previa"
+                value="{% if meter_readings %}{{ meter_readings.0.current_reading }}{% else %}0{% endif %}">
+            </div>
+            <div class="da-field">
+              <label>Lectura actual del contador</label>
+              <input type="number" name="current_reading" min="0" class="da-input"
+                id="curr-reading" placeholder="Ej: 125340" required
+                oninput="calcPages()">
+            </div>
+            {# Preview calculado #}
+            <div id="pages-preview" style="display:none;background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.625rem;padding:.75rem;font-size:.78rem;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;">
+                <span style="color:var(--color-text-muted);">Páginas impresas</span>
+                <strong id="prev-pages" style="color:var(--color-text-primary);">0</strong>
+              </div>
+              {% if copies_included %}
+              <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;">
+                <span style="color:var(--color-text-muted);">Cuota incluida</span>
+                <span>{{ copies_included|floatformat:0 }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;">
+                <span style="color:var(--color-text-muted);">Excedente</span>
+                <strong id="prev-over" style="color:#EF4444;">0</strong>
+              </div>
+              {% if contract.copy_overage_rate %}
+              <div style="display:flex;justify-content:space-between;margin-top:.35rem;padding-top:.35rem;border-top:1px solid var(--color-border);">
+                <span style="color:var(--color-text-muted);">Cargo estimado</span>
+                <strong id="prev-charge" style="color:#EF4444;">$0</strong>
+              </div>
+              {% endif %}
+              {% endif %}
+            </div>
+            <div class="da-field">
+              <label>Notas <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+              <input type="text" name="notes" class="da-input" placeholder="Observaciones de la visita…">
+            </div>
+            <button type="submit" class="da-btn da-btn-primary" style="width:100%;justify-content:center;">Registrar lectura</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Preview cálculo antes de guardar ──
+const INCLUDED = {{ copies_included|default:0 }};
+const RATE     = {{ contract.copy_overage_rate|default:"0" }};
+
+function calcPages() {
+  const curr = parseInt(document.getElementById('curr-reading').value || 0);
+  const prev = parseInt(document.getElementById('prev-reading').value || 0);
+  const pages = Math.max(0, curr - prev);
+  const over  = Math.max(0, pages - INCLUDED);
+  const charge = INCLUDED > 0 ? over * RATE : 0;
+
+  document.getElementById('prev-pages').textContent  = pages.toLocaleString();
+  document.getElementById('prev-over').textContent   = over > 0 ? '+' + over.toLocaleString() : '0';
+  document.getElementById('prev-charge').textContent = charge > 0 ? '$' + Math.round(charge).toLocaleString() : '$0';
+  document.getElementById('prev-over').style.color   = over > 0 ? '#EF4444' : '#10B981';
+  document.getElementById('pages-preview').style.display = curr > 0 ? '' : 'none';
+}
+
+// ── Gráfica de barras ──
+const chartData = {{ chart_json|safe }};
+const chartEl   = document.getElementById('meter-chart');
+
+if (chartEl && chartData.length) {
+  const maxPages = Math.max(...chartData.map(d => d.pages), 1);
+  const included = chartData[0].included;
+
+  chartData.forEach((d, i) => {
+    const barH   = Math.max(Math.round(d.pct * 0.85), 2); // % of 90px
+    const color  = d.over ? '#EF4444' : 'var(--color-primary)';
+    const col    = document.createElement('div');
+    col.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:.375rem;position:relative;';
+
+    // Línea de cuota
+    if (included > 0) {
+      const quotaH = Math.round(included / maxPages * 85);
+      const line   = document.createElement('div');
+      line.style.cssText = `position:absolute;bottom:${quotaH}px;left:0;right:0;border-top:2px dashed rgba(245,158,11,.5);pointer-events:none;`;
+      col.appendChild(line);
+    }
+
+    const barWrap = document.createElement('div');
+    barWrap.style.cssText = `width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:90px;`;
+    const bar = document.createElement('div');
+    bar.title = `${d.label}: ${d.pages.toLocaleString()} pág.${d.over ? ' · Excedente $' + Math.round(d.charge).toLocaleString() : ''}`;
+    bar.style.cssText = `width:80%;height:${barH}%;background:${color};border-radius:.3rem .3rem 0 0;min-height:3px;transition:opacity .2s;cursor:default;`;
+    bar.addEventListener('mouseover', () => bar.style.opacity = '.75');
+    bar.addEventListener('mouseout',  () => bar.style.opacity = '1');
+
+    const lbl = document.createElement('div');
+    lbl.textContent = d.label;
+    lbl.style.cssText = 'font-size:.6rem;color:var(--color-text-muted);position:absolute;bottom:-1.4rem;text-align:center;width:100%;';
+
+    barWrap.appendChild(bar);
+    col.appendChild(barWrap);
+    col.appendChild(lbl);
+    chartEl.appendChild(col);
+  });
+}
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Encuesta de Satisfacción — Solution Copiers S.A.S{% endblock %}
+{% block meta_description %}Cuéntanos cómo fue tu experiencia con nuestros servicios. Tu opinión nos ayuda a mejorar.{% endblock %}
+
+{% block content %}
+<div class="survey-page-bg" aria-hidden="true">
+  <div class="survey-orb survey-orb--1"></div>
+  <div class="survey-orb survey-orb--2"></div>
+  <div class="survey-orb survey-orb--3"></div>
+</div>
+
+<section class="relative py-12 lg:py-20">
+  <div class="container-custom relative">
+
+    <!-- ── Grid principal: sidebar + form ── -->
+    <div class="survey-layout">
+
+      <!-- ════════════════════════════════
+           SIDEBAR IZQUIERDO (desktop)
+           ════════════════════════════════ -->
+      <aside class="survey-sidebar">
+        <div class="survey-sidebar-inner">
+
+          <!-- Encabezado -->
+          <div class="mb-8">
+            <span class="survey-badge mb-4">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+              </svg>
+              Encuesta de satisfacción
+            </span>
+            <h1 class="font-display text-2xl lg:text-3xl text-text-primary leading-tight mb-3">
+              ¿Cómo fue tu <em>experiencia</em>?
+            </h1>
+            <p class="text-sm text-text-secondary leading-relaxed">
+              Tu opinión nos ayuda a seguir mejorando. Toma menos de 2 minutos.
+            </p>
+          </div>
+
+          <!-- Stepper de pasos -->
+          <nav class="survey-stepper" aria-label="Pasos de la encuesta">
+            <div class="survey-step-item is-active" data-step="1">
+              <div class="survey-step-dot">
+                <span class="survey-step-num-inner">1</span>
+              </div>
+              <div class="survey-step-info">
+                <span class="survey-step-title">Datos de contacto</span>
+                <span class="survey-step-subtitle">Nombre, empresa, correo</span>
+              </div>
+            </div>
+            <div class="survey-step-connector"></div>
+            <div class="survey-step-item" data-step="2">
+              <div class="survey-step-dot">
+                <span class="survey-step-num-inner">2</span>
+              </div>
+              <div class="survey-step-info">
+                <span class="survey-step-title">Servicio recibido</span>
+                <span class="survey-step-subtitle">¿Qué servicio usaste?</span>
+              </div>
+            </div>
+            <div class="survey-step-connector"></div>
+            <div class="survey-step-item" data-step="3">
+              <div class="survey-step-dot">
+                <span class="survey-step-num-inner">3</span>
+              </div>
+              <div class="survey-step-info">
+                <span class="survey-step-title">Calificación</span>
+                <span class="survey-step-subtitle">Puntúa nuestra atención</span>
+              </div>
+            </div>
+            <div class="survey-step-connector"></div>
+            <div class="survey-step-item" data-step="4">
+              <div class="survey-step-dot">
+                <span class="survey-step-num-inner">4</span>
+              </div>
+              <div class="survey-step-info">
+                <span class="survey-step-title">Recomendación</span>
+                <span class="survey-step-subtitle">¿Nos recomendarías?</span>
+              </div>
+            </div>
+          </nav>
+
+          <!-- Trust block -->
+          <div class="survey-trust-block">
+            <div class="survey-trust-item">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              Datos 100% confidenciales
+            </div>
+            <div class="survey-trust-item">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Menos de 2 minutos
+            </div>
+            <div class="survey-trust-item">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+              +10 años de experiencia
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ════════════════════════════════
+           FORMULARIO PRINCIPAL
+           ════════════════════════════════ -->
+      <div class="survey-form-col">
+
+        <!-- Encabezado mobile (se oculta en desktop) -->
+        <div class="lg:hidden text-center mb-8">
+          <span class="survey-badge mb-3">Encuesta de satisfacción</span>
+          <h1 class="font-display text-display-md text-text-primary mb-2">
+            ¿Cómo fue tu <em>experiencia</em>?
+          </h1>
+          <p class="text-text-secondary">Tu opinión nos ayuda a mejorar.</p>
+        </div>
+
+        {% if messages %}
+        <div class="mb-5">
+          {% for msg in messages %}
+          <div class="flex items-center gap-3 px-4 py-3 rounded-lg border"
+               style="background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface)); border-color: color-mix(in srgb, var(--color-danger) 30%, transparent); color: var(--color-danger);">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            {{ msg }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <form id="encuestaForm" method="POST" action="{% url 'encuestas:guardar' %}" novalidate>
+          {% csrf_token %}
+          <div class="space-y-5">
+
+            <!-- ── SECCIÓN 01: Datos ── -->
+            <div class="survey-card" data-section="1">
+              <div class="survey-card-header">
+                <span class="survey-card-num">01</span>
+                <div>
+                  <h2 class="survey-card-title">Datos de contacto</h2>
+                  <p class="survey-card-subtitle">¿Cómo podemos identificarte?</p>
+                </div>
+              </div>
+              <div class="survey-card-body">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="survey-field">
+                    <label for="nombre" class="survey-label">
+                      Nombre completo
+                      <span class="survey-required">*</span>
+                    </label>
+                    <div class="survey-input-wrap">
+                      <svg class="survey-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                      </svg>
+                      <input type="text" id="nombre" name="nombre" class="survey-input"
+                             placeholder="Ej: Carlos Rodríguez" required />
+                    </div>
+                    <span class="survey-field-error hidden" id="err-nombre"></span>
+                  </div>
+
+                  <div class="survey-field">
+                    <label for="empresa" class="survey-label">Empresa</label>
+                    <div class="survey-input-wrap">
+                      <svg class="survey-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/>
+                      </svg>
+                      <input type="text" id="empresa" name="empresa" class="survey-input"
+                             placeholder="Nombre de tu empresa" />
+                    </div>
+                  </div>
+
+                  <div class="survey-field">
+                    <label for="email" class="survey-label">
+                      Correo electrónico
+                      <span class="survey-required">*</span>
+                    </label>
+                    <div class="survey-input-wrap">
+                      <svg class="survey-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+                      </svg>
+                      <input type="email" id="email" name="email" class="survey-input"
+                             placeholder="correo@empresa.com" required />
+                    </div>
+                    <span class="survey-field-error hidden" id="err-email"></span>
+                  </div>
+
+                  <div class="survey-field">
+                    <label for="telefono" class="survey-label">Teléfono</label>
+                    <div class="survey-input-wrap">
+                      <svg class="survey-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/>
+                      </svg>
+                      <input type="tel" id="telefono" name="telefono" class="survey-input"
+                             placeholder="+57 300 000 0000" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── SECCIÓN 02: Servicio ── -->
+            <div class="survey-card" data-section="2">
+              <div class="survey-card-header">
+                <span class="survey-card-num">02</span>
+                <div>
+                  <h2 class="survey-card-title">Servicio recibido</h2>
+                  <p class="survey-card-subtitle">¿Con qué área trabajaste?</p>
+                </div>
+              </div>
+              <div class="survey-card-body">
+                <div class="survey-service-grid">
+                  {% for value, label in model_choices %}
+                  <label class="survey-service-card">
+                    <input type="radio" name="tipo_servicio" value="{{ value }}" class="sr-only" />
+                    <span class="survey-service-inner">
+                      <span class="survey-service-icon-wrap">
+                        {% if value == "venta" %}
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
+                        {% elif value == "alquiler" %}
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3"/></svg>
+                        {% elif value == "mantenimiento" %}
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/></svg>
+                        {% elif value == "suministros" %}
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+                        {% elif value == "soporte" %}
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"/></svg>
+                        {% elif value == "software" %}
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/></svg>
+                        {% elif value == "cableado" %}
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z"/></svg>
+                        {% endif %}
+                      </span>
+                      <span class="survey-service-label">{{ label }}</span>
+                    </span>
+                  </label>
+                  {% endfor %}
+                </div>
+                <span class="survey-field-error hidden mt-3 block" id="err-servicio">Selecciona un servicio para continuar.</span>
+              </div>
+            </div>
+
+            <!-- ── SECCIÓN 03: Calificaciones ── -->
+            <div class="survey-card" data-section="3">
+              <div class="survey-card-header">
+                <span class="survey-card-num">03</span>
+                <div>
+                  <h2 class="survey-card-title">Calificación del servicio</h2>
+                  <p class="survey-card-subtitle">1 estrella = Muy malo · 5 estrellas = Excelente</p>
+                </div>
+              </div>
+              <div class="survey-card-body">
+                <div class="survey-ratings-list">
+                  {% for field_name, label in rating_fields %}
+                  <div class="survey-rating-row" data-field="{{ field_name }}">
+                    <span class="survey-rating-label">{{ label }}</span>
+                    <div class="survey-stars-wrap">
+                      <div class="star-group" data-field="{{ field_name }}">
+                        {% for i in "12345" %}
+                        <button type="button" class="survey-star" data-val="{{ forloop.counter }}"
+                                aria-label="{{ forloop.counter }} estrella{% if forloop.counter != 1 %}s{% endif %}">
+                          <svg viewBox="0 0 24 24" class="survey-star-svg">
+                            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                          </svg>
+                        </button>
+                        {% endfor %}
+                      </div>
+                      <span class="survey-star-hint"></span>
+                    </div>
+                    <input type="hidden" name="{{ field_name }}" class="rating-input" value="" />
+                  </div>
+                  {% endfor %}
+                </div>
+                <span class="survey-field-error hidden mt-3 block" id="err-rating">Por favor califica todos los criterios.</span>
+              </div>
+            </div>
+
+            <!-- ── SECCIÓN 04: Recomendación ── -->
+            <div class="survey-card" data-section="4">
+              <div class="survey-card-header">
+                <span class="survey-card-num">04</span>
+                <div>
+                  <h2 class="survey-card-title">Última pregunta</h2>
+                  <p class="survey-card-subtitle">Tu opinión final nos importa mucho</p>
+                </div>
+              </div>
+              <div class="survey-card-body">
+
+                <p class="text-text-primary font-medium mb-5 text-base">
+                  ¿Recomendarías Solution Copiers a un colega o empresa?
+                </p>
+
+                <div class="survey-recommend-grid">
+                  <label class="survey-recommend-card">
+                    <input type="radio" name="recomendaria" value="si" checked class="sr-only" />
+                    <span class="survey-recommend-inner">
+                      <span class="survey-recommend-icon survey-recommend-icon--yes">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75A2.25 2.25 0 0116.5 4.5c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 00-1.423-.23H5.904M14.25 9h2.25M5.904 18.75c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 01-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 10.203 4.167 9.75 5 9.75h1.053c.472 0 .745.556.5.96a8.958 8.958 0 00-1.302 4.665c0 1.194.232 2.333.654 3.375z"/>
+                        </svg>
+                      </span>
+                      <span class="survey-recommend-text">
+                        <strong>Sí, con gusto</strong>
+                        <span>Los recomendaría</span>
+                      </span>
+                    </span>
+                  </label>
+
+                  <label class="survey-recommend-card">
+                    <input type="radio" name="recomendaria" value="no" class="sr-only" />
+                    <span class="survey-recommend-inner">
+                      <span class="survey-recommend-icon survey-recommend-icon--no">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 15h2.25m8.024-9.75c.011.05.028.1.052.148.591 1.2.924 2.55.924 3.977a8.96 8.96 0 01-.999 4.125m.023-8.25c-.076-.365.183-.75.575-.75h.908c.889 0 1.713.518 1.972 1.368.339 1.11.521 2.287.521 3.507 0 1.553-.295 3.036-.831 4.398C20.613 14.547 19.833 15 19 15h-1.053c-.472 0-.745-.556-.5-.96a8.95 8.95 0 00.303-.54m.023-8.25H16.48a4.5 4.5 0 01-1.423-.23l-3.114-1.04a4.5 4.5 0 00-1.423-.23H6.504c-.618 0-1.217.247-1.605.729A11.95 11.95 0 002.25 12c0 .434.023.863.068 1.285C2.427 14.306 3.346 15 4.372 15h3.126c.618 0 .991.724.725 1.282A7.471 7.471 0 007.5 19.5a2.25 2.25 0 002.25 2.25.75.75 0 00.75-.75v-.633c0-.573.11-1.14.322-1.672.304-.76.93-1.33 1.653-1.715a9.04 9.04 0 002.86-2.4c.498-.634 1.226-1.08 2.032-1.08h.384"/>
+                        </svg>
+                      </span>
+                      <span class="survey-recommend-text">
+                        <strong>No por ahora</strong>
+                        <span>Hay oportunidades de mejora</span>
+                      </span>
+                    </span>
+                  </label>
+                </div>
+
+                <div class="mt-6">
+                  <label for="comentarios" class="survey-label">
+                    Comentarios adicionales
+                    <span class="text-text-muted font-normal">(opcional)</span>
+                  </label>
+                  <textarea id="comentarios" name="comentarios" rows="4"
+                            class="survey-input resize-none mt-1 w-full"
+                            placeholder="Cuéntanos qué podemos mejorar o qué te pareció excelente..."></textarea>
+                  <p class="text-xs text-text-muted mt-1.5">Tu comentario nos ayuda a mejorar directamente.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── SUBMIT ── -->
+            <div class="survey-submit-area">
+              <button type="submit" class="btn-primary survey-submit-btn" id="submitBtn">
+                <span class="btn-text">Enviar encuesta</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+                </svg>
+              </button>
+              <p class="survey-privacy-note">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                Datos confidenciales · Solo para mejorar el servicio
+              </p>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'dist/js/encuesta.js' %}" defer></script>
+{% endblock %}

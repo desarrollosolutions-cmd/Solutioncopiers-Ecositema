@@ -1,0 +1,40 @@
+🔔 NUEVA COTIZACIÓN — Solution Copiers
+
+═══════════════════════════════════════════════
+DATOS DEL LEAD
+═══════════════════════════════════════════════
+
+Nombre:        {{ quote.lead.full_name }}
+Email:         {{ quote.lead.email }}
+Teléfono:      {{ quote.lead.phone }}
+Empresa:       {{ quote.lead.company_name|default:"No proporcionada" }}
+Tamaño:        {{ quote.lead.get_company_size_display|default:"No proporcionado" }}
+Cargo:         {{ quote.lead.job_title|default:"No proporcionado" }}
+Ciudad:        {{ quote.lead.city }}
+
+═══════════════════════════════════════════════
+SOLICITUD
+═══════════════════════════════════════════════
+
+Área de interés:  {{ quote.get_interest_area_display }}
+ID:               {{ quote.public_id }}
+Recibida:         {{ quote.created_at|date:"d/m/Y H:i" }}
+
+Estimación automática: ${{ quote.estimated_total|floatformat:0 }} COP
+
+{% if quote.wizard_data %}
+═══════════════════════════════════════════════
+DATOS DEL COTIZADOR
+═══════════════════════════════════════════════
+{% for key, value in quote.wizard_data.items %}{{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+
+{% if quote.client_message %}
+═══════════════════════════════════════════════
+MENSAJE DEL CLIENTE
+═══════════════════════════════════════════════
+{{ quote.client_message }}
+{% endif %}
+
+⏰ Recuerda contactar al cliente dentro de las próximas 24 horas.

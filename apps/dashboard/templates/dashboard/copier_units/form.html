@@ -1,0 +1,97 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}{% if is_edit %}Unidad {{ unit.serial_number }}{% else %}Nueva unidad{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <a href="{% url 'dashboard:copier_units' %}">Inventario</a>
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">{% if is_edit %}{{ unit.serial_number }}{% else %}Nueva unidad{% endif %}</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">{% if is_edit %}Editar unidad · {{ unit.serial_number }}{% else %}Registrar unidad de equipo{% endif %}</h1>
+  <a href="{% url 'dashboard:copier_units' %}" class="da-btn da-btn-secondary">← Volver</a>
+</div>
+
+{% if error %}
+<div class="da-alert da-alert-error" style="margin-bottom:1rem;">{{ error }}</div>
+{% endif %}
+
+<form method="post" style="max-width:640px;">
+  {% csrf_token %}
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+    <div class="da-card">
+      <div class="da-card-header">Información del equipo</div>
+      <div class="da-card-body">
+        <div class="da-form-grid">
+          <div class="da-field da-form-full">
+            <label>Modelo del catálogo</label>
+            <select name="copier" class="da-input" required>
+              <option value="">— Seleccionar modelo —</option>
+              {% for cop in copier_list %}
+              <option value="{{ cop.pk }}" {% if is_edit and unit.copier_id == cop.pk %}selected{% elif post.copier == cop.pk|stringformat:"s" %}selected{% endif %}>
+                {{ cop.brand }} {{ cop.model_number }} — {{ cop.name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="da-field da-form-full">
+            <label>Número de serial <span style="color:var(--color-text-muted);font-weight:400;">(único por unidad)</span></label>
+            <input type="text" name="serial_number" class="da-input"
+              value="{% if is_edit %}{{ unit.serial_number }}{% else %}{{ post.serial_number|default:'' }}{% endif %}"
+              placeholder="Ej: X1234567890" required>
+          </div>
+          <div class="da-field">
+            <label>Estado actual</label>
+            <select name="status" class="da-input">
+              {% for val, lbl in status_choices %}
+              <option value="{{ val }}" {% if is_edit and unit.status == val %}selected{% elif not is_edit and val == 'available' %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="da-field">
+            <label>Condición física</label>
+            <select name="condition" class="da-input">
+              {% for val, lbl in condition_choices %}
+              <option value="{{ val }}" {% if is_edit and unit.condition == val %}selected{% elif not is_edit and val == 'good' %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="da-card">
+      <div class="da-card-header">Detalles adicionales</div>
+      <div class="da-card-body">
+        <div class="da-form-grid">
+          <div class="da-field">
+            <label>Fecha de adquisición <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+            <input type="date" name="acquisition_date" class="da-input"
+              value="{% if is_edit and unit.acquisition_date %}{{ unit.acquisition_date|date:'Y-m-d' }}{% endif %}">
+          </div>
+          <div class="da-field">
+            <label>Contador actual (páginas)</label>
+            <input type="number" name="current_meter" min="0" class="da-input"
+              value="{% if is_edit %}{{ unit.current_meter }}{% else %}0{% endif %}"
+              placeholder="0">
+          </div>
+          <div class="da-field da-form-full">
+            <label>Ubicación / Notas <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+            <input type="text" name="location_notes" class="da-input"
+              value="{% if is_edit %}{{ unit.location_notes }}{% endif %}"
+              placeholder="Ej: En bodega principal · Rack A-3 o cliente Juan García">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="da-btn da-btn-primary" style="width:100%;padding:.875rem;justify-content:center;font-size:.9375rem;">
+      {% if is_edit %}Guardar cambios{% else %}Registrar unidad{% endif %}
+    </button>
+
+  </div>
+</form>
+{% endblock %}

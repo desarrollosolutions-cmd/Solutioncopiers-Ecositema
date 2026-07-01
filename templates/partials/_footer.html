@@ -1,0 +1,86 @@
+{% load static i18n %}
+<footer class="bg-primary-dark text-white mt-20">
+    <div class="container-custom py-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+            <div class="lg:col-span-1">
+                <div class="mb-4">
+                    <img src="{% static 'images/logo.webp' %}"
+                         alt="Solution Copiers"
+                         class="h-12 w-auto object-contain brightness-0 invert"
+                         width="200" height="48">
+                </div>
+                <p class="text-sm text-white/70 mb-6">{{ site_settings.tagline }}</p>
+                <div class="flex items-center gap-3">
+                    {% if site_settings.instagram_url %}
+                    <a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener noreferrer"
+                       class="w-9 h-9 rounded-base bg-white/10 hover:bg-accent flex items-center justify-center transition-colors"
+                       aria-label="Instagram">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                    {% endif %}
+                    {% if site_settings.facebook_url %}
+                    <a href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener noreferrer"
+                       class="w-9 h-9 rounded-base bg-white/10 hover:bg-accent flex items-center justify-center transition-colors"
+                       aria-label="Facebook">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <h4 class="font-display text-sm uppercase tracking-wider text-accent mb-4">Hardware</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="{% url 'catalog:rental_list' %}" class="text-white/70 hover:text-white transition">{% trans "Alquiler de fotocopiadoras" %}</a></li>
+                    <li><a href="{% url 'catalog:sale_list' %}" class="text-white/70 hover:text-white transition">{% trans "Venta de fotocopiadoras" %}</a></li>
+                    <li><a href="{% url 'catalog:structured_cabling' %}" class="text-white/70 hover:text-white transition">{% trans "Cableado estructurado" %}</a></li>
+                    <li><a href="{% url 'catalog:technical_service' %}" class="text-white/70 hover:text-white transition">{% trans "Servicio técnico" %}</a></li>
+                    <li><a href="{% url 'catalog:consumables_list' %}" class="text-white/70 hover:text-white transition">{% trans "Consumibles Ricoh" %}</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-display text-sm uppercase tracking-wider text-accent mb-4">Software</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="{% url 'services:software_development' %}" class="text-white/70 hover:text-white transition">{% trans "Software a la medida" %}</a></li>
+                    <li><a href="{% url 'services:web_design' %}" class="text-white/70 hover:text-white transition">{% trans "Diseño web" %}</a></li>
+                    <li><a href="{% url 'services:mobile_apps' %}" class="text-white/70 hover:text-white transition">{% trans "Apps móviles" %}</a></li>
+                    <li><a href="{% url 'services:database_services' %}" class="text-white/70 hover:text-white transition">{% trans "Bases de datos" %}</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-display text-sm uppercase tracking-wider text-accent mb-4">{% trans "Contacto" %}</h4>
+                <ul class="space-y-3 text-sm">
+                    <li class="text-white/70">{{ site_settings.address }}</li>
+                    <li><a href="tel:{{ site_settings.phone_primary }}" class="text-white/70 hover:text-white transition">{{ site_settings.phone_primary }}</a></li>
+                    <li><a href="mailto:{{ site_settings.email_contact }}" class="text-white/70 hover:text-white transition">{{ site_settings.email_contact }}</a></li>
+                    {% if site_settings.instagram_url %}
+                    <li><a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener noreferrer" class="text-white/70 hover:text-white transition inline-flex items-center gap-2">
+                        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        @solutioncopiers
+                    </a></li>
+                    {% endif %}
+                    {% if site_settings.facebook_url %}
+                    <li><a href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener noreferrer" class="text-white/70 hover:text-white transition inline-flex items-center gap-2">
+                        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        solutioncopiers2
+                    </a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row gap-4 justify-between items-center text-xs text-white/50">
+            <div>© {% now "Y" %} {{ site_settings.site_name }}. {% trans "Todos los derechos reservados." %}</div>
+            <div class="flex gap-6">
+                <a href="{% url 'core:privacy' %}" class="hover:text-white transition">{% trans "Política de privacidad" %}</a>
+                <a href="{% url 'core:terms' %}" class="hover:text-white transition">{% trans "Términos y condiciones" %}</a>
+            </div>
+        </div>
+    </div>
+</footer>

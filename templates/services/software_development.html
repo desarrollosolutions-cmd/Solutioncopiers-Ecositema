@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="section">
+    <div class="container-custom">
+        <div class="mb-10 max-w-3xl">
+            <div class="silo-label software mb-4">Silo Software</div>
+            <h1 class="font-display text-display-xl mb-4 text-balance">Desarrollo de Software a la Medida en Medellín</h1>
+            <p class="text-lg text-text-secondary text-pretty mb-4">
+                El <strong>desarrollo de software a la medida</strong> en Medellín exige más que código: requiere
+                entender el negocio y construir soluciones que escalan con la empresa. Somos una fábrica de software
+                especializada en <strong>aplicaciones web corporativas</strong>, sistemas ERP/CRM, integraciones API
+                e inteligencia artificial aplicada a procesos B2B para empresas en Colombia y Latinoamérica.
+            </p>
+            <p class="text-base text-text-muted text-pretty">
+                Nuestro equipo domina el <strong>diseño de bases de datos empresariales</strong> relacionales
+                (PostgreSQL, MySQL, SQL Server) y no relacionales (MongoDB, Redis, Firebase), garantizando integridad
+                de datos y arquitecturas cloud-ready en AWS, GCP y Azure. Desarrollamos bajo metodologías ágiles con
+                entrega incremental, pruebas automatizadas y soporte continuo post-lanzamiento.
+                Agenda tu reunión de discovery sin costo.
+            </p>
+        </div>
+
+        {% block hero_image %}
+        <div class="w-full aspect-video rounded-2xl overflow-hidden mb-12">
+            <img src="{% static 'images/img-hero-software.jpg' %}"
+                 alt="Desarrollo de software a la medida en Medellín"
+                 class="w-full h-full object-cover object-center" loading="lazy">
+        </div>
+        {% endblock %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for service in services %}
+            <a href="{{ service.get_absolute_url }}" class="card-padded hover:border-primary transition">
+                <h3 class="font-display text-xl mb-2">{{ service.name }}</h3>
+                <p class="text-sm text-text-muted mb-3">{{ service.tagline }}</p>
+                <p class="text-text-secondary mb-4">{{ service.short_description }}</p>
+                {% if service.starting_price %}
+                <div class="font-display text-lg text-primary">Desde ${{ service.starting_price|floatformat:0 }} <span class="text-sm text-text-muted">COP</span></div>
+                {% endif %}
+            </a>
+            {% empty %}
+                <p class="text-text-secondary col-span-2 text-center py-12">Próximamente disponible.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% if technologies %}
+<section class="section bg-bg-alt">
+    <div class="container-custom">
+        <h2 class="font-display text-display-md mb-8 text-center">Stack tecnológico</h2>
+        <div class="flex flex-wrap justify-center gap-4">
+            {% for tech in technologies %}
+                <span class="badge text-base px-4 py-2">{{ tech.name }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% include "components/_cta_section.html" with primary_url="/cotizador/?servicio=software" primary_text="Cotizar software ahora" %}
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+    <div class="container-custom max-w-4xl">
+        <h1 class="font-display text-display-lg mb-4">{{ service.name }}</h1>
+        <p class="text-lg text-text-secondary mb-8">{{ service.short_description }}</p>
+
+        <div class="prose prose-lg mb-8">{{ service.description|safe }}</div>
+
+        {% if service.features %}
+        <h2 class="font-display text-2xl mb-4">Incluye</h2>
+        <ul class="space-y-2 mb-8">
+            {% for feature in service.features %}
+            <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-success mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span>{{ feature }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <a href="{% url 'leads:wizard' %}?servicio=cabling" class="btn-primary">Solicitar cotización</a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "leads/emails/base_email.html" %}
+{% block subject %}📋 Contrato por vencer — {{ contract.lead.full_name }} ({{ days_left }} días){% endblock %}
+{% block header_subtitle %}Alerta de vencimiento de contrato{% endblock %}
+
+{% block body %}
+{% if days_left <= 7 %}
+<span class="badge badge-danger">Vence en {{ days_left }} días</span>
+{% else %}
+<span class="badge badge-warning">Vence en {{ days_left }} días</span>
+{% endif %}
+
+<h2 class="title" style="margin-top:12px;">Contrato por vencer</h2>
+<p class="subtitle">El contrato <strong>{{ contract.contract_number }}</strong> de {{ contract.lead.full_name }} vence el {{ contract.end_date|date:"d/m/Y" }}.</p>
+
+<div class="info-grid">
+  <div class="info-item">
+    <div class="info-label">Cliente</div>
+    <div class="info-value">{{ contract.lead.full_name }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Empresa</div>
+    <div class="info-value">{{ contract.lead.company_name|default:"Particular" }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">N° contrato</div>
+    <div class="info-value" style="font-family:monospace;">{{ contract.contract_number }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Cuota mensual</div>
+    <div class="info-value">${{ contract.monthly_rate|floatformat:0 }} COP</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Equipo</div>
+    <div class="info-value">{{ contract.equipment_description|truncatechars:50 }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Fecha de vencimiento</div>
+    <div class="info-value" style="color:{% if days_left <= 7 %}#DC2626{% else %}#B45309{% endif %};">{{ contract.end_date|date:"d/m/Y" }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Teléfono</div>
+    <div class="info-value">{{ contract.lead.phone }}</div>
+  </div>
+  <div class="info-item">
+    <div class="info-label">Email cliente</div>
+    <div class="info-value" style="word-break:break-all;">{{ contract.lead.email }}</div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>💡 Acción sugerida</strong>
+  Contacta al cliente para gestionar la renovación del contrato antes de la fecha de vencimiento.
+  Una renovación exitosa evita la interrupción del servicio y asegura la continuidad del ingreso.
+</div>
+
+<a href="{{ dashboard_url }}" class="btn">Ver contrato en el CRM →</a>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Retenciones Sufridas{% endblock %}
+{% block nav_contabilidad %}active{% endblock %}
+{% block breadcrumb %}
+<span class="da-breadcrumb-sep">/</span>
+<a href="{% url 'dashboard:contabilidad' %}" class="da-breadcrumb-link">Contabilidad</a>
+<span class="da-breadcrumb-sep">/</span>
+<span class="da-breadcrumb-current">Retenciones Sufridas</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Retenciones Sufridas</h1>
+    <div style="font-size:.8rem;color:var(--color-text-muted);">{{ periodo_label }} · {{ date_from }} al {{ date_to }}</div>
+  </div>
+  <a href="?year={{ year }}&bimestre={{ bimestre }}&export=csv" class="da-btn da-btn-secondary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.9rem;height:.9rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+    Exportar CSV
+  </a>
+</div>
+
+<form method="get" style="display:flex;flex-wrap:wrap;gap:.625rem;align-items:center;margin-bottom:1.25rem;">
+  <select name="year" class="da-input" style="width:auto;padding:.45rem .875rem;">
+    {% for y in años %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}
+  </select>
+  <select name="bimestre" class="da-input" style="width:auto;padding:.45rem .875rem;">
+    <option value="0" {% if bimestre == 0 %}selected{% endif %}>Año completo</option>
+    {% for num, lbl in bimestres %}<option value="{{ num }}" {% if bimestre == num %}selected{% endif %}>Bimestre {{ num }}: {{ lbl }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
+</form>
+
+{# KPIs retenciones #}
+<div class="da-stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.25rem;">
+  <div class="da-stat">
+    <div class="da-stat-bar" style="background:var(--color-danger);"></div>
+    <div class="da-stat-label">RteFuente sufrida</div>
+    <div class="da-stat-value" style="color:var(--color-danger);">-${{ totales.rte_fuente|default:0|floatformat:0 }}</div>
+    <div class="da-stat-sub">Retención en la fuente aplicada</div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-bar" style="background:#F59E0B;"></div>
+    <div class="da-stat-label">ReteICA sufrida</div>
+    <div class="da-stat-value" style="color:#F59E0B;">-${{ totales.rte_ica|default:0|floatformat:0 }}</div>
+    <div class="da-stat-sub">Industria y comercio Medellín</div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-bar" style="background:var(--color-primary);"></div>
+    <div class="da-stat-label">ReteIVA sufrida</div>
+    <div class="da-stat-value">-${{ totales.rte_iva|default:0|floatformat:0 }}</div>
+    <div class="da-stat-sub">15% del IVA (grandes contribuyentes)</div>
+  </div>
+</div>
+
+<div class="da-table-wrap">
+  <div class="da-table-header">
+    <span class="da-table-title">{{ facturas.count }} factura{{ facturas.count|pluralize:"s" }} con retenciones</span>
+    <div style="font-size:.8rem;color:var(--color-text-muted);">
+      Total retenciones: <strong style="color:var(--color-danger);">
+        -${% with t=totales.rte_fuente|default:0 i=totales.rte_ica|default:0 v=totales.rte_iva|default:0 %}{{ t|floatformat:0 }}{% endwith %}
+      </strong>
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="da-table" style="min-width:860px;">
+      <thead>
+        <tr>
+          <th>Factura</th><th>Fecha</th><th>NIT cliente</th><th>Cliente</th>
+          <th class="text-right">Total fact.</th>
+          <th class="text-right">RteFte %</th><th class="text-right">RteFte $</th>
+          <th class="text-right">RteICA ‰</th><th class="text-right">RteICA $</th>
+          <th class="text-right">RteIVA %</th><th class="text-right">RteIVA $</th>
+          <th class="text-right">Total Rte.</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in facturas %}
+        <tr>
+          <td><a href="{% url 'dashboard:invoice_detail' pk=inv.pk %}" style="color:var(--color-primary);font-family:var(--font-mono);font-size:.75rem;">{{ inv.invoice_number }}</a></td>
+          <td style="font-size:.8rem;">{{ inv.issue_date }}</td>
+          <td style="font-family:var(--font-mono);font-size:.75rem;color:var(--color-text-muted);">{{ inv.client_nit|default:"—" }}</td>
+          <td style="font-size:.82rem;">{{ inv.client_name|truncatechars:25 }}</td>
+          <td style="text-align:right;font-weight:600;">${{ inv.total|floatformat:0 }}</td>
+          <td style="text-align:right;font-size:.8rem;">{{ inv.retention_fuente_pct }}%</td>
+          <td style="text-align:right;font-size:.8rem;color:var(--color-danger);">
+            {% if inv.retention_fuente %}-${{ inv.retention_fuente|floatformat:0 }}{% else %}—{% endif %}
+          </td>
+          <td style="text-align:right;font-size:.8rem;">{{ inv.retention_ica_pct }}‰</td>
+          <td style="text-align:right;font-size:.8rem;color:#F59E0B;">
+            {% if inv.retention_ica %}-${{ inv.retention_ica|floatformat:0 }}{% else %}—{% endif %}
+          </td>
+          <td style="text-align:right;font-size:.8rem;">{{ inv.retention_iva_pct }}%</td>
+          <td style="text-align:right;font-size:.8rem;">
+            {% if inv.retention_iva %}-${{ inv.retention_iva|floatformat:0 }}{% else %}—{% endif %}
+          </td>
+          <td style="text-align:right;font-weight:700;color:var(--color-danger);">-${{ inv.total_retenciones|floatformat:0 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="12" style="text-align:center;padding:2rem;color:var(--color-text-muted);">Sin retenciones registradas en el período</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="da-card" style="margin-top:1.25rem;">
+  <div class="da-card-header">Información retenciones Colombia</div>
+  <div class="da-card-body" style="font-size:.82rem;color:var(--color-text-muted);">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+      <div>
+        <div style="font-weight:700;color:var(--color-text-primary);margin-bottom:.4rem;">RteFuente (Art. 392-401 E.T.)</div>
+        <ul style="padding-left:1rem;line-height:1.9;list-style:disc;">
+          <li>Compras productos: <strong>2.5%</strong> (declarantes) / <strong>3.5%</strong> (no decl.)</li>
+          <li>Servicios generales: <strong>4%</strong> declarantes</li>
+          <li>Honorarios personas jurídicas: <strong>11%</strong></li>
+          <li>Honorarios personas naturales: <strong>10%</strong></li>
+          <li>Transporte de carga: <strong>1%</strong></li>
+        </ul>
+      </div>
+      <div>
+        <div style="font-weight:700;color:var(--color-text-primary);margin-bottom:.4rem;">ReteICA (Medellín)</div>
+        <ul style="padding-left:1rem;line-height:1.9;list-style:disc;">
+          <li>Comercio al por mayor/menor: <strong>9.66‰</strong></li>
+          <li>Servicios en general: <strong>9.66‰</strong></li>
+          <li>Actividades industriales: variable</li>
+          <li>Solo aplica si el cliente es agente retenedor de ICA</li>
+          <li>Base: valor de la venta sin IVA</li>
+        </ul>
+      </div>
+      <div>
+        <div style="font-weight:700;color:var(--color-text-primary);margin-bottom:.4rem;">ReteIVA</div>
+        <ul style="padding-left:1rem;line-height:1.9;list-style:disc;">
+          <li>Tarifa: <strong>15%</strong> del IVA facturado</li>
+          <li>Solo aplica cuando el comprador es <em>gran contribuyente</em></li>
+          <li>Se descuenta del IVA a pagar en el F-300</li>
+          <li>El agente retenedor la declara en F-350</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

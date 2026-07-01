@@ -1,0 +1,154 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Contratos{% endblock %}
+{% block nav_contracts %}active{% endblock %}
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">Contratos de alquiler</span>
+{% endblock %}
+
+{% block content %}
+{# ── Stats ── #}
+<div class="da-stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:1.5rem;">
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,var(--color-success) 12%,transparent);color:var(--color-success);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:var(--color-success);">{{ total_active }}</div>
+    <div class="da-stat-lbl">Contratos activos</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,#D97706 12%,transparent);color:#D97706;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:#D97706;">{{ total_expiring }}</div>
+    <div class="da-stat-lbl">Vencen en 30 días</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,var(--color-danger) 12%,transparent);color:var(--color-danger);">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:var(--color-danger);">{{ total_expired }}</div>
+    <div class="da-stat-lbl">Vencidos</div>
+    <div class="da-stat-bar"></div>
+  </div>
+</div>
+
+{# ── Alerta vencimientos ── #}
+{% if total_expiring %}
+<div class="da-alert da-alert-info" style="margin-bottom:1.25rem;">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+  <strong>{{ total_expiring }} contrato{{ total_expiring|pluralize:"s" }}</strong> vence{{ total_expiring|pluralize:"n" }} en los próximos 30 días.
+  <a href="?alert=expiring" style="color:inherit;font-weight:700;text-decoration:underline;margin-left:.5rem;">Ver solo esos →</a>
+</div>
+{% endif %}
+
+<div class="da-page-header">
+  <h1 class="da-page-title">Contratos de alquiler</h1>
+  <a href="{% url 'dashboard:contract_create' %}" class="da-btn da-btn-primary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+    Nuevo contrato
+  </a>
+</div>
+
+{# ── Filtros ── #}
+<form method="get" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-bottom:1.25rem;">
+  <div class="da-search-wrap">
+    <div class="da-search-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
+    <input type="text" name="q" value="{{ current_q }}" placeholder="Cliente, empresa, N° contrato…" class="da-input da-input-search" style="width:260px;">
+  </div>
+  <select name="status" class="da-input" style="width:auto;padding:.5rem .875rem;">
+    <option value="">Todos los estados</option>
+    {% for val, lbl in status_choices %}
+    <option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
+  {% if current_q or current_status or current_alert %}
+  <a href="{% url 'dashboard:contracts' %}" class="da-btn da-btn-secondary">Limpiar</a>
+  {% endif %}
+</form>
+
+{# ── Tabla ── #}
+<div class="da-table-wrap">
+  <div class="da-table-header">
+    <span class="da-table-title">{{ paginator.count }} contrato{{ paginator.count|pluralize:"s" }}</span>
+  </div>
+  <table class="da-table">
+    <thead>
+      <tr>
+        <th>N° Contrato</th>
+        <th>Cliente</th>
+        <th>Equipo</th>
+        <th>Cuota/mes</th>
+        <th>Inicio</th>
+        <th>Vencimiento</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in contracts %}
+      <tr>
+        <td>
+          <span style="font-family:var(--font-mono,monospace);font-size:.78rem;font-weight:700;color:var(--color-primary);">
+            {{ c.contract_number }}
+          </span>
+        </td>
+        <td>
+          <div class="da-name">{{ c.lead.full_name }}</div>
+          {% if c.lead.company_name %}<div style="font-size:.72rem;color:var(--color-text-muted);">{{ c.lead.company_name }}</div>{% endif %}
+        </td>
+        <td style="font-size:.8125rem;max-width:200px;">
+          <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.equipment_description }}</div>
+        </td>
+        <td style="font-variant-numeric:tabular-nums;font-weight:700;">${{ c.monthly_rate|floatformat:0 }}</td>
+        <td style="font-size:.78rem;white-space:nowrap;">{{ c.start_date|date:"d/m/Y" }}</td>
+        <td style="font-size:.78rem;white-space:nowrap;">
+          {% if c.end_date %}
+            {% if c.is_overdue %}
+            <span style="color:var(--color-danger);font-weight:700;">{{ c.end_date|date:"d/m/Y" }} <span style="font-size:.65rem;">(vencido)</span></span>
+            {% elif c.is_expiring_soon %}
+            <span style="color:#D97706;font-weight:700;">{{ c.end_date|date:"d/m/Y" }}
+              <span style="font-size:.65rem;">({{ c.days_until_expiry }}d)</span>
+            </span>
+            {% else %}
+            {{ c.end_date|date:"d/m/Y" }}
+            {% endif %}
+          {% else %}
+          <span style="color:var(--color-text-muted);">Indefinido</span>
+          {% endif %}
+        </td>
+        <td>
+          <span class="da-badge
+            {% if c.status == 'active' %}da-badge-published
+            {% elif c.status == 'pending' %}da-badge-reviewing
+            {% elif c.status == 'expired' %}da-badge-lost
+            {% else %}da-badge-draft{% endif %}">
+            {{ c.get_status_display }}
+          </span>
+        </td>
+        <td>
+          <a href="{% url 'dashboard:contract_detail' c.pk %}" class="da-btn da-btn-secondary da-btn-sm">Editar</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" style="text-align:center;padding:3rem;color:var(--color-text-muted);">
+          No hay contratos registrados.
+          <a href="{% url 'dashboard:contract_create' %}" style="color:var(--color-primary);font-weight:600;"> Crear el primero →</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if is_paginated %}
+  <div class="da-pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if current_q %}&q={{ current_q }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}" class="da-page-btn">← Anterior</a>{% endif %}
+    <span class="da-page-btn active">{{ page_obj.number }} / {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if current_q %}&q={{ current_q }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}" class="da-page-btn">Siguiente →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

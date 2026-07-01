@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+    <div class="container-custom max-w-4xl">
+        <div class="silo-label software mb-3">Silo Software</div>
+        <h1 class="font-display text-display-lg mb-4">{{ service.name }}</h1>
+        <p class="text-lg text-text-secondary mb-6">{{ service.tagline }}</p>
+
+        <div class="w-full aspect-video rounded-2xl overflow-hidden mb-6">
+          {% if service.main_image %}
+            <img src="{{ service.main_image.url }}" alt="{{ service.main_image_alt|default:service.name }}"
+                 class="w-full h-full object-cover object-center" loading="lazy">
+          {% else %}
+            {% include "components/_img_placeholder.html" with aspect="aspect-video" label=service.name %}
+          {% endif %}
+        </div>
+
+        <p class="text-text-secondary mb-8">{{ service.short_description }}</p>
+
+        <div class="prose prose-lg mb-8">{{ service.description|safe }}</div>
+
+        {% if service.benefits %}
+        <h2 class="font-display text-2xl mb-4">Beneficios</h2>
+        <ul class="space-y-2 mb-8">
+            {% for benefit in service.benefits %}
+            <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-success mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span>{{ benefit }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if service.estimated_duration %}
+        <div class="card-padded mb-8">
+            <div class="text-xs text-text-muted uppercase">Duración estimada</div>
+            <div class="font-display text-xl">{{ service.estimated_duration }}</div>
+        </div>
+        {% endif %}
+
+        <a href="{% url 'leads:wizard' %}?servicio=web" class="btn-primary">Solicitar cotización</a>
+    </div>
+</section>
+{% endblock %}

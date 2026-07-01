@@ -1,0 +1,176 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Nueva Factura{% endblock %}
+{% block nav_billing %}active{% endblock %}
+{% block breadcrumb %}
+<span class="da-breadcrumb-sep">/</span>
+<a href="{% url 'dashboard:ar_dashboard' %}" class="da-breadcrumb-link">Facturación</a>
+<span class="da-breadcrumb-sep">/</span>
+<a href="{% url 'dashboard:invoice_list' %}" class="da-breadcrumb-link">Facturas</a>
+<span class="da-breadcrumb-sep">/</span>
+<span class="da-breadcrumb-current">Nueva</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">Nueva Factura</h1>
+</div>
+
+<form method="post" action="{% url 'dashboard:invoice_create' %}" x-data="invoiceForm()" @submit.prevent="submitForm">
+  {% csrf_token %}
+
+  <div class="da-grid-2" style="gap:1.25rem;">
+
+    <!-- Izquierda: datos del cliente + líneas -->
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <!-- Buscar lead -->
+      <div class="da-card">
+        <div class="da-card-header">Cliente</div>
+        <div class="da-card-body">
+          <div style="margin-bottom:1rem;">
+            <label class="da-label">Vincular a lead CRM (opcional)</label>
+            <select name="lead_id" class="da-input" @change="fillFromLead($event)">
+              <option value="">— Seleccionar lead —</option>
+              {% for lead in leads %}
+              <option value="{{ lead.pk }}"
+                data-name="{{ lead.full_name }}"
+                data-nit="{{ lead.nit }}"
+                data-email="{{ lead.email }}"
+                data-phone="{{ lead.phone }}"
+                data-city="{{ lead.city }}">
+                {{ lead.full_name }} {% if lead.company_name %}({{ lead.company_name }}){% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="da-grid-2" style="gap:.75rem;">
+            <div>
+              <label class="da-label">Nombre completo *</label>
+              <input type="text" name="client_name" x-model="clientName" class="da-input" required placeholder="Nombre o razón social">
+            </div>
+            <div>
+              <label class="da-label">NIT / Cédula</label>
+              <input type="text" name="client_nit" x-model="clientNit" class="da-input" placeholder="900.123.456-7">
+            </div>
+            <div>
+              <label class="da-label">Email</label>
+              <input type="email" name="client_email" x-model="clientEmail" class="da-input" placeholder="cliente@empresa.com">
+            </div>
+            <div>
+              <label class="da-label">Teléfono</label>
+              <input type="tel" name="client_phone" x-model="clientPhone" class="da-input" placeholder="300 123 4567">
+            </div>
+            <div>
+              <label class="da-label">Ciudad</label>
+              <input type="text" name="client_city" x-model="clientCity" class="da-input" value="Medellín">
+            </div>
+            <div>
+              <label class="da-label">Método de pago</label>
+              <select name="payment_method" class="da-input">
+                {% for val, lbl in payment_methods %}<option value="{{ val }}">{{ lbl }}</option>{% endfor %}
+              </select>
+            </div>
+            <div style="grid-column:1/-1;">
+              <label class="da-label">Dirección</label>
+              <input type="text" name="client_address" class="da-input" placeholder="Carrera 00 #...">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Líneas de factura -->
+      <div class="da-card">
+        <div class="da-card-header">
+          <span>Líneas de factura</span>
+          <button type="button" @click="addLine()" class="da-btn da-btn-secondary" style="font-size:.75rem;padding:.3rem .75rem;">+ Agregar línea</button>
+        </div>
+        <div class="da-card-body" style="padding:0">
+          <table class="da-table">
+            <thead>
+              <tr>
+                <th>Descripción</th>
+                <th style="width:80px;">Cant.</th>
+                <th style="width:130px;">Precio unit.</th>
+                <th style="width:40px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="(line, i) in lines" :key="i">
+                <tr>
+                  <td>
+                    <input type="text" :name="'item_description'" x-model="line.desc" class="da-input" style="font-size:.8rem;" placeholder="Descripción del producto o servicio">
+                  </td>
+                  <td>
+                    <input type="number" :name="'item_quantity'" x-model.number="line.qty" min="1" class="da-input" style="font-size:.8rem;text-align:center;">
+                  </td>
+                  <td>
+                    <input type="number" :name="'item_price'" x-model.number="line.price" min="0" step="100" class="da-input" style="font-size:.8rem;" placeholder="0">
+                  </td>
+                  <td>
+                    <button type="button" @click="removeLine(i)" style="color:var(--color-danger);background:none;border:none;cursor:pointer;padding:.25rem;">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="da-card">
+        <div class="da-card-header">Observaciones</div>
+        <div class="da-card-body">
+          <textarea name="notes" rows="3" class="da-input" style="resize:vertical;" placeholder="Notas internas o para el cliente…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Derecha: totales -->
+    <div>
+      <div class="da-card" style="position:sticky;top:80px;">
+        <div class="da-card-header">Resumen</div>
+        <div class="da-card-body">
+          <dl style="font-size:.9rem;display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.25rem;">
+            <div style="display:flex;justify-content:space-between;"><dt style="color:var(--color-text-muted);">Subtotal</dt><dd style="color:var(--color-text-secondary);">$<span x-text="formatNum(subtotal)">0</span></dd></div>
+            <div style="display:flex;justify-content:space-between;"><dt style="color:var(--color-text-muted);">IVA (19%)</dt><dd style="color:var(--color-text-secondary);">$<span x-text="formatNum(iva)">0</span></dd></div>
+            <div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:700;border-top:1px solid var(--color-border);padding-top:.75rem;">
+              <dt style="color:var(--color-text-primary);">Total</dt>
+              <dd style="color:var(--color-primary);">$<span x-text="formatNum(total)">0</span> COP</dd>
+            </div>
+          </dl>
+          <button type="submit" class="da-btn da-btn-primary" style="width:100%;justify-content:center;font-size:.95rem;">
+            Crear factura
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</form>
+
+<script>
+function invoiceForm() {
+  return {
+    clientName: '', clientNit: '', clientEmail: '', clientPhone: '', clientCity: 'Medellín',
+    lines: [{ desc: '', qty: 1, price: 0 }],
+    get subtotal() { return this.lines.reduce((s, l) => s + (l.qty * l.price), 0); },
+    get iva()      { return Math.round(this.subtotal * 0.19); },
+    get total()    { return this.subtotal + this.iva; },
+    formatNum(n)   { return Number(n).toLocaleString('es-CO'); },
+    addLine()      { this.lines.push({ desc: '', qty: 1, price: 0 }); },
+    removeLine(i)  { if (this.lines.length > 1) this.lines.splice(i, 1); },
+    fillFromLead(e) {
+      const opt = e.target.selectedOptions[0];
+      if (!opt.value) return;
+      this.clientName  = opt.dataset.name  || '';
+      this.clientNit   = opt.dataset.nit   || '';
+      this.clientEmail = opt.dataset.email || '';
+      this.clientPhone = opt.dataset.phone || '';
+      this.clientCity  = opt.dataset.city  || 'Medellín';
+    },
+    submitForm() { this.$el.closest('form').submit(); },
+  };
+}
+</script>
+{% endblock %}
