@@ -50,8 +50,9 @@ urlpatterns = [
     path("notificaciones/leer-todas/",        views.PanelNotificationMarkAllReadView.as_view(), name="notifications_read_all"),
 
     # Turno y GPS (técnicos y mensajeros desde el panel)
-    path("turno/",         views.PanelTurnoView.as_view(),      name="turno"),
-    path("turno/inicio/",  views.PanelShiftStartView.as_view(), name="shift_start"),
-    path("turno/fin/",     views.PanelShiftEndView.as_view(),   name="shift_end"),
-    path("ubicacion/",     views.PanelUbicacionView.as_view(),  name="ubicacion"),
+    path("turno/",                           views.PanelTurnoView.as_view(),             name="turno"),
+    path("turno/inicio/",                    views.PanelShiftStartView.as_view(),        name="shift_start"),
+    path("turno/fin/",                       views.PanelShiftEndView.as_view(),          name="shift_end"),
+    path("ubicacion/",                       views.PanelUbicacionView.as_view(),         name="ubicacion"),
+    path("entregas/<int:pk>/completar/",     views.PanelDeliveryCompleteView.as_view(),  name="delivery_complete"),
 ]

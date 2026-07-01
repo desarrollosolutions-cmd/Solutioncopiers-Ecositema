@@ -4819,6 +4819,27 @@ class PanelTurnoView(View):
 
 
 @panel_decorator
+class PanelDeliveryCompleteView(View):
+    """Completar una tarea de entrega desde el portal del panel/mensajero."""
+    def post(self, request, pk):
+        from apps.dashboard.models import DeliveryTask, FieldUser
+        try:
+            fu = request.user.field_profile
+        except FieldUser.DoesNotExist:
+            return JsonResponse({"ok": False, "error": "Sin perfil de campo"}, status=403)
+        task = get_object_or_404(DeliveryTask, pk=pk, field_user=fu, status=DeliveryTask.Status.PENDING)
+        task.completion_notes   = request.POST.get("notes", "").strip()
+        task.completion_invoice = request.POST.get("invoice", "").strip()
+        task.status             = DeliveryTask.Status.DONE
+        task.completed_at       = timezone.now()
+        photo = request.FILES.get("photo")
+        if photo:
+            task.completion_photo = photo
+        task.save()
+        return JsonResponse({"ok": True, "task_id": task.pk})
+
+
+@panel_decorator
 class PanelShiftStartView(View):
     def post(self, request):
         from apps.dashboard.models import FieldUserLocation

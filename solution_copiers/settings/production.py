@@ -78,6 +78,7 @@ PERMISSIONS_POLICY = (
 # MIDDLEWARE adicional en producción — inyecta CSP y Permissions-Policy
 # ---------------------------------------------------------------------------
 MIDDLEWARE = [  # noqa: F405
+    "django.middleware.gzip.GZipMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "solution_copiers.middleware.SecurityHeadersMiddleware",  # CSP + Permissions-Policy
@@ -124,8 +125,8 @@ if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAM
         },
     }
 
-# --- BD con connection pooling (Supabase pgbouncer) ---
-DATABASES["default"]["CONN_MAX_AGE"] = 0  # noqa: F405
+# --- BD con connection pooling (Neon) ---
+DATABASES["default"]["CONN_MAX_AGE"] = 60  # noqa: F405
 DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}  # noqa: F405
 DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True  # noqa: F405
 
