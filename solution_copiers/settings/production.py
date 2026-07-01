@@ -7,9 +7,16 @@ from .base import *  # noqa: F401, F403
 DEBUG = False
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])  # noqa: F405
+
+# Render
 RENDER_EXTERNAL_HOSTNAME = env("RENDER_EXTERNAL_HOSTNAME", default=None)  # noqa: F405
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# Railway
+RAILWAY_PUBLIC_DOMAIN = env("RAILWAY_PUBLIC_DOMAIN", default=None)  # noqa: F405
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
 
 # ---------------------------------------------------------------------------
 # HEADERS HTTP DE SEGURIDAD
@@ -32,6 +39,8 @@ CSRF_COOKIE_SAMESITE    = "Strict"
 X_FRAME_OPTIONS = "DENY"
 
 CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host]
+if RAILWAY_PUBLIC_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
 
 # ---------------------------------------------------------------------------
 # CONTENT SECURITY POLICY (CSP)
