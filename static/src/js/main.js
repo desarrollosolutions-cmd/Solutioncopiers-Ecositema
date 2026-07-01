@@ -22,91 +22,69 @@ import { quoteWizard } from "./components/quote-wizard.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// === THEME MANAGER ===
-function darkMode() {
-  return {
-    theme: document.documentElement.getAttribute('data-theme') || 'light',
-    open: false,
-
-    themes: [
-      {
-        id: 'light',
-        label: 'Claro',
-        desc: 'Modo día',
-        bg: '#FFFFFF',
-        surface: '#FFFFFF',
-        primary: '#C4121A',
-      },
-      {
-        id: 'dark',
-        label: 'Noche',
-        desc: 'Modo oscuro',
-        bg: '#100808',
-        surface: '#221414',
-        primary: '#C4121A',
-      },
-    ],
-
-    setTheme(id) {
-      this.theme = id;
-      document.documentElement.setAttribute('data-theme', id);
-      localStorage.setItem('theme', id);
-      this.open = false;
-    },
-
-    toggle() {
-      this.open = !this.open;
-    },
-
-    get dark() {
-      return this.theme !== 'light';
-    },
-
-    get current() {
-      return this.themes.find(t => t.id === this.theme) || this.themes[0];
-    },
-  };
-}
-window.darkMode = darkMode;
-
 // === ALPINE.JS ===
 window.Alpine = Alpine;
-window.quoteWizard = quoteWizard;
 
-window.publicSearch = function publicSearch() {
-  return {
-    open: false,
-    query: '',
-    loading: false,
-    results: { consumables: [], copiers: [] },
-    close() {
-      this.open = false;
-      this.query = '';
+// Registrar componentes con Alpine.data() — CSP-safe, no requiere unsafe-eval
+Alpine.data('darkMode', () => ({
+  theme: document.documentElement.getAttribute('data-theme') || 'light',
+  open: false,
+  themes: [
+    { id: 'light', label: 'Claro', desc: 'Modo día', bg: '#FFFFFF', surface: '#FFFFFF', primary: '#C4121A' },
+    { id: 'dark',  label: 'Noche', desc: 'Modo oscuro', bg: '#100808', surface: '#221414', primary: '#C4121A' },
+  ],
+  setTheme(id) {
+    this.theme = id;
+    document.documentElement.setAttribute('data-theme', id);
+    localStorage.setItem('theme', id);
+    this.open = false;
+  },
+  toggle() { this.open = !this.open; },
+  get dark()    { return this.theme !== 'light'; },
+  get current() { return this.themes.find(t => t.id === this.theme) || this.themes[0]; },
+}));
+
+Alpine.data('publicSearch', () => ({
+  open: false,
+  query: '',
+  loading: false,
+  results: { consumables: [], copiers: [] },
+  init() {
+    this.$watch('open', v => {
+      if (v) this.$nextTick(() => this.$refs.input && this.$refs.input.focus());
+    });
+  },
+  close() {
+    this.open = false;
+    this.query = '';
+    this.results = { consumables: [], copiers: [] };
+    this.loading = false;
+  },
+  goToResults() {
+    if (this.query.trim().length >= 2) {
+      window.location.href = '/consumibles-toner-ricoh/?q=' + encodeURIComponent(this.query.trim());
+      this.close();
+    }
+  },
+  search() {
+    if (this.query.length < 2) {
       this.results = { consumables: [], copiers: [] };
       this.loading = false;
-    },
-    goToResults() {
-      if (this.query.trim().length >= 2) {
-        window.location.href = '/consumibles-toner-ricoh/?q=' + encodeURIComponent(this.query.trim());
-        this.close();
-      }
-    },
-    search() {
-      if (this.query.length < 2) {
-        this.results = { consumables: [], copiers: [] };
-        this.loading = false;
-        return;
-      }
-      this.loading = true;
-      const url = document.getElementById('search-url').dataset.url;
-      fetch(url + '?q=' + encodeURIComponent(this.query))
-        .then(r => r.ok ? r.json() : Promise.reject(r.status))
-        .then(d => { this.results = d; })
-        .catch(() => { this.results = { consumables: [], copiers: [] }; })
-        .finally(() => { this.loading = false; });
-    },
-  };
-};
+      return;
+    }
+    this.loading = true;
+    const el = document.getElementById('search-url');
+    const url = el ? el.dataset.url : '/catalog/search/';
+    fetch(url + '?q=' + encodeURIComponent(this.query))
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(d => { this.results = d; })
+      .catch(() => { this.results = { consumables: [], copiers: [] }; })
+      .finally(() => { this.loading = false; });
+  },
+}));
+
+// quoteWizard sigue disponible en window para compatibilidad
+window.quoteWizard = quoteWizard;
 
 Alpine.start();
 

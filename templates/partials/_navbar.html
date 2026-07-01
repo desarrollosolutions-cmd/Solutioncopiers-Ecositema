@@ -3,8 +3,7 @@
 <header class="navbar" data-navbar x-data="{ mobileOpen: false }">
 
 {# ── Modal de búsqueda global ── #}
-<div x-data="publicSearch()"
-     x-init="$watch('open', v => { if(v){ $nextTick(()=>$refs.input.focus()) } })"
+<div x-data="publicSearch"
      @keydown.escape.window="close()"
      @open-public-search.window="open=true">
 
@@ -43,8 +42,8 @@
         </svg>
         <input x-ref="input"
                type="text"
-               x-model.debounce.300ms="query"
-               @input="search()"
+               x-model="query"
+               @input.debounce.300ms="search()"
                @keydown.enter.prevent="goToResults()"
                placeholder="{% trans "Buscar tóneres, equipos, repuestos…" %}"
                class="flex-1 bg-transparent text-base outline-none"
@@ -264,7 +263,7 @@
                 </button>
 
                 {# Toggle modo claro/oscuro #}
-                <div x-data="darkMode()">
+                <div x-data="darkMode">
                     <button @click="setTheme(theme === 'dark' ? 'light' : 'dark')"
                             class="p-2 rounded-base hover:bg-bg-alt transition-colors"
                             :title="theme === 'dark' ? '{% trans "Cambiar a modo claro" %}' : '{% trans "Cambiar a modo oscuro" %}'"
@@ -315,7 +314,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                 </button>
-                <div x-data="darkMode()">
+                <div x-data="darkMode">
                     <button @click="setTheme(theme === 'dark' ? 'light' : 'dark')"
                             class="p-2 rounded-base hover:bg-bg-alt transition-colors"
                             :title="theme === 'dark' ? 'Modo claro' : 'Modo oscuro'">

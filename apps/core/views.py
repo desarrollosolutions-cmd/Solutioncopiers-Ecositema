@@ -46,11 +46,9 @@ class HomeView(SEOContextMixin, JsonLDMixin, TemplateView):
             .select_related("category")[:6]
         )
 
-        # Pool amplio de consumibles con imagen → 8 aleatorios en cada carga
+        # Pool amplio de consumibles → 8 aleatorios en cada carga
         _cons_pool = list(
             Consumable.published
-            .exclude(main_image="")
-            .exclude(main_image__isnull=True)
             .order_by("consumable_type", "order")[:80]
         )
         context["featured_consumables"] = random.sample(_cons_pool, min(8, len(_cons_pool)))
