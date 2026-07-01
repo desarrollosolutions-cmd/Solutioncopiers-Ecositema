@@ -9,7 +9,4 @@ python -m pip install -r requirements.txt
 echo "==> Recolectando archivos estáticos..."
 python manage.py collectstatic --noinput
 
-echo "==> Aplicando migraciones de base de datos..."
-python manage.py migrate --noinput
-
 echo "==> Build completado."
