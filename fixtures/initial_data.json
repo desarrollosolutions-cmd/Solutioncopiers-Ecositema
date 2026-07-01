@@ -23096,48 +23096,6 @@
   }
 },
 {
-  "model": "catalog.stockmovement",
-  "pk": 1,
-  "fields": {
-    "consumable": 267,
-    "movement_type": "out",
-    "quantity": -1,
-    "notes": "",
-    "created_by": [
-      "admin"
-    ],
-    "created_at": "2026-06-09T14:43:01.288Z"
-  }
-},
-{
-  "model": "catalog.stockmovement",
-  "pk": 2,
-  "fields": {
-    "consumable": 332,
-    "movement_type": "out",
-    "quantity": -1,
-    "notes": "",
-    "created_by": [
-      "admin"
-    ],
-    "created_at": "2026-06-09T14:43:03.398Z"
-  }
-},
-{
-  "model": "catalog.stockmovement",
-  "pk": 3,
-  "fields": {
-    "consumable": 394,
-    "movement_type": "in",
-    "quantity": 1,
-    "notes": "",
-    "created_by": [
-      "admin"
-    ],
-    "created_at": "2026-06-09T14:48:37.303Z"
-  }
-},
-{
   "model": "catalog.cablingservice",
   "pk": 4,
   "fields": {
