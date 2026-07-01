@@ -48,7 +48,7 @@ if RAILWAY_PUBLIC_DOMAIN:
 # ---------------------------------------------------------------------------
 CONTENT_SECURITY_POLICY = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com "
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com "
         "https://checkout.wompi.co https://www.googletagmanager.com https://www.google-analytics.com; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src 'self' https://fonts.gstatic.com data:; "
