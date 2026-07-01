@@ -90,6 +90,31 @@ EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)  # noqa: F405
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")  # noqa: F405
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")  # noqa: F405
 
+# ---------------------------------------------------------------------------
+# CLOUDFLARE R2 — Almacenamiento de media files
+# ---------------------------------------------------------------------------
+R2_ACCOUNT_ID        = env("R2_ACCOUNT_ID",        default="")
+R2_ACCESS_KEY_ID     = env("R2_ACCESS_KEY_ID",      default="")
+R2_SECRET_ACCESS_KEY = env("R2_SECRET_ACCESS_KEY",  default="")
+R2_BUCKET_NAME       = env("R2_BUCKET_NAME",        default="")
+R2_CUSTOM_DOMAIN     = env("R2_CUSTOM_DOMAIN",      default="")
+
+if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY and R2_BUCKET_NAME:
+    STORAGES["default"] = {  # noqa: F405
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "access_key":    R2_ACCESS_KEY_ID,
+            "secret_key":    R2_SECRET_ACCESS_KEY,
+            "bucket_name":   R2_BUCKET_NAME,
+            "endpoint_url":  f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
+            "region_name":   "auto",
+            "custom_domain": R2_CUSTOM_DOMAIN or None,
+            "file_overwrite": False,
+            "object_parameters": {"CacheControl": "max-age=86400"},
+            "querystring_auth": False,
+        },
+    }
+
 # --- BD con connection pooling (Supabase pgbouncer) ---
 DATABASES["default"]["CONN_MAX_AGE"] = 0  # noqa: F405
 DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}  # noqa: F405
