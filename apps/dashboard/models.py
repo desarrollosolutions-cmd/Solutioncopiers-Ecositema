@@ -286,9 +286,10 @@ class DeliveryTask(models.Model):
     )
     created_at         = models.DateTimeField(auto_now_add=True)
     completed_at       = models.DateTimeField(null=True, blank=True)
-    completion_notes   = models.TextField("notas de entrega", blank=True)
-    completion_invoice = models.CharField("# factura / remisión", max_length=100, blank=True)
-    completion_photo   = models.ImageField(upload_to="delivery_proofs/%Y/%m/", null=True, blank=True)
+    completion_notes     = models.TextField("notas de entrega", blank=True)
+    completion_invoice   = models.CharField("# factura / remisión", max_length=100, blank=True)
+    completion_photo     = models.ImageField(upload_to="delivery_proofs/%Y/%m/", null=True, blank=True)
+    completion_signature = models.TextField("firma del receptor", blank=True)
 
     class Meta:
         ordering            = ["order", "created_at"]

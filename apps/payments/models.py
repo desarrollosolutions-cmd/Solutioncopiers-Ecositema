@@ -233,6 +233,9 @@ class Invoice(TimeStampedModel):
     # ── Notas ─────────────────────────────────────────────────────────────
     notes            = models.TextField(_("observaciones"), blank=True)
 
+    # ── Stock ─────────────────────────────────────────────────────────────
+    stock_reduced    = models.BooleanField(_("stock descontado"), default=False)
+
     class Meta:
         verbose_name        = _("Factura")
         verbose_name_plural = _("Facturas")

@@ -102,19 +102,25 @@
       <table class="pn-table" id="lines-table">
         <thead>
           <tr>
-            <th style="width:50%;">Descripción</th>
+            <th style="width:42%;">Descripción / Insumo</th>
             <th style="width:15%;text-align:right;">Cant.</th>
             <th style="width:20%;text-align:right;">Precio unit.</th>
             <th style="width:12%;text-align:right;">Subtotal</th>
+            <th style="width:11%;text-align:center;">Stock</th>
             <th style="width:3%;"></th>
           </tr>
         </thead>
         <tbody id="lines-body">
           <tr class="line-row">
-            <td><input type="text" name="item_description" class="pn-input" required placeholder="Descripción del servicio o producto"></td>
+            <td style="position:relative;">
+              <input type="hidden" name="item_consumable_id" class="line-consumable-id" value="">
+              <input type="text" name="item_description" class="pn-input line-desc" required placeholder="Buscar insumo o escribir descripción…" autocomplete="off" oninput="onDescInput(this)">
+              <div class="ac-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:200;background:var(--color-surface);border:1px solid var(--color-border);border-radius:.5rem;max-height:220px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.12);"></div>
+            </td>
             <td><input type="number" name="item_quantity" class="pn-input line-qty" min="0.01" step="0.01" value="1" style="text-align:right;" onchange="recalc(this.closest('tr'))"></td>
             <td><input type="number" name="item_price" class="pn-input line-price" min="0" step="100" value="0" style="text-align:right;" onchange="recalc(this.closest('tr'))"></td>
             <td class="line-sub" style="text-align:right;font-weight:600;color:var(--color-text-primary);">$0</td>
+            <td class="line-stock" style="text-align:center;font-size:.8rem;color:var(--color-text-muted);">—</td>
             <td></td>
           </tr>
         </tbody>
@@ -138,6 +144,9 @@
 </form>
 
 <script>
+const AC_URL = '{% url "panel:consumables_autocomplete" %}';
+let _acTimer = null;
+
 function fillFromLead(sel) {
   const opt = sel.options[sel.selectedIndex];
   document.getElementById('id_client_name').value  = opt.dataset.name  || '';
@@ -166,14 +175,67 @@ function updateGrand() {
   document.getElementById('grand-total').textContent = fmt(total);
 }
 
+function onDescInput(input) {
+  const row = input.closest('.line-row');
+  // Limpiar consumable vinculado si el usuario escribe manualmente
+  row.querySelector('.line-consumable-id').value = '';
+  row.querySelector('.line-stock').textContent = '—';
+
+  clearTimeout(_acTimer);
+  const q = input.value.trim();
+  const dd = row.querySelector('.ac-dropdown');
+  if (q.length < 2) { dd.style.display = 'none'; return; }
+
+  _acTimer = setTimeout(() => {
+    fetch(AC_URL + '?q=' + encodeURIComponent(q))
+      .then(r => r.json())
+      .then(items => {
+        if (!items.length) { dd.style.display = 'none'; return; }
+        dd.innerHTML = items.map(it => `
+          <div class="ac-item" data-id="${it.id}" data-name="${it.name}" data-price="${it.price}" data-stock="${it.stock_quantity}"
+               style="padding:.6rem 1rem;cursor:pointer;border-bottom:1px solid var(--color-border);font-size:.875rem;"
+               onmousedown="selectConsumable(this)">
+            <strong>${it.name}</strong>
+            ${it.brand ? '<span style="color:var(--color-text-muted);margin-left:.5rem;">'+it.brand+'</span>' : ''}
+            <span style="float:right;color:${it.in_stock ? 'var(--color-success,#22c55e)' : 'var(--color-danger,#ef4444)'};">
+              ${it.in_stock ? 'Stock: '+it.stock_quantity : 'Sin stock'}
+            </span>
+            <br><small style="color:var(--color-text-muted);">${fmt(parseFloat(it.price)||0)} por unidad</small>
+          </div>`).join('');
+        dd.style.display = 'block';
+      });
+  }, 250);
+}
+
+function selectConsumable(item) {
+  const row = item.closest('.line-row');
+  row.querySelector('.line-desc').value = item.dataset.name;
+  row.querySelector('.line-consumable-id').value = item.dataset.id;
+  row.querySelector('.line-price').value = item.dataset.price || '0';
+  row.querySelector('.line-stock').innerHTML =
+    '<span style="color:var(--color-success,#22c55e);font-weight:600;">' + item.dataset.stock + '</span>';
+  item.closest('.ac-dropdown').style.display = 'none';
+  recalc(row);
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.line-row')) {
+    document.querySelectorAll('.ac-dropdown').forEach(d => d.style.display = 'none');
+  }
+});
+
 function addLine() {
   const tbody = document.getElementById('lines-body');
   const first = tbody.querySelector('.line-row');
   const clone = first.cloneNode(true);
-  clone.querySelector('[name="item_description"]').value = '';
+  clone.querySelector('.line-desc').value = '';
+  clone.querySelector('.line-consumable-id').value = '';
   clone.querySelector('.line-qty').value   = '1';
   clone.querySelector('.line-price').value = '0';
   clone.querySelector('.line-sub').textContent = '$0';
+  clone.querySelector('.line-stock').textContent = '—';
+  clone.querySelector('.ac-dropdown').style.display = 'none';
+  clone.querySelector('.ac-dropdown').innerHTML = '';
   // Botón eliminar
   const delTd = clone.querySelector('td:last-child');
   delTd.innerHTML = '<button type="button" onclick="removeLine(this)" style="background:none;border:none;cursor:pointer;color:var(--color-danger);padding:.25rem;line-height:1;" title="Eliminar"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>';

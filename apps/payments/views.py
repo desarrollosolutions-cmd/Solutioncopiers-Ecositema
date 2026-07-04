@@ -22,6 +22,7 @@ import logging
 from decimal import Decimal
 
 from django.conf import settings
+from django.db import models
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, JsonResponse
@@ -387,6 +388,41 @@ class WompiWebhookView(View):
                     pass
 
 
+def _reduce_stock_for_invoice(invoice: Invoice, user=None) -> int:
+    """Descuenta stock por cada línea de factura con consumible vinculado.
+    Idempotente: no hace nada si ya se descontó (stock_reduced=True).
+    Retorna la cantidad de movimientos creados.
+    """
+    if invoice.stock_reduced:
+        return 0
+    from apps.catalog.models import Consumable, StockMovement
+    from django.db import transaction as db_transaction
+
+    movements = 0
+    with db_transaction.atomic():
+        for item in invoice.items.select_related("consumable").filter(consumable__isnull=False):
+            qty = int(item.quantity)
+            if qty <= 0:
+                continue
+            consumable = item.consumable
+            Consumable.objects.filter(pk=consumable.pk).update(
+                stock_quantity=models.F("stock_quantity") - qty
+            )
+            consumable.refresh_from_db(fields=["stock_quantity"])
+            if consumable.stock_quantity <= 0:
+                Consumable.objects.filter(pk=consumable.pk).update(in_stock=False)
+            StockMovement.objects.create(
+                consumable    = consumable,
+                movement_type = StockMovement.MovementType.OUT,
+                quantity      = -qty,
+                notes         = f"Factura {invoice.invoice_number}",
+                created_by    = user,
+            )
+            movements += 1
+        Invoice.objects.filter(pk=invoice.pk).update(stock_reduced=True)
+    return movements
+
+
 def _auto_generate_invoice(order: Order):
     """Crea borrador de factura automáticamente al confirmar el pago."""
     if hasattr(order, "invoice") and order.invoice:
@@ -426,6 +462,7 @@ def _auto_generate_invoice(order: Order):
             )
         invoice.recalculate_totals()
         invoice.save(update_fields=["subtotal", "tax_base", "tax_amount", "total"])
+        _reduce_stock_for_invoice(invoice)
 
 
 def _get_company_settings() -> dict:
@@ -554,18 +591,27 @@ class InvoiceCreateView(CRMLoginMixin, View):
             invoice.save()
 
             # Líneas
-            descriptions = post.getlist("item_description")
-            quantities   = post.getlist("item_quantity")
-            prices       = post.getlist("item_price")
-            for desc, qty, price in zip(descriptions, quantities, prices):
+            descriptions   = post.getlist("item_description")
+            quantities     = post.getlist("item_quantity")
+            prices         = post.getlist("item_price")
+            consumable_ids = post.getlist("item_consumable_id")
+            for i, (desc, qty, price) in enumerate(zip(descriptions, quantities, prices)):
                 desc = desc.strip()
                 if not desc:
                     continue
+                consumable = None
+                raw_cid = consumable_ids[i] if i < len(consumable_ids) else ""
+                if raw_cid:
+                    try:
+                        consumable = Consumable.objects.get(pk=int(raw_cid))
+                    except (Consumable.DoesNotExist, ValueError):
+                        pass
                 InvoiceItem.objects.create(
-                    invoice    = invoice,
+                    invoice     = invoice,
                     description = desc,
-                    quantity   = Decimal(qty or "1"),
-                    unit_price = Decimal(price or "0"),
+                    quantity    = Decimal(qty or "1"),
+                    unit_price  = Decimal(price or "0"),
+                    consumable  = consumable,
                 )
 
             invoice.recalculate_totals()
@@ -599,6 +645,8 @@ class InvoiceStatusUpdateView(CRMLoginMixin, View):
             if new_status == Invoice.Status.PAID and not invoice.paid_date:
                 invoice.paid_date = timezone.localdate()
             invoice.save(update_fields=["status", "paid_date"])
+            if new_status in (Invoice.Status.ISSUED, Invoice.Status.PAID):
+                _reduce_stock_for_invoice(invoice, user=request.user)
             messages.success(request, "Estado de factura actualizado.")
         return redirect("dashboard:invoice_detail", pk=pk)
 

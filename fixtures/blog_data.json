@@ -1,0 +1,300 @@
+[
+{
+  "model": "blog.category",
+  "pk": 4,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.066Z",
+    "updated_at": "2026-05-23T14:33:55.066Z",
+    "slug": "fotocopiadoras-y-equipos",
+    "meta_title": "",
+    "meta_description": "",
+    "meta_keywords": "",
+    "og_image": "",
+    "canonical_url": "",
+    "schema_type": "WebPage",
+    "noindex": false,
+    "name": "Fotocopiadoras y Equipos",
+    "description": "Guias practicas sobre alquiler, venta, mantenimiento y consumibles de fotocopiadoras para empresas en Colombia.",
+    "silo": "hardware"
+  }
+},
+{
+  "model": "blog.category",
+  "pk": 5,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.067Z",
+    "updated_at": "2026-05-23T14:33:55.067Z",
+    "slug": "infraestructura-empresarial",
+    "meta_title": "",
+    "meta_description": "",
+    "meta_keywords": "",
+    "og_image": "",
+    "canonical_url": "",
+    "schema_type": "WebPage",
+    "noindex": false,
+    "name": "Infraestructura Empresarial",
+    "description": "Cableado estructurado, redes y todo lo que necesita la infraestructura tecnologica de tu oficina.",
+    "silo": "hardware"
+  }
+},
+{
+  "model": "blog.category",
+  "pk": 6,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.068Z",
+    "updated_at": "2026-05-23T14:33:55.068Z",
+    "slug": "soluciones-digitales",
+    "meta_title": "",
+    "meta_description": "",
+    "meta_keywords": "",
+    "og_image": "",
+    "canonical_url": "",
+    "schema_type": "WebPage",
+    "noindex": false,
+    "name": "Soluciones Digitales",
+    "description": "Software a la medida, diseno web y aplicaciones moviles para empresas colombianas.",
+    "silo": "software"
+  }
+},
+{
+  "model": "blog.tag",
+  "pk": 10,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.069Z",
+    "updated_at": "2026-05-23T14:33:55.069Z",
+    "slug": "ricoh",
+    "name": "Ricoh"
+  }
+},
+{
+  "model": "blog.tag",
+  "pk": 11,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.071Z",
+    "updated_at": "2026-05-23T14:33:55.071Z",
+    "slug": "fotocopiadoras",
+    "name": "Fotocopiadoras"
+  }
+},
+{
+  "model": "blog.tag",
+  "pk": 12,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.072Z",
+    "updated_at": "2026-05-23T14:33:55.072Z",
+    "slug": "alquiler",
+    "name": "Alquiler"
+  }
+},
+{
+  "model": "blog.tag",
+  "pk": 13,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.072Z",
+    "updated_at": "2026-05-23T14:33:55.073Z",
+    "slug": "mantenimiento",
+    "name": "Mantenimiento"
+  }
+},
+{
+  "model": "blog.tag",
+  "pk": 14,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.073Z",
+    "updated_at": "2026-05-23T14:33:55.073Z",
+    "slug": "cableado-estructurado",
+    "name": "Cableado estructurado"
+  }
+},
+{
+  "model": "blog.tag",
+  "pk": 15,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.074Z",
+    "updated_at": "2026-05-23T14:33:55.074Z",
+    "slug": "software-a-la-medida",
+    "name": "Software a la medida"
+  }
+},
+{
+  "model": "blog.tag",
+  "pk": 16,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.075Z",
+    "updated_at": "2026-05-23T14:33:55.075Z",
+    "slug": "medellin",
+    "name": "Medellin"
+  }
+},
+{
+  "model": "blog.tag",
+  "pk": 17,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.075Z",
+    "updated_at": "2026-05-23T14:33:55.075Z",
+    "slug": "pymes",
+    "name": "Pymes"
+  }
+},
+{
+  "model": "blog.post",
+  "pk": 6,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.077Z",
+    "updated_at": "2026-05-23T16:15:33.878Z",
+    "slug": "cuanto-cuesta-alquilar-una-fotocopiadora-en-medellin-en-2025",
+    "meta_title": "",
+    "meta_description": "",
+    "meta_keywords": "",
+    "og_image": "",
+    "canonical_url": "",
+    "schema_type": "WebPage",
+    "noindex": false,
+    "status": "published",
+    "published_at": "2026-05-23T14:33:55.075Z",
+    "is_featured": true,
+    "main_image": "content/originals/img-blog-costo-alquiler.webp",
+    "main_image_alt": "Fotocopiadora Ricoh multifuncional en oficina de Medellin",
+    "title": "Cuanto cuesta alquilar una fotocopiadora en Medellin en 2025",
+    "excerpt": "Comparamos los planes de alquiler disponibles en Medellin, los costos reales por pagina y que modelo Ricoh se adapta al volumen de impresion de tu empresa.",
+    "content": "<p>Si estas evaluando si alquilar o comprar una fotocopiadora para tu empresa en Medellin, la respuesta corta es: <strong>alquilar casi siempre sale mas rentable</strong>. Aqui te explicamos por que y cuanto cuesta realmente.</p>\n\n<h2>Que incluye el modelo de alquiler</h2>\n<p>Un plan de alquiler con Solution Copiers incluye el equipo, instalacion, mantenimiento preventivo, correctivo, repuestos y toner. Pagas una cuota mensual fija y te olvidas de los imprevistos. Sin inversion inicial, sin sorpresas.</p>\n\n<h2>Rangos de precio segun volumen (2025)</h2>\n<ul>\n  <li><strong>Hasta 2.500 paginas/mes:</strong> desde $280.000 COP/mes — oficinas pequenas de 5 a 15 personas.</li>\n  <li><strong>2.500 a 5.000 paginas/mes:</strong> desde $380.000 COP/mes — empresas medianas con impresion frecuente.</li>\n  <li><strong>5.000 a 10.000 paginas/mes:</strong> desde $550.000 COP/mes — oficinas con alto volumen documental.</li>\n  <li><strong>Color hasta 3.000 paginas/mes:</strong> desde $600.000 COP/mes — color profesional para colegios y agencias.</li>\n</ul>\n\n<h2>Por que alquilar en lugar de comprar</h2>\n<p>Comprar un equipo Ricoh nuevo representa una inversion inicial de entre $8 y $25 millones de pesos, mas los costos de mantenimiento, repuestos y toner que corren por tu cuenta. Con el alquiler, ese capital queda libre para tu operacion y el servicio tecnico esta garantizado.</p>\n\n<h2>Como saber que modelo necesitas</h2>\n<p>El factor clave es el <strong>volumen mensual de paginas</strong>. Si imprimes menos de 3.000 paginas al mes, un equipo B/N como el Ricoh MP 2554 o MP 2555SP es suficiente. Si superas las 5.000 o necesitas color, el Ricoh MP C3003 o el IMC 2500 son los mas solicitados.</p>\n\n<p>Solicita tu cotizacion personalizada en nuestro <a href=\"/cotizador/\">cotizador en linea</a> y recibe una propuesta en menos de 24 horas.</p>",
+    "category": 4,
+    "author": null,
+    "reading_time_min": 4,
+    "tags": [
+      12,
+      11,
+      16,
+      10
+    ]
+  }
+},
+{
+  "model": "blog.post",
+  "pk": 7,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.079Z",
+    "updated_at": "2026-05-23T16:15:34.553Z",
+    "slug": "mantenimiento-preventivo-vs-correctivo-en-fotocopiadoras-que-diferencia-hay",
+    "meta_title": "",
+    "meta_description": "",
+    "meta_keywords": "",
+    "og_image": "",
+    "canonical_url": "",
+    "schema_type": "WebPage",
+    "noindex": false,
+    "status": "published",
+    "published_at": "2026-05-23T14:33:55.078Z",
+    "is_featured": true,
+    "main_image": "content/originals/img-blog-mantenimiento.webp",
+    "main_image_alt": "Tecnico de Solution Copiers haciendo mantenimiento preventivo a fotocopiadora Ricoh",
+    "title": "Mantenimiento preventivo vs correctivo en fotocopiadoras: que diferencia hay",
+    "excerpt": "Muchas empresas solo llaman al tecnico cuando la maquina falla. Te explicamos por que el mantenimiento preventivo ahorra mas dinero y como funciona el servicio de Solution Copiers.",
+    "content": "<p>La pregunta que mas nos hacen los gerentes administrativos: <em>si el equipo funciona bien, para que llamar al tecnico?</em> La respuesta tiene que ver con costos y continuidad operativa.</p>\n\n<h2>Mantenimiento preventivo: antes de que falle</h2>\n<p>El mantenimiento preventivo es una visita programada donde el tecnico limpia, calibra y revisa todos los componentes del equipo antes de que generen una falla. Se cambian piezas con desgaste visible antes de que rompan.</p>\n<p><strong>Beneficios reales:</strong></p>\n<ul>\n  <li>Reduce en un 70% las paradas imprevistas del equipo.</li>\n  <li>Extiende la vida util de rodillos, fusores y tambores.</li>\n  <li>Mantiene la calidad de impresion en niveles optimos.</li>\n  <li>Evita que un fallo menor se convierta en una reparacion costosa.</li>\n</ul>\n\n<h2>Mantenimiento correctivo: cuando ya fallo</h2>\n<p>El mantenimiento correctivo es la intervencion de emergencia cuando el equipo presenta una averia: atascos repetidos, manchas en impresion, error en pantalla o fallo total. El objetivo es restaurar el funcionamiento lo antes posible.</p>\n<p>En Solution Copiers garantizamos atencion en menos de <strong>24 horas en Medellin</strong> para correctivos. El diagnostico en sitio es sin costo adicional.</p>\n\n<h2>Cual conviene mas para tu empresa</h2>\n<p>Ambos son necesarios. La diferencia esta en que el preventivo lo controlas tu (es programado) y el correctivo lo genera el equipo (es imprevisto). Un buen contrato de alquiler con Solution Copiers incluye ambos sin costo adicional.</p>\n\n<h2>Lo que cubre nuestro plan de alquiler</h2>\n<ul>\n  <li>Mantenimiento preventivo programado</li>\n  <li>Mantenimiento correctivo ilimitado</li>\n  <li>Repuestos originales o genericos de excelente calidad</li>\n  <li>Toner segun el plan contratado</li>\n  <li>Soporte telefonico y visita tecnica incluida</li>\n</ul>\n\n<p>Si tienes equipos propios y buscas un contrato de mantenimiento independiente, tambien lo hacemos. <a href=\"/contacto/\">Contactanos</a> y cotizamos.</p>",
+    "category": 4,
+    "author": null,
+    "reading_time_min": 5,
+    "tags": [
+      11,
+      13,
+      10
+    ]
+  }
+},
+{
+  "model": "blog.post",
+  "pk": 8,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.081Z",
+    "updated_at": "2026-05-23T16:15:35.169Z",
+    "slug": "ricoh-mp-3055-vs-ricoh-im-430-que-modelo-ricoh-elegir-para-tu-empresa",
+    "meta_title": "",
+    "meta_description": "",
+    "meta_keywords": "",
+    "og_image": "",
+    "canonical_url": "",
+    "schema_type": "WebPage",
+    "noindex": false,
+    "status": "published",
+    "published_at": "2026-05-23T14:33:55.080Z",
+    "is_featured": true,
+    "main_image": "content/originals/img-blog-ricoh-comparacion.webp",
+    "main_image_alt": "Comparativa entre Ricoh MP 3055SP y Ricoh IM 430F en oficina",
+    "title": "Ricoh MP 3055 vs Ricoh IM 430: que modelo Ricoh elegir para tu empresa",
+    "excerpt": "Comparamos dos de los modelos B/N mas vendidos en Medellin: el clasico MP 3055SP y el nuevo IM 430F. Cual conviene segun tu volumen.",
+    "content": "<p>En Solution Copiers rentamos ambos modelos con frecuencia y la pregunta que nos hacen constantemente es: <em>cual me conviene?</em> La respuesta depende del volumen, el presupuesto y si valoras las funciones inteligentes.</p>\n\n<h2>Ricoh MP 3055SP — el referente de la gama media</h2>\n<p>El MP 3055SP es uno de los modelos mas solicitados para empresas de 20 a 60 personas. Imprime a 30 ppm, tiene duplex automatico, ADF de 100 hojas y soporte de papel A4 y A3. Ciclo mensual recomendado: hasta 100.000 paginas.</p>\n<p><strong>Para quien es ideal:</strong> colegios, juridicos, empresas de servicios, contabilidades.</p>\n\n<h2>Ricoh IM 430F — la nueva generacion</h2>\n<p>El IM 430F es 43 ppm, mas rapido que el MP 3055SP, con pantalla tactil de 9 pulgadas, impresion movil (AirPrint, Mopria), conexion WiFi de fabrica e integracion directa con Google Drive, OneDrive y Dropbox.</p>\n<p><strong>Para quien es ideal:</strong> empresas con trabajo hibrido, equipos que imprimen desde movil, oficinas que quieren reducir pasos en flujos documentales.</p>\n\n<h2>Comparativa rapida</h2>\n<ul>\n  <li><strong>Velocidad:</strong> IM 430F gana (43 vs 30 ppm)</li>\n  <li><strong>Conectividad:</strong> IM 430F gana (WiFi, nube de fabrica)</li>\n  <li><strong>Costo mensual:</strong> MP 3055SP es generalmente mas economico</li>\n  <li><strong>Formato de papel:</strong> ambos soportan A4 y A3</li>\n  <li><strong>Fiabilidad:</strong> ambos son equipos Ricoh con garantia igual</li>\n</ul>\n\n<h2>Nuestra recomendacion</h2>\n<p>Si el presupuesto es la prioridad y el volumen no supera las 5.000 paginas al mes, el MP 3055SP es suficiente. Si la empresa tiene trabajo hibrido o quiere simplificar flujos de documentos, el IM 430F vale la diferencia de precio.</p>\n\n<p>¿Quieres ver ambos modelos y cotizar? <a href=\"/alquiler-fotocopiadoras-medellin/\">Ver catalogo completo</a>.</p>",
+    "category": 4,
+    "author": null,
+    "reading_time_min": 5,
+    "tags": [
+      12,
+      11,
+      10
+    ]
+  }
+},
+{
+  "model": "blog.post",
+  "pk": 9,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.083Z",
+    "updated_at": "2026-05-23T16:15:35.801Z",
+    "slug": "por-que-una-fotocopiadora-multifuncional-es-mejor-que-5-impresoras-de-escritorio",
+    "meta_title": "",
+    "meta_description": "",
+    "meta_keywords": "",
+    "og_image": "",
+    "canonical_url": "",
+    "schema_type": "WebPage",
+    "noindex": false,
+    "status": "published",
+    "published_at": "2026-05-23T14:33:55.082Z",
+    "is_featured": false,
+    "main_image": "content/originals/img-blog-impresion-oficina.webp",
+    "main_image_alt": "Ricoh MP 2554 multifuncional frente a grupo de impresoras de escritorio",
+    "title": "Por que una fotocopiadora multifuncional es mejor que 5 impresoras de escritorio",
+    "excerpt": "La mayoria de las empresas en Medellin aun tienen varias impresoras de escritorio individuales. Te mostramos por que ese modelo sale mas caro y mas problematico que un solo equipo multifuncional.",
+    "content": "<p>Es un error comun: la empresa crece, se compran impresoras de escritorio para cada area y de pronto hay 6 impresoras, 4 marcas distintas, toners diferentes y un problema diferente cada semana. Aqui esta el calculo real.</p>\n\n<h2>El costo real de las impresoras de escritorio</h2>\n<p>Una impresora de escritorio basica imprime a 20-25 ppm, consume un toner de $80.000-$120.000 cada 1.500-2.000 paginas y falla con frecuencia. Con 5 impresoras imprimiendo 500 paginas cada una al mes:</p>\n<ul>\n  <li>Toner mensual: entre $200.000 y $400.000 COP (para las 5)</li>\n  <li>Mantenimiento: no incluido, cada reparacion es un imprevisto</li>\n  <li>Velocidad: 20-25 ppm por equipo, colas de impresion por persona</li>\n  <li>Espacio: 5 equipos sobre 5 escritorios</li>\n</ul>\n\n<h2>Un equipo multifuncional Ricoh centralizado</h2>\n<p>Con un Ricoh MP 2554 o MP 2555SP imprimiendo 2.500 paginas al mes para todo el equipo:</p>\n<ul>\n  <li>Toner mensual: incluido en el plan de alquiler</li>\n  <li>Mantenimiento: incluido, sin imprevistos</li>\n  <li>Velocidad: 25-30 ppm, red compartida, impresion desde cualquier PC o movil</li>\n  <li>Escaneo, copia y fax incluidos sin costo adicional</li>\n</ul>\n\n<h2>El ahorro es inmediato</h2>\n<p>La mayoria de nuestros clientes que hacen esta migracion ahorran entre el 30% y el 50% en costos de impresion mensual. Y eliminan completamente los imprevistos: el equipo falla, llamamos, en menos de 24 horas esta resuelto.</p>\n\n<p>Si todavia tienes impresoras de escritorio, este es un buen momento para hacer el cambio. <a href=\"/cotizador/\">Cotiza aqui</a>.</p>",
+    "category": 4,
+    "author": null,
+    "reading_time_min": 4,
+    "tags": [
+      11,
+      17,
+      10
+    ]
+  }
+},
+{
+  "model": "blog.post",
+  "pk": 10,
+  "fields": {
+    "created_at": "2026-05-23T14:33:55.084Z",
+    "updated_at": "2026-05-23T16:15:36.381Z",
+    "slug": "cableado-estructurado-cat-6a-por-que-es-la-mejor-inversion-para-tu-oficina-en-2025",
+    "meta_title": "",
+    "meta_description": "",
+    "meta_keywords": "",
+    "og_image": "",
+    "canonical_url": "",
+    "schema_type": "WebPage",
+    "noindex": false,
+    "status": "published",
+    "published_at": "2026-05-23T14:33:55.084Z",
+    "is_featured": true,
+    "main_image": "content/originals/img-blog-multifuncional.webp",
+    "main_image_alt": "Tecnico instalando cableado estructurado Cat 6A en rack de comunicaciones en Medellin",
+    "title": "Cableado estructurado Cat 6A: por que es la mejor inversion para tu oficina en 2025",
+    "excerpt": "El cableado estructurado es la infraestructura invisible que hace funcionar todo lo demas. Te explicamos por que Cat 6A es el estandar correcto hoy y cuanto cuesta en Medellin.",
+    "content": "<p>Si estas montando una oficina nueva o renovando la red existente, la decision del cableado es una de las mas importantes. Y es la que mas se subestima. Un cableado mal instalado genera problemas durante anos.</p>\n\n<h2>Por que Cat 6A y no Cat 6</h2>\n<p>Cat 6 soporta 1 Gbps a 100 metros. Cat 6A soporta 10 Gbps a 100 metros con mayor resistencia a interferencias. En 2025, la diferencia de costo entre instalar Cat 6 y Cat 6A es de entre $800.000 y $1.500.000 en un proyecto de 50 puntos. Un delta pequeno considerando que el cableado dura 15-20 anos.</p>\n\n<h2>Que incluye una instalacion correcta</h2>\n<ul>\n  <li>Cable certificado Cat 6A por punto</li>\n  <li>Conectores RJ45 categoria 6A</li>\n  <li>Patch panel y rack de comunicaciones</li>\n  <li>Certificacion punto por punto con equipo Fluke DSX-5000</li>\n  <li>Informe tecnico con resultados de certificacion</li>\n  <li>Etiquetado profesional de todos los puntos</li>\n</ul>\n\n<h2>Cuanto cuesta en Medellin</h2>\n<p>Un punto de red Cat 6A certificado en Medellin cuesta entre $180.000 y $250.000 COP dependiendo del acceso y la distancia. Un proyecto tipico de oficina de 20 personas con 30 puntos de red queda entre $5.400.000 y $7.500.000 COP instalado y certificado.</p>\n\n<h2>Para quien es el cableado estructurado</h2>\n<p>Para cualquier empresa que dependa de la red para trabajar: desde una oficina de 10 personas hasta una empresa con 200 puestos. Si usas VoIP, camaras IP, impresoras en red o servidores locales, el cableado estructurado certificado es obligatorio.</p>\n\n<p>¿Quieres saber cuantos puntos necesita tu espacio? <a href=\"/contacto/\">Agendamos una visita tecnica sin costo</a>.</p>",
+    "category": 5,
+    "author": null,
+    "reading_time_min": 5,
+    "tags": [
+      14,
+      16,
+      17
+    ]
+  }
+}
+]

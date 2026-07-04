@@ -2678,12 +2678,15 @@ class PanelConsumableAutocompleteView(View):
             Q(name__icontains=q) |
             Q(brand__icontains=q) |
             Q(part_number__icontains=q)
-        ).values("name", "brand", "consumable_type", "in_stock", "stock_quantity")[:12]
+        ).values("id", "name", "brand", "part_number", "price", "consumable_type", "in_stock", "stock_quantity")[:12]
 
         results = [
             {
+                "id":             r["id"],
                 "name":           r["name"],
                 "brand":          r["brand"],
+                "part_number":    r["part_number"] or "",
+                "price":          str(r["price"]) if r["price"] else "0",
                 "type":           r["consumable_type"],
                 "in_stock":       r["in_stock"],
                 "stock_quantity": r["stock_quantity"],
@@ -2799,6 +2802,7 @@ class PanelInvoiceStatusUpdateView(View):
 
     def post(self, request, pk: int):
         from apps.payments.models import Invoice
+        from apps.payments.views import _reduce_stock_for_invoice
         from django.contrib import messages as dj_messages
         invoice = get_object_or_404(Invoice, pk=pk, created_by=request.user)
         new_status = request.POST.get("status")
@@ -2807,6 +2811,8 @@ class PanelInvoiceStatusUpdateView(View):
             if new_status == Invoice.Status.PAID and not invoice.paid_date:
                 invoice.paid_date = timezone.localdate()
             invoice.save(update_fields=["status", "paid_date"])
+            if new_status in (Invoice.Status.ISSUED, Invoice.Status.PAID):
+                _reduce_stock_for_invoice(invoice, user=request.user)
             dj_messages.success(request, "Estado de factura actualizado.")
         return redirect("panel:invoice_detail", pk=pk)
 
@@ -4622,13 +4628,11 @@ class CampoTaskCompleteView(View):
             field_user__user=request.user,
             status=DeliveryTask.Status.PENDING,
         )
-        task.completion_notes   = request.POST.get("notes", "").strip()
-        task.completion_invoice = request.POST.get("invoice", "").strip()
-        task.status             = DeliveryTask.Status.DONE
-        task.completed_at       = timezone.now()
-        photo = request.FILES.get("photo")
-        if photo:
-            task.completion_photo = photo
+        task.completion_notes     = request.POST.get("notes", "").strip()
+        task.completion_invoice   = request.POST.get("invoice", "").strip()
+        task.completion_signature = request.POST.get("signature", "").strip()
+        task.status               = DeliveryTask.Status.DONE
+        task.completed_at         = timezone.now()
         task.save()
         return JsonResponse({"ok": True, "task_id": task.pk})
 
@@ -4828,13 +4832,11 @@ class PanelDeliveryCompleteView(View):
         except FieldUser.DoesNotExist:
             return JsonResponse({"ok": False, "error": "Sin perfil de campo"}, status=403)
         task = get_object_or_404(DeliveryTask, pk=pk, field_user=fu, status=DeliveryTask.Status.PENDING)
-        task.completion_notes   = request.POST.get("notes", "").strip()
-        task.completion_invoice = request.POST.get("invoice", "").strip()
-        task.status             = DeliveryTask.Status.DONE
-        task.completed_at       = timezone.now()
-        photo = request.FILES.get("photo")
-        if photo:
-            task.completion_photo = photo
+        task.completion_notes     = request.POST.get("notes", "").strip()
+        task.completion_invoice   = request.POST.get("invoice", "").strip()
+        task.completion_signature = request.POST.get("signature", "").strip()
+        task.status               = DeliveryTask.Status.DONE
+        task.completed_at         = timezone.now()
         task.save()
         return JsonResponse({"ok": True, "task_id": task.pk})
 

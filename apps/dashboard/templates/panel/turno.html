@@ -233,7 +233,7 @@
   <div class="pndm-sheet" onclick="event.stopPropagation()">
     <div class="pndm-handle"></div>
     <div style="font-size:.9375rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1rem;" id="pn-dmodal-title">Confirmar entrega</div>
-    <form id="pn-delivery-form" enctype="multipart/form-data">
+    <form id="pn-delivery-form">
       <input type="hidden" id="pn-dtask-id">
       <div style="margin-bottom:.875rem;">
         <label class="pndm-label" for="pn-dnotes">Notas de entrega</label>
@@ -244,9 +244,12 @@
         <input class="pndm-input" type="text" name="invoice" id="pn-dinvoice" placeholder="FAC-001, REM-2345" autocomplete="off">
       </div>
       <div style="margin-bottom:1.125rem;">
-        <label class="pndm-label">Foto comprobante (opcional)</label>
-        <input type="file" name="photo" id="pn-dphoto" accept="image/*" capture="environment"
-          style="width:100%;padding:.5rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.625rem;font-size:.85rem;font-family:inherit;box-sizing:border-box;">
+        <label class="pndm-label">Firma del receptor</label>
+        <div style="position:relative;background:#fff;border:1.5px solid var(--color-border);border-radius:.625rem;overflow:hidden;touch-action:none;">
+          <canvas id="pn-sig-canvas" style="display:block;width:100%;height:130px;cursor:crosshair;"></canvas>
+          <button type="button" onclick="clearSig()" style="position:absolute;top:.375rem;right:.375rem;background:rgba(0,0,0,.12);border:none;border-radius:.375rem;padding:.2rem .5rem;font-size:.72rem;color:#333;cursor:pointer;line-height:1.4;">Borrar</button>
+        </div>
+        <p style="font-size:.72rem;color:var(--color-text-muted);margin:.35rem 0 0;">Dibuja tu firma con el dedo o el mouse</p>
       </div>
       <button type="button" class="pndm-btn-confirm" id="pn-dsubmit" onclick="submitDelivery()">
         <span id="pn-dsubmit-txt">Confirmar entrega</span>
@@ -260,12 +263,48 @@
 const CSRF_PN = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
 let _savedScrollY = 0;
 
+/* ── Firma canvas ── */
+let _sigCanvas, _sigCtx, _sigDrawing = false;
+
+function initSigCanvas() {
+  _sigCanvas = document.getElementById('pn-sig-canvas');
+  _sigCtx    = _sigCanvas.getContext('2d');
+  // Ajustar resolución real al tamaño CSS
+  const rect = _sigCanvas.getBoundingClientRect();
+  _sigCanvas.width  = rect.width  * window.devicePixelRatio;
+  _sigCanvas.height = rect.height * window.devicePixelRatio;
+  _sigCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  _sigCtx.strokeStyle = '#1a1a2e';
+  _sigCtx.lineWidth   = 2.5;
+  _sigCtx.lineCap     = 'round';
+  _sigCtx.lineJoin    = 'round';
+}
+
+function _sigPos(e) {
+  const r = _sigCanvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return { x: src.clientX - r.left, y: src.clientY - r.top };
+}
+
+function _sigStart(e) { e.preventDefault(); _sigDrawing = true; const p = _sigPos(e); _sigCtx.beginPath(); _sigCtx.moveTo(p.x, p.y); }
+function _sigMove(e)  { e.preventDefault(); if (!_sigDrawing) return; const p = _sigPos(e); _sigCtx.lineTo(p.x, p.y); _sigCtx.stroke(); }
+function _sigEnd()    { _sigDrawing = false; }
+
+function clearSig() {
+  if (_sigCtx) _sigCtx.clearRect(0, 0, _sigCanvas.width, _sigCanvas.height);
+}
+
+function isSigEmpty() {
+  if (!_sigCanvas) return true;
+  const d = _sigCtx.getImageData(0, 0, _sigCanvas.width, _sigCanvas.height).data;
+  return !d.some(v => v !== 0);
+}
+
 function openDeliveryModal(id, title) {
   document.getElementById('pn-dtask-id').value = id;
   document.getElementById('pn-dmodal-title').textContent = title;
   document.getElementById('pn-dnotes').value = '';
   document.getElementById('pn-dinvoice').value = '';
-  document.getElementById('pn-dphoto').value = '';
   document.getElementById('pn-dsubmit-txt').textContent = 'Confirmar entrega';
   document.getElementById('pn-dsubmit').disabled = false;
   _savedScrollY = window.scrollY;
@@ -273,6 +312,18 @@ function openDeliveryModal(id, title) {
   document.body.style.position = 'fixed';
   document.body.style.width = '100%';
   document.getElementById('pn-delivery-modal').classList.add('pndm-open');
+  // Inicializar canvas después de que el modal sea visible
+  requestAnimationFrame(() => {
+    initSigCanvas();
+    clearSig();
+    _sigCanvas.addEventListener('mousedown',  _sigStart, { passive: false });
+    _sigCanvas.addEventListener('mousemove',  _sigMove,  { passive: false });
+    _sigCanvas.addEventListener('mouseup',    _sigEnd);
+    _sigCanvas.addEventListener('mouseleave', _sigEnd);
+    _sigCanvas.addEventListener('touchstart', _sigStart, { passive: false });
+    _sigCanvas.addEventListener('touchmove',  _sigMove,  { passive: false });
+    _sigCanvas.addEventListener('touchend',   _sigEnd);
+  });
 }
 
 function closeDModal() {
@@ -295,8 +346,7 @@ function submitDelivery() {
   fd.append('csrfmiddlewaretoken', CSRF_PN);
   fd.append('notes',   document.getElementById('pn-dnotes').value);
   fd.append('invoice', document.getElementById('pn-dinvoice').value);
-  const photo = document.getElementById('pn-dphoto').files[0];
-  if (photo) fd.append('photo', photo);
+  fd.append('signature', isSigEmpty() ? '' : _sigCanvas.toDataURL('image/png'));
 
   fetch('/panel/entregas/' + taskId + '/completar/', { method: 'POST', body: fd })
     .then(function(r) {
