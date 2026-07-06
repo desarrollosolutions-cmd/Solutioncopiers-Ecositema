@@ -24,14 +24,14 @@
 <div class="da-alert-warning" style="margin-bottom:1.25rem;">{{ error }}</div>
 {% endif %}
 
-<div style="display:grid;grid-template-columns:1fr 300px;gap:1.25rem;">
+<div class="da-grid-sidebar">
 
   {# Formulario #}
   <div class="da-card" style="padding:1.5rem;">
     <div style="font-size:.875rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1.25rem;">Datos de la cuenta</div>
     <form method="post" id="main-form">
       {% csrf_token %}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
+      <div class="da-grid-2" style="gap:.875rem;">
 
         <div class="da-field">
           <label>Nombre</label>
@@ -79,7 +79,7 @@
       {% if not is_edit %}
       <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--color-border);">
         <div style="font-size:.875rem;font-weight:700;color:var(--color-text-primary);margin-bottom:.75rem;">Nivel de acceso</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+        <div class="da-grid-2" style="gap:.75rem;">
 
           <label style="display:flex;align-items:flex-start;gap:.75rem;padding:.875rem 1rem;background:var(--color-bg-alt);border:2px solid var(--color-border);border-radius:.75rem;cursor:pointer;transition:border-color .18s;" id="lbl-staff">
             <input type="radio" name="is_superuser" value="0" checked

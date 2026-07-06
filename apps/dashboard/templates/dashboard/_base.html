@@ -830,15 +830,44 @@
     }
     .da-topbar-btn { position: relative; }
 
-    /* ── RESPONSIVE ──────────────────────────────────────────────── */
+    /* ── GRID UTILITIES ──────────────────────────────────────────────── */
+    .da-grid-2       { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .da-grid-sidebar { display:grid; grid-template-columns:1fr 300px; gap:1.25rem; }
+
+    /* ── HAMBURGER (desktop: oculto) ─────────────────────────────────── */
+    .da-hamburger { display:none; align-items:center; justify-content:center; background:none; border:1px solid var(--color-border); cursor:pointer; padding:.375rem .5rem; border-radius:.5rem; color:var(--color-text-secondary); transition:color .15s,border-color .15s,background .15s; flex-shrink:0; }
+    .da-hamburger:hover { color:var(--color-primary); border-color:var(--color-primary); background:color-mix(in srgb,var(--color-primary) 6%,var(--color-bg-alt)); }
+    .da-hamburger svg { width:1.125rem; height:1.125rem; }
+
+    /* ── BACKDROP MÓVIL ──────────────────────────────────────────────── */
+    .da-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:90; backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+    .da-backdrop.da-open { display:block; }
+
+    /* ── BREAKPOINT MÓVIL ────────────────────────────────────────────── */
     @media (max-width: 768px) {
-      .da-sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
-      .da-main    { margin-left: 0; }
+      .da-sidebar         { transform:translateX(-100%); transition:transform .28s cubic-bezier(.4,0,.2,1); z-index:100; }
+      .da-sidebar.da-open { transform:translateX(0); }
+      .da-main    { margin-left:0; }
+      .da-content { padding:.875rem .875rem 4rem; }
+      .da-hamburger { display:flex; }
+      .da-topbar  { padding:0 1rem; gap:.375rem; }
+      .da-topbar-time, #da-live-clock { display:none; }
+      .da-breadcrumb  { font-size:.75rem; }
+      .da-page-header { flex-direction:column; align-items:flex-start; }
+      .da-page-title  { font-size:1.125rem; }
+      .da-grid-2       { grid-template-columns:1fr; }
+      .da-grid-sidebar { grid-template-columns:1fr; }
+      .da-form-grid    { grid-template-columns:1fr !important; }
+      .da-form-grid-3  { grid-template-columns:1fr !important; }
+      .da-stats-grid   { grid-template-columns:repeat(2,1fr) !important; }
+      .da-table-wrap   { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      table.da-table   { min-width:540px; }
     }
   </style>
 </head>
 <body>
 
+<div class="da-backdrop" id="da-backdrop"></div>
 {# ── SIDEBAR ── #}
 <aside class="da-sidebar">
   <div class="da-brand">
@@ -1004,6 +1033,9 @@
 {# ── MAIN ── #}
 <div class="da-main">
   <header class="da-topbar">
+    <button class="da-hamburger" id="da-hamburger" aria-label="Abrir menú">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
     <div class="da-breadcrumb">
       <a href="{% url 'dashboard:home' %}">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;vertical-align:middle;margin-right:.2rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -1134,6 +1166,16 @@
       });
     });
   }
+
+  /* ── Drawer móvil ── */
+  var daHam      = document.getElementById('da-hamburger');
+  var daSidebar  = document.querySelector('.da-sidebar');
+  var daBackdrop = document.getElementById('da-backdrop');
+  function daCloseSidebar(){ if(daSidebar) daSidebar.classList.remove('da-open'); if(daBackdrop) daBackdrop.classList.remove('da-open'); }
+  if(daHam){ daHam.addEventListener('click', function(){ var open=daSidebar.classList.toggle('da-open'); if(open) daBackdrop.classList.add('da-open'); else daBackdrop.classList.remove('da-open'); }); }
+  if(daBackdrop) daBackdrop.addEventListener('click', daCloseSidebar);
+  window.addEventListener('resize', function(){ if(window.innerWidth > 768) daCloseSidebar(); });
+  if(daSidebar) daSidebar.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){ if(window.innerWidth <= 768) daCloseSidebar(); }); });
 })();
 </script>
 

@@ -6,7 +6,7 @@
 <div class="da-page-header"><h1 class="da-page-title">{{ action }}</h1><a href="{% url 'dashboard:copiers' %}" class="da-btn da-btn-secondary">← Cancelar</a></div>
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
-  <div style="display:grid;grid-template-columns:1fr 300px;gap:1.25rem;">
+  <div class="da-grid-sidebar">
     <div style="display:flex;flex-direction:column;gap:1.25rem;">
       <div class="da-card"><div class="da-card-header">Información del equipo</div><div class="da-card-body"><div class="da-form-grid">
         <div class="da-field da-form-full"><label>Nombre</label>{{ form.name }}</div>

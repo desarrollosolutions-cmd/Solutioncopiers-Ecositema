@@ -21,7 +21,7 @@
     <form method="post" action="{% url 'dashboard:campo_user_detail' field_user.pk %}">
       {% csrf_token %}
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+      <div class="da-grid-2" style="margin-bottom:1rem;">
         <div>
           <label style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.05em;">Usuario</label>
           <div style="padding:.65rem 1rem;background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.625rem;font-size:.875rem;color:var(--color-text-secondary);">
@@ -79,7 +79,7 @@
         {% endif %}
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+      <div class="da-grid-2" style="margin-bottom:1rem;">
         <div>
           <label for="id_role" style="display:block;font-size:.72rem;font-weight:600;color:var(--color-text-muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.05em;">Rol</label>
           <select name="role" id="id_role" required style="width:100%;padding:.65rem 1rem;background:var(--color-bg-alt);border:1.5px solid var(--color-border);border-radius:.625rem;font-size:.875rem;color:var(--color-text-primary);outline:none;appearance:none;font-family:inherit;">

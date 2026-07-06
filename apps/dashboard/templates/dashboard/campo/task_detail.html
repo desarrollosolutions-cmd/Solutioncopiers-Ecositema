@@ -31,7 +31,7 @@
     {# Datos de la tarea #}
     <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.5rem;">
       <div style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1.25rem;">Información de la tarea</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
+      <div class="da-grid-2" style="gap:.875rem;">
         <div>
           <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Asignado a</div>
           <div style="font-size:.875rem;font-weight:600;color:var(--color-text-primary);">{{ task.field_user.user.get_full_name|default:task.field_user.user.username }}</div>
