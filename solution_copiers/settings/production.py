@@ -33,8 +33,8 @@ SECURE_BROWSER_XSS_FILTER        = True      # Legacy browsers
 # Cookies en producción — siempre Secure
 SESSION_COOKIE_SECURE  = True
 CSRF_COOKIE_SECURE     = True
-SESSION_COOKIE_SAMESITE = "Strict"   # Más restrictivo en producción
-CSRF_COOKIE_SAMESITE    = "Strict"
+SESSION_COOKIE_SAMESITE = "Lax"      # Strict bloquea cookies al abrir links desde apps externas (WhatsApp, email)
+CSRF_COOKIE_SAMESITE    = "Lax"
 
 X_FRAME_OPTIONS = "DENY"
 

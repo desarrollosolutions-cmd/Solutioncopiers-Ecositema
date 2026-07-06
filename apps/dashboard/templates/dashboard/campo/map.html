@@ -10,9 +10,9 @@
       <span id="counter">{{ on_shift }}</span> persona(s) en turno activo · actualiza cada 30 seg
     </p>
   </div>
-  <div style="display:flex;gap:.75rem;">
-    <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Tareas de entrega</a>
-    <a href="{% url 'dashboard:campo_users' %}" class="da-btn da-btn-secondary">Gestionar equipo</a>
+  <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+    <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Tareas</a>
+    <a href="{% url 'dashboard:campo_users' %}" class="da-btn da-btn-secondary">Equipo</a>
     <button onclick="refreshMap()" class="da-btn da-btn-primary" id="refresh-btn">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
       Actualizar
@@ -24,10 +24,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<div style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;">
+<div class="da-grid-sidebar">
 
   <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
-    <div id="map" style="height:520px;"></div>
+    <div id="map" style="height:clamp(260px,50vh,520px);"></div>
   </div>
 
   <div style="display:flex;flex-direction:column;gap:.75rem;">
@@ -35,7 +35,7 @@
       <div style="padding:.875rem 1.125rem;border-bottom:1px solid var(--color-border);font-size:.8125rem;font-weight:700;color:var(--color-text-primary);">
         Personal en campo
       </div>
-      <div id="user-list" style="max-height:440px;overflow-y:auto;">
+      <div id="user-list" style="max-height:clamp(180px,35vh,440px);overflow-y:auto;">
         {% for fu in field_users %}
         <div class="campo-user-row" data-uid="{{ fu.user.pk }}"
           style="padding:.75rem 1.125rem;border-bottom:1px solid var(--color-border);cursor:pointer;transition:background .15s;"
@@ -152,5 +152,6 @@ function focusUser(uid) {
 
 refreshMap();
 setInterval(refreshMap, 30000);
+window.addEventListener('resize', () => { map.invalidateSize(); });
 </script>
 {% endblock %}

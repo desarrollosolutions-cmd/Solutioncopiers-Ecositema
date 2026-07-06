@@ -3,6 +3,15 @@
 {% block nav_campo %}active{% endblock %}
 
 {% block content %}
+<style>
+@media(max-width:768px){
+  .cq-form-grid{grid-template-columns:1fr 1fr !important;}
+  .cq-form-grid .cq-submit{grid-column:1/-1;}
+}
+@media(max-width:480px){
+  .cq-form-grid{grid-template-columns:1fr !important;}
+}
+</style>
 <div class="da-page-header">
   <div>
     <h1 class="da-page-title">Tareas de entrega</h1>
@@ -24,7 +33,7 @@
   <div style="font-size:.8125rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1rem;">Nueva tarea de entrega</div>
   <form method="post" action="{% url 'dashboard:campo_tasks' %}">
     {% csrf_token %}
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:.75rem;align-items:end;flex-wrap:wrap;">
+    <div class="cq-form-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:.75rem;align-items:end;">
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Mensajero / Técnico</label>
         <select name="field_user_id" required class="da-input" style="width:100%;">
@@ -46,8 +55,8 @@
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Fecha</label>
         <input type="date" name="due_date" class="da-input" style="width:100%;" value="{{ today }}">
       </div>
-      <div>
-        <button type="submit" class="da-btn da-btn-primary" style="white-space:nowrap;">
+      <div class="cq-submit">
+        <button type="submit" class="da-btn da-btn-primary" style="white-space:nowrap;width:100%;justify-content:center;">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           Asignar
         </button>
@@ -58,7 +67,7 @@
 
 {# ── Filtros ── #}
 <form method="get" style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:flex-end;">
-  <select name="user" class="da-input" style="width:200px;">
+  <select name="user" class="da-input" style="width:200px;max-width:100%;">
     <option value="">Todos los mensajeros</option>
     {% for fu in field_users %}
     <option value="{{ fu.pk }}" {% if filter_user == fu.pk|stringformat:"s" %}selected{% endif %}>
@@ -66,13 +75,13 @@
     </option>
     {% endfor %}
   </select>
-  <select name="status" class="da-input" style="width:160px;">
+  <select name="status" class="da-input" style="width:160px;max-width:100%;">
     <option value="">Todos los estados</option>
     {% for val, label in status_choices %}
     <option value="{{ val }}" {% if filter_status == val %}selected{% endif %}>{{ label }}</option>
     {% endfor %}
   </select>
-  <input type="date" name="date" class="da-input" style="width:160px;" value="{{ filter_date }}">
+  <input type="date" name="date" class="da-input" style="width:160px;max-width:100%;" value="{{ filter_date }}">
   <button type="submit" class="da-btn da-btn-primary">Filtrar</button>
   {% if filter_user or filter_status or filter_date %}
   <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Limpiar</a>
@@ -81,7 +90,8 @@
 
 {# ── Lista ── #}
 <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
-  <table style="width:100%;border-collapse:collapse;">
+  <div style="overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;min-width:600px;">
     <thead>
       <tr style="border-bottom:1px solid var(--color-border);">
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Tarea</th>
@@ -140,5 +150,6 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
 </div>
 {% endblock %}

@@ -23,7 +23,7 @@
   </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 360px;gap:1.25rem;">
+<div class="da-grid-sidebar">
 
   {# Columna principal #}
   <div style="display:flex;flex-direction:column;gap:1rem;">
@@ -78,7 +78,7 @@
         {% endif %}
       </div>
       {% if task.completion_photo_b64 or task.completion_signature %}
-      <div style="display:grid;grid-template-columns:{% if task.completion_photo_b64 and task.completion_signature %}1fr 1fr{% else %}1fr{% endif %};gap:1rem;">
+      <div class="{% if task.completion_photo_b64 and task.completion_signature %}da-grid-2{% endif %}" style="gap:1rem;{% if not task.completion_photo_b64 or not task.completion_signature %}display:block;{% endif %}">
         {% if task.completion_photo_b64 %}
         <div>
           <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.625rem;">Foto de la entrega</div>

@@ -8,7 +8,7 @@
     <h1 class="da-page-title">Equipo de campo</h1>
     <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">Mensajeros y técnicos con acceso al portal /campo/</p>
   </div>
-  <div style="display:flex;gap:.75rem;">
+  <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
     <a href="{% url 'dashboard:campo_map' %}" class="da-btn da-btn-secondary">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
       Ver mapa
@@ -31,7 +31,8 @@
 {% endif %}
 
 <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
-  <table style="width:100%;border-collapse:collapse;">
+  <div style="overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;min-width:560px;">
     <thead>
       <tr style="border-bottom:1px solid var(--color-border);">
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Persona</th>
@@ -109,5 +110,6 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
 </div>
 {% endblock %}
