@@ -63,7 +63,7 @@
         <div style="width:1.5rem;height:1.5rem;border-radius:9999px;background:rgba(16,185,129,.15);color:#10B981;display:flex;align-items:center;justify-content:center;font-size:.75rem;">✓</div>
         <div style="font-size:.8rem;font-weight:700;color:#10B981;">Tarea completada — {{ task.completed_at|date:"d/m/Y H:i" }}</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:{% if task.completion_photo %}1.25rem{% else %}0{% endif %};">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:{% if task.completion_signature or task.completion_invoice or task.completion_notes %}1.25rem{% else %}0{% endif %};">
         {% if task.completion_invoice %}
         <div>
           <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;"># Factura / Remisión</div>
@@ -77,14 +77,12 @@
         </div>
         {% endif %}
       </div>
-      {% if task.completion_photo %}
+      {% if task.completion_signature %}
       <div>
-        <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.625rem;">Foto del comprobante</div>
-        <a href="{{ task.completion_photo.url }}" target="_blank">
-          <img src="{{ task.completion_photo.url }}" alt="Comprobante"
-            style="max-width:100%;max-height:420px;border-radius:.875rem;border:1px solid var(--color-border);object-fit:contain;display:block;">
-        </a>
-        <p style="font-size:.7rem;color:var(--color-text-muted);margin-top:.375rem;">Toca la imagen para ver en tamaño completo</p>
+        <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.625rem;">Firma del receptor</div>
+        <img src="{{ task.completion_signature }}" alt="Firma del receptor"
+          style="max-width:320px;max-height:160px;border-radius:.875rem;border:1px solid var(--color-border);background:#fff;object-fit:contain;display:block;padding:.5rem;">
+        <p style="font-size:.7rem;color:var(--color-text-muted);margin-top:.375rem;">Firma registrada al momento de la entrega</p>
       </div>
       {% endif %}
     </div>
