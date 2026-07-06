@@ -243,6 +243,18 @@
         <label class="pndm-label" for="pn-dinvoice"># Factura / Remisión (opcional)</label>
         <input class="pndm-input" type="text" name="invoice" id="pn-dinvoice" placeholder="FAC-001, REM-2345" autocomplete="off">
       </div>
+      <div style="margin-bottom:1rem;">
+        <label class="pndm-label">Foto de la entrega (opcional)</label>
+        <label id="pn-photo-label" style="display:flex;align-items:center;gap:.625rem;padding:.625rem .875rem;border:1.5px dashed var(--color-border);border-radius:.625rem;cursor:pointer;background:var(--color-surface-alt,#f8f8f8);">
+          <span style="font-size:1.25rem;">📷</span>
+          <span id="pn-photo-label-txt" style="font-size:.8rem;color:var(--color-text-muted);">Toca para tomar o elegir foto</span>
+          <input type="file" id="pn-photo-input" accept="image/*" capture="environment" style="display:none;" onchange="onPhotoSelected(this)">
+        </label>
+        <div id="pn-photo-preview" style="display:none;margin-top:.5rem;position:relative;">
+          <img id="pn-photo-img" style="max-width:100%;max-height:200px;border-radius:.625rem;border:1px solid var(--color-border);object-fit:contain;display:block;">
+          <button type="button" onclick="clearPhoto()" style="position:absolute;top:.375rem;right:.375rem;background:rgba(0,0,0,.55);border:none;border-radius:.375rem;padding:.2rem .5rem;font-size:.72rem;color:#fff;cursor:pointer;">Quitar</button>
+        </div>
+      </div>
       <div style="margin-bottom:1.125rem;">
         <label class="pndm-label">Firma del receptor</label>
         <div style="position:relative;background:#fff;border:1.5px solid var(--color-border);border-radius:.625rem;overflow:hidden;touch-action:none;">
@@ -262,6 +274,43 @@
 <script>
 const CSRF_PN = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
 let _savedScrollY = 0;
+
+/* ── Foto de entrega ── */
+let _photoB64 = '';
+
+function onPhotoSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      // Comprimir: máx 1024px, calidad 75%
+      const MAX = 1024;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      _photoB64 = c.toDataURL('image/jpeg', 0.75);
+      document.getElementById('pn-photo-img').src = _photoB64;
+      document.getElementById('pn-photo-preview').style.display = 'block';
+      document.getElementById('pn-photo-label-txt').textContent = file.name;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto() {
+  _photoB64 = '';
+  document.getElementById('pn-photo-input').value = '';
+  document.getElementById('pn-photo-preview').style.display = 'none';
+  document.getElementById('pn-photo-label-txt').textContent = 'Toca para tomar o elegir foto';
+}
 
 /* ── Firma canvas ── */
 let _sigCanvas, _sigCtx, _sigDrawing = false;
@@ -305,6 +354,7 @@ function openDeliveryModal(id, title) {
   document.getElementById('pn-dmodal-title').textContent = title;
   document.getElementById('pn-dnotes').value = '';
   document.getElementById('pn-dinvoice').value = '';
+  clearPhoto();
   document.getElementById('pn-dsubmit-txt').textContent = 'Confirmar entrega';
   document.getElementById('pn-dsubmit').disabled = false;
   _savedScrollY = window.scrollY;
@@ -344,9 +394,10 @@ function submitDelivery() {
 
   const fd = new FormData();
   fd.append('csrfmiddlewaretoken', CSRF_PN);
-  fd.append('notes',   document.getElementById('pn-dnotes').value);
-  fd.append('invoice', document.getElementById('pn-dinvoice').value);
+  fd.append('notes',     document.getElementById('pn-dnotes').value);
+  fd.append('invoice',   document.getElementById('pn-dinvoice').value);
   fd.append('signature', isSigEmpty() ? '' : _sigCanvas.toDataURL('image/png'));
+  fd.append('photo_b64', _photoB64);
 
   fetch('/panel/entregas/' + taskId + '/completar/', { method: 'POST', body: fd })
     .then(function(r) {

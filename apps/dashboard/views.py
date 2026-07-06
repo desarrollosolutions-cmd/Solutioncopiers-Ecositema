@@ -4631,6 +4631,7 @@ class CampoTaskCompleteView(View):
         task.completion_notes     = request.POST.get("notes", "").strip()
         task.completion_invoice   = request.POST.get("invoice", "").strip()
         task.completion_signature = request.POST.get("signature", "").strip()
+        task.completion_photo_b64 = request.POST.get("photo_b64", "").strip()
         task.status               = DeliveryTask.Status.DONE
         task.completed_at         = timezone.now()
         task.save()
@@ -4835,6 +4836,7 @@ class PanelDeliveryCompleteView(View):
         task.completion_notes     = request.POST.get("notes", "").strip()
         task.completion_invoice   = request.POST.get("invoice", "").strip()
         task.completion_signature = request.POST.get("signature", "").strip()
+        task.completion_photo_b64 = request.POST.get("photo_b64", "").strip()
         task.status               = DeliveryTask.Status.DONE
         task.completed_at         = timezone.now()
         task.save()

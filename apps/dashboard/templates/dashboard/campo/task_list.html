@@ -122,6 +122,7 @@
           {% if task.status == 'done' %}
             {{ task.completed_at|date:"d/m/Y H:i" }}
             {% if task.completion_invoice %}<br><span style="color:var(--color-text-secondary);">Fact: {{ task.completion_invoice }}</span>{% endif %}
+            {% if task.completion_photo_b64 %}<br><span style="color:#10B981;">📷 Con foto</span>{% endif %}
             {% if task.completion_signature %}<br><span style="color:#10B981;">✍ Firmado</span>{% endif %}
           {% else %}—{% endif %}
         </td>
