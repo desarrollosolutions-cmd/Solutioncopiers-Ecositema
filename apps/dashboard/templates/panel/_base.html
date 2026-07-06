@@ -317,10 +317,12 @@
       Mi Turno
     </a>
     {% endif %}
+    {% if not request.user.field_profile %}
     <a href="{% url 'panel:home' %}" class="pn-nav-item {% block nav_home %}{% endblock %}">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Mi resumen
     </a>
+    {% endif %}
 
     <div class="pn-nav-section">Clientes y Ventas</div>
     {% if perms.dashboard.panel_cotizaciones %}

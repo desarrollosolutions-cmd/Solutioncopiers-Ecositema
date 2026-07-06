@@ -5,8 +5,10 @@
 
 {% block content %}
 <div class="pn-page-header">
-  <h1 class="pn-page-title">Tickets de servicio</h1>
+  <h1 class="pn-page-title">{% if is_tecnico %}Mis tickets asignados{% else %}Tickets de servicio{% endif %}</h1>
+  {% if not is_tecnico %}
   <a href="{% url 'panel:ticket_create' %}" class="pn-btn pn-btn-primary pn-btn-sm">+ Nuevo ticket</a>
+  {% endif %}
 </div>
 
 {# Filtros #}
@@ -20,8 +22,10 @@
     </form>
   </div>
   <div style="display:flex;gap:.375rem;flex-wrap:wrap;">
+    {% if not is_tecnico %}
     <a href="?mine=1&status=&q={{ q }}" class="pn-btn pn-btn-sm {% if mine == '1' and not status %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">Mis tickets</a>
     <a href="?mine=0&status=&q={{ q }}" class="pn-btn pn-btn-sm {% if mine == '0' %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">Todos</a>
+    {% endif %}
     {% for val, lbl in status_choices %}
     <a href="?mine={{ mine }}&status={{ val }}&q={{ q }}" class="pn-btn pn-btn-sm {% if status == val %}pn-btn-primary{% else %}pn-btn-secondary{% endif %}">{{ lbl }}</a>
     {% endfor %}

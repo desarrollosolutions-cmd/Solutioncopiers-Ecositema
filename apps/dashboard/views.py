@@ -2013,13 +2013,10 @@ class PanelHomeView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         from apps.dashboard.models import FieldUser
-        # Mensajero sin permisos de panel → redirigir al turno
         try:
             fp = request.user.field_profile
-            has_panel_perms = request.user.user_permissions.filter(
-                content_type__app_label="dashboard"
-            ).exists()
-            if not has_panel_perms:
+            # Técnicos y mensajeros van directo a turno — no al home CRM
+            if fp.role in (FieldUser.Role.TECNICO, FieldUser.Role.MENSAJERO):
                 return redirect("panel:turno")
         except FieldUser.DoesNotExist:
             pass
@@ -2372,8 +2369,16 @@ class PanelTicketListView(TemplateView):
             "-priority", "-created_at"
         )
 
+        from apps.dashboard.models import FieldUser
+        is_tecnico = False
+        try:
+            is_tecnico = user.field_profile.role == FieldUser.Role.TECNICO
+        except FieldUser.DoesNotExist:
+            pass
+
         status = self.request.GET.get("status", "")
-        mine   = self.request.GET.get("mine", "1")
+        # Técnicos solo ven sus tickets — no se puede quitar el filtro
+        mine = "1" if is_tecnico else self.request.GET.get("mine", "1")
         search = self.request.GET.get("q", "").strip()
 
         if mine == "1":
@@ -2387,13 +2392,14 @@ class PanelTicketListView(TemplateView):
                 Q(description__icontains=search)
             )
 
-        ctx["tickets"]        = qs[:60]
-        ctx["total"]          = qs.count()
-        ctx["status"]         = status
-        ctx["mine"]           = mine
-        ctx["q"]              = search
-        ctx["status_choices"] = ServiceTicket.Status.choices
+        ctx["tickets"]          = qs[:60]
+        ctx["total"]            = qs.count()
+        ctx["status"]           = status
+        ctx["mine"]             = mine
+        ctx["q"]                = search
+        ctx["status_choices"]   = ServiceTicket.Status.choices
         ctx["priority_choices"] = ServiceTicket.Priority.choices
+        ctx["is_tecnico"]       = is_tecnico
         return ctx
 
 

@@ -89,13 +89,6 @@ PANEL_ROLES = [
                         "panel_tickets", "panel_contratos", "panel_insumos", "panel_facturacion"],
     },
     {
-        "key":         "tecnico",
-        "label":       "Técnico",
-        "description": "Solo ve y gestiona sus tickets asignados. Turno via /panel/turno/.",
-        "color":       "#10B981",
-        "perms":       ["panel_tickets"],
-    },
-    {
         "key":         "supervisor",
         "label":       "Supervisor",
         "description": "Acceso completo a todas las secciones del panel.",
