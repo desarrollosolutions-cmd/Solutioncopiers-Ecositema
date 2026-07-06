@@ -106,8 +106,14 @@ TEMPLATES = [
 WSGI_APPLICATION = "solution_copiers.wsgi.application"
 
 # ---------------------------------------------------------------------------
-# BASE DE DATOS - PostgreSQL
+# BASE DE DATOS — PostgreSQL obligatorio en todos los entornos
 # ---------------------------------------------------------------------------
+_db_url = env("DATABASE_URL")
+if _db_url.startswith("sqlite"):
+    raise RuntimeError(
+        "SQLite no está permitido. Configura DATABASE_URL con una URL de PostgreSQL en .env"
+    )
+
 DATABASES = {
     "default": env.db("DATABASE_URL"),
 }
