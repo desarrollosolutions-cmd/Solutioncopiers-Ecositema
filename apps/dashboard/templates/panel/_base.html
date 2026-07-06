@@ -366,6 +366,7 @@
     </a>
     {% endif %}
 
+    {% if not request.user.field_profile %}
     <div class="pn-nav-section">Clientes y Ventas</div>
     {% if perms.dashboard.panel_cotizaciones %}
     <a href="{% url 'panel:quotes' %}" class="pn-nav-item {% block nav_quotes %}{% endblock %}">
@@ -392,6 +393,7 @@
       Facturas
     </a>
     {% endif %}
+    {% endif %}{# /not field_profile #}
 
     <div class="pn-nav-section">Servicio</div>
     {% if perms.dashboard.panel_tickets %}
@@ -401,7 +403,7 @@
       {% if my_open_tickets %}<span class="pn-nav-badge">{{ my_open_tickets }}</span>{% endif %}
     </a>
     {% endif %}
-    {% if perms.dashboard.panel_insumos %}
+    {% if perms.dashboard.panel_insumos and not request.user.field_profile %}
     <a href="{% url 'panel:consumables' %}" class="pn-nav-item {% block nav_consumables %}{% endblock %}">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
       Insumos
