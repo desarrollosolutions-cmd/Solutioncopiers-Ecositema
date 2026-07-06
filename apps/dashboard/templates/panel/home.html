@@ -19,7 +19,7 @@
 </div>
 
 {# ── KPIs ── #}
-<div class="pn-stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem;">
+<div class="pn-stat-grid" style="margin-bottom:1.25rem;">
   <div class="pn-stat">
     <div class="pn-stat-bar"></div>
     <div class="pn-stat-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
@@ -63,7 +63,7 @@
 {% endif %}
 
 {# ── Tareas de hoy / vencidas ── #}
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.125rem;">
+<div class="pn-grid-2" style="margin-bottom:1.125rem;">
 
   <div class="pn-card" style="overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--color-border);">
@@ -145,7 +145,7 @@
 {% endif %}
 
 {# ── Layout 2 columnas ── #}
-<div style="display:grid;grid-template-columns:1fr 300px;gap:1.125rem;">
+<div class="pn-grid-sidebar">
 
   {# Cotizaciones recientes #}
   <div class="pn-table-wrap">

@@ -34,7 +34,7 @@
     <div class="pn-card">
       <div class="pn-card-header">Datos del cliente</div>
       <div class="pn-card-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem .5rem;">
+        <div class="pn-grid-2" style="gap:.75rem .5rem;">
           <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Nombre</div><div style="font-size:.875rem;font-weight:600;color:var(--color-text-primary);">{{ quote.lead.full_name }}</div></div>
           <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Empresa</div><div style="font-size:.875rem;color:var(--color-text-secondary);">{{ quote.lead.company_name|default:"—" }}</div></div>
           <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Teléfono</div>
