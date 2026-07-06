@@ -65,7 +65,15 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
 .modal-input{width:100%;padding:.7rem .875rem;background:#070E18;border:1.5px solid #192D42;border-radius:.75rem;color:#E4F1FA;font-size:.875rem;font-family:inherit;outline:none;transition:border-color .18s;margin-bottom:.875rem;}
 .modal-input:focus{border-color:#0EA5E9;}
 .modal-textarea{resize:vertical;min-height:90px;}
-.photo-preview{width:100%;border-radius:.75rem;margin-top:.5rem;display:none;}
+.photo-label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.375rem;padding:1rem;background:#070E18;border:1.5px dashed #192D42;border-radius:.75rem;cursor:pointer;color:#7AAEC8;font-size:.78rem;margin-bottom:.875rem;transition:border-color .2s;}
+.photo-label:active{border-color:#0EA5E9;}
+.photo-label span:first-child{font-size:1.5rem;}
+.photo-preview-box{margin-bottom:.875rem;position:relative;}
+.photo-preview-box img{width:100%;border-radius:.75rem;display:block;}
+.photo-clear-btn{position:absolute;top:.5rem;right:.5rem;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:9999px;width:1.75rem;height:1.75rem;cursor:pointer;font-size:.75rem;font-weight:700;line-height:1;}
+.sig-wrap{background:#070E18;border:1.5px solid #192D42;border-radius:.75rem;overflow:hidden;margin-bottom:.875rem;position:relative;}
+.sig-canvas{width:100%;height:140px;touch-action:none;display:block;}
+.sig-clear{position:absolute;top:.4rem;right:.4rem;background:rgba(0,0,0,.5);border:none;color:#7AAEC8;font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:.375rem;cursor:pointer;}
 .btn-confirm{width:100%;padding:.875rem;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:.875rem;font-size:.9375rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:.5rem;}
 .btn-cancel-modal{width:100%;padding:.75rem;background:none;border:1.5px solid #192D42;color:#7AAEC8;border-radius:.875rem;font-size:.875rem;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.5rem;}
 .gps-pill{display:inline-flex;align-items:center;gap:.3rem;font-size:.62rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:rgba(14,165,233,.1);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);margin-top:.4rem;}
@@ -221,7 +229,7 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
   <div class="modal-sheet">
     <div class="modal-title" id="modal-task-title">Completar entrega</div>
 
-    <form id="complete-form" onsubmit="submitComplete(event)" enctype="multipart/form-data">
+    <form id="complete-form" onsubmit="submitComplete(event)">
       <input type="hidden" id="modal-task-id" name="task_id">
 
       <label class="modal-label">Notas de entrega</label>
@@ -233,9 +241,22 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
         placeholder="Ej: FAC-001, REM-2345">
 
       <label class="modal-label">Foto del comprobante</label>
-      <input type="file" name="photo" id="modal-photo" accept="image/*" capture="environment"
-        class="modal-input" style="padding:.5rem;" onchange="previewPhoto(this)">
-      <img id="photo-preview" class="photo-preview" alt="Vista previa">
+      <label class="photo-label" id="campo-photo-label" onclick="document.getElementById('campo-photo-input').click()">
+        <span>📷</span>
+        <span id="campo-photo-txt">Toca para tomar o elegir foto</span>
+      </label>
+      <input type="file" id="campo-photo-input" accept="image/*" capture="environment"
+        style="display:none;" onchange="onCampoPhoto(this)">
+      <div class="photo-preview-box" id="campo-photo-box" style="display:none;">
+        <img id="campo-photo-img" src="" alt="foto">
+        <button type="button" class="photo-clear-btn" onclick="clearCampoPhoto()">✕</button>
+      </div>
+
+      <label class="modal-label">Firma del receptor</label>
+      <div class="sig-wrap">
+        <canvas id="campo-sig-canvas" class="sig-canvas"></canvas>
+        <button type="button" class="sig-clear" onclick="clearCampoSig()">Limpiar</button>
+      </div>
 
       <button type="submit" class="btn-confirm" id="btn-confirm">
         <span id="confirm-text">Confirmar entrega</span>
@@ -376,6 +397,77 @@ function endShift() {
 // Iniciar GPS si ya estaba en turno al cargar
 if (isOnShift) startGPS();
 
+// ── Foto base64 ──
+let _campoPhotoB64 = '';
+
+function onCampoPhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const orig = new Image();
+    orig.onload = () => {
+      const MAX = 1024;
+      let w = orig.width, h = orig.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(orig, 0, 0, w, h);
+      _campoPhotoB64 = c.toDataURL('image/jpeg', 0.75);
+      document.getElementById('campo-photo-img').src = _campoPhotoB64;
+      document.getElementById('campo-photo-box').style.display = 'block';
+      document.getElementById('campo-photo-label').style.display = 'none';
+    };
+    orig.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearCampoPhoto() {
+  _campoPhotoB64 = '';
+  document.getElementById('campo-photo-input').value = '';
+  document.getElementById('campo-photo-box').style.display = 'none';
+  document.getElementById('campo-photo-label').style.display = '';
+}
+
+// ── Canvas firma ──
+let _campoSigCanvas, _campoSigCtx, _campoDrawing = false, _campoSigEmpty = true;
+
+function initCampoSig() {
+  _campoSigCanvas = document.getElementById('campo-sig-canvas');
+  if (!_campoSigCanvas) return;
+  _campoSigCanvas.width  = _campoSigCanvas.offsetWidth  || 320;
+  _campoSigCanvas.height = _campoSigCanvas.offsetHeight || 140;
+  _campoSigCtx = _campoSigCanvas.getContext('2d');
+  _campoSigCtx.strokeStyle = '#E4F1FA';
+  _campoSigCtx.lineWidth   = 2;
+  _campoSigCtx.lineCap     = 'round';
+  _campoSigCtx.lineJoin    = 'round';
+
+  function pt(e) {
+    const r = _campoSigCanvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - r.left, y: src.clientY - r.top };
+  }
+  function down(e) { e.preventDefault(); _campoDrawing = true; _campoSigEmpty = false; const p = pt(e); _campoSigCtx.beginPath(); _campoSigCtx.moveTo(p.x, p.y); }
+  function move(e) { e.preventDefault(); if (!_campoDrawing) return; const p = pt(e); _campoSigCtx.lineTo(p.x, p.y); _campoSigCtx.stroke(); }
+  function up(e)   { e.preventDefault(); _campoDrawing = false; }
+  _campoSigCanvas.addEventListener('mousedown',  down);
+  _campoSigCanvas.addEventListener('mousemove',  move);
+  _campoSigCanvas.addEventListener('mouseup',    up);
+  _campoSigCanvas.addEventListener('touchstart', down, { passive: false });
+  _campoSigCanvas.addEventListener('touchmove',  move, { passive: false });
+  _campoSigCanvas.addEventListener('touchend',   up,   { passive: false });
+}
+
+function clearCampoSig() {
+  if (_campoSigCtx) _campoSigCtx.clearRect(0, 0, _campoSigCanvas.width, _campoSigCanvas.height);
+  _campoSigEmpty = true;
+}
+
 // ── Modal completar tarea ──
 function openComplete(taskId, title) {
   currentTaskId = taskId;
@@ -383,12 +475,14 @@ function openComplete(taskId, title) {
   document.getElementById('modal-task-title').textContent = title;
   document.getElementById('modal-notes').value = '';
   document.getElementById('modal-invoice').value = '';
-  document.getElementById('modal-photo').value = '';
-  document.getElementById('photo-preview').style.display = 'none';
+  clearCampoPhoto();
+  clearCampoSig();
   document.getElementById('confirm-text').textContent = 'Confirmar entrega';
   document.getElementById('btn-confirm').disabled = false;
   document.getElementById('complete-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  // Init canvas after modal is visible so offsetWidth is correct
+  setTimeout(initCampoSig, 50);
 }
 
 function closeModal() {
@@ -396,23 +490,18 @@ function closeModal() {
   document.body.style.overflow = '';
 }
 
-function previewPhoto(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.getElementById('photo-preview');
-      img.src = e.target.result;
-      img.style.display = 'block';
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
-}
-
 function submitComplete(e) {
   e.preventDefault();
   const taskId = document.getElementById('modal-task-id').value;
-  const fd = new FormData(e.target);
+  const fd = new FormData();
   fd.append('csrfmiddlewaretoken', CSRF);
+  fd.append('task_id',  taskId);
+  fd.append('notes',    document.getElementById('modal-notes').value);
+  fd.append('invoice',  document.getElementById('modal-invoice').value);
+  fd.append('photo_b64', _campoPhotoB64);
+  if (_campoSigCanvas && !_campoSigEmpty) {
+    fd.append('signature', _campoSigCanvas.toDataURL('image/png'));
+  }
 
   document.getElementById('confirm-text').textContent = 'Enviando…';
   document.getElementById('btn-confirm').disabled = true;
@@ -422,7 +511,6 @@ function submitComplete(e) {
     .then(data => {
       if (data.ok) {
         closeModal();
-        // Marcar tarjeta como completada visualmente
         const card = document.getElementById('dtask-' + taskId);
         if (card) {
           card.classList.add('done');
