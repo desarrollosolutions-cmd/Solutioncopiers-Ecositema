@@ -300,3 +300,23 @@ class DeliveryTask(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.field_user.user.get_full_name() or self.field_user.user.username}"
+
+
+class FieldLocationLog(models.Model):
+    """Historial de puntos GPS durante un turno. Se registra cada ~2 min."""
+    user        = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="location_logs"
+    )
+    latitude    = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude   = models.DecimalField(max_digits=9, decimal_places=6)
+    shift_date  = models.DateField(db_index=True)
+    recorded_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering            = ["recorded_at"]
+        verbose_name        = "Punto de ruta"
+        verbose_name_plural = "Historial de rutas"
+        indexes             = [models.Index(fields=["user", "shift_date"])]
+
+    def __str__(self):
+        return f"{self.user.username} · {self.shift_date} · {self.recorded_at:%H:%M}"

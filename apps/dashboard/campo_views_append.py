@@ -103,8 +103,11 @@ class CampoTurnoView(View):
 @campo_decorator
 class CampoUbicacionUpdateView(View):
 
+    LOG_INTERVAL_SECONDS = 120  # guardar punto de ruta cada 2 minutos
+
     def post(self, request):
-        from apps.dashboard.models import FieldUserLocation
+        from apps.dashboard.models import FieldUserLocation, FieldLocationLog
+        from datetime import timedelta
         try:
             lat  = float(request.POST.get("lat") or request.POST.get("latitude"))
             lng  = float(request.POST.get("lng") or request.POST.get("longitude"))
@@ -120,6 +123,21 @@ class CampoUbicacionUpdateView(View):
                     "is_on_shift": True,
                 },
             )
+            # ── Registro de ruta (throttled a LOG_INTERVAL_SECONDS) ──
+            today = timezone.localdate()
+            cutoff = timezone.now() - timedelta(seconds=self.LOG_INTERVAL_SECONDS)
+            already_logged = FieldLocationLog.objects.filter(
+                user=request.user, recorded_at__gte=cutoff
+            ).exists()
+            if not already_logged:
+                FieldLocationLog.objects.create(
+                    user=request.user, latitude=lat, longitude=lng, shift_date=today
+                )
+                # Limpiar puntos con más de 90 días (cada vez que se loguea un punto nuevo)
+                FieldLocationLog.objects.filter(
+                    user=request.user,
+                    shift_date__lt=today - timedelta(days=90)
+                ).delete()
             return JsonResponse({"ok": True, "updated_at": loc.updated_at.isoformat()})
         except (TypeError, ValueError) as e:
             return JsonResponse({"ok": False, "error": str(e)}, status=400)
@@ -330,3 +348,84 @@ class CampoTicketDetailView(View):
 
         ticket.save(update_fields=["status", "resolution_notes", "resolved_at"])
         return redirect("campo:ticket_detail", pk=pk)
+
+
+# ---------------------------------------------------------------------------
+# Rutas históricas del equipo de campo
+# ---------------------------------------------------------------------------
+
+@da_decorator
+class CampoRouteHistoryView(TemplateView):
+    template_name = "dashboard/campo/route_history.html"
+
+    def get_context_data(self, **kwargs):
+        from apps.dashboard.models import FieldUser, FieldLocationLog
+        ctx = super().get_context_data(**kwargs)
+        ctx["field_users"] = FieldUser.objects.select_related("user").order_by("user__first_name")
+        # Días disponibles (últimos 90) para el usuario seleccionado
+        user_pk  = self.request.GET.get("user")
+        date_str = self.request.GET.get("date", timezone.localdate().isoformat())
+        ctx["selected_user"]  = user_pk
+        ctx["selected_date"]  = date_str
+        if user_pk:
+            ctx["available_dates"] = (
+                FieldLocationLog.objects
+                .filter(user__pk=user_pk)
+                .values_list("shift_date", flat=True)
+                .distinct()
+                .order_by("-shift_date")[:90]
+            )
+        return ctx
+
+
+@da_decorator
+class CampoRouteJsonView(View):
+    """Devuelve puntos de ruta + tareas completadas para un usuario y fecha."""
+
+    def get(self, request):
+        from apps.dashboard.models import FieldLocationLog, DeliveryTask, FieldUser
+        user_pk  = request.GET.get("user")
+        date_str = request.GET.get("date")
+        if not user_pk or not date_str:
+            return JsonResponse({"points": [], "tasks": []})
+
+        points = list(
+            FieldLocationLog.objects
+            .filter(user__pk=user_pk, shift_date=date_str)
+            .values("latitude", "longitude", "recorded_at")
+            .order_by("recorded_at")
+        )
+        # Tareas completadas ese día por ese usuario
+        try:
+            fu = FieldUser.objects.get(user__pk=user_pk)
+            tasks_qs = DeliveryTask.objects.filter(
+                field_user=fu, status="done",
+                completed_at__date=date_str,
+            ).values("pk", "title", "client_name", "address", "completion_invoice",
+                     "payment_method", "completed_at")
+            tasks = list(tasks_qs)
+        except FieldUser.DoesNotExist:
+            tasks = []
+
+        return JsonResponse({
+            "points": [
+                {
+                    "lat": float(p["latitude"]),
+                    "lng": float(p["longitude"]),
+                    "t":   p["recorded_at"].strftime("%H:%M"),
+                }
+                for p in points
+            ],
+            "tasks": [
+                {
+                    "pk":      t["pk"],
+                    "title":   t["title"],
+                    "client":  t["client_name"],
+                    "address": t["address"],
+                    "invoice": t["completion_invoice"],
+                    "payment": t["payment_method"],
+                    "time":    t["completed_at"].strftime("%H:%M") if t["completed_at"] else "",
+                }
+                for t in tasks
+            ],
+        })

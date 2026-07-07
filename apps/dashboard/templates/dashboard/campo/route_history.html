@@ -1,0 +1,209 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Rutas del equipo{% endblock %}
+{% block nav_campo %}active{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Trazabilidad de rutas</h1>
+    <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">Recorrido GPS de cada mensajero por día</p>
+  </div>
+  <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+    <a href="{% url 'dashboard:campo_map' %}" class="da-btn da-btn-secondary">Mapa en vivo</a>
+    <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Tareas</a>
+  </div>
+</div>
+
+{# ── Filtros ── #}
+<form method="get" style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:flex-end;">
+  <div>
+    <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Mensajero / Técnico</label>
+    <select name="user" class="da-input" style="width:220px;max-width:100%;" onchange="this.form.submit()">
+      <option value="">— Seleccionar —</option>
+      {% for fu in field_users %}
+      <option value="{{ fu.user.pk }}" {% if selected_user == fu.user.pk|stringformat:"s" %}selected{% endif %}>
+        {{ fu.user.get_full_name|default:fu.user.username }} ({{ fu.get_role_display }})
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  {% if selected_user %}
+  <div>
+    <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Fecha</label>
+    <select name="date" class="da-input" style="width:180px;max-width:100%;" onchange="this.form.submit()">
+      {% for d in available_dates %}
+      <option value="{{ d|date:'Y-m-d' }}" {% if selected_date == d|date:'Y-m-d' %}selected{% endif %}>{{ d|date:"d/m/Y" }}</option>
+      {% empty %}
+      <option value="">Sin registros aún</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+</form>
+
+{% if selected_user %}
+
+{# ── Mapa + lista de tareas ── #}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div class="da-grid-sidebar">
+
+  {# Mapa #}
+  <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
+    <div id="route-map" style="height:clamp(300px,55vh,560px);"></div>
+  </div>
+
+  {# Panel derecho: stats + tareas #}
+  <div style="display:flex;flex-direction:column;gap:.875rem;">
+
+    {# Stats de la ruta #}
+    <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.25rem;">
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:.875rem;color:var(--color-text-primary);">Resumen del día</div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;font-size:.78rem;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Puntos registrados</span>
+          <span id="stat-points" style="font-weight:600;">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Primer registro</span>
+          <span id="stat-start" style="font-weight:600;">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Último registro</span>
+          <span id="stat-end" style="font-weight:600;">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Entregas completadas</span>
+          <span id="stat-tasks" style="font-weight:600;">—</span>
+        </div>
+      </div>
+    </div>
+
+    {# Lista de tareas del día #}
+    <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
+      <div style="padding:.875rem 1.125rem;border-bottom:1px solid var(--color-border);font-size:.8125rem;font-weight:700;">
+        Entregas del día
+      </div>
+      <div id="task-list-panel" style="max-height:clamp(180px,35vh,380px);overflow-y:auto;">
+        <div style="padding:2rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">Cargando…</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ROUTE_JSON_URL = "{% url 'dashboard:campo_routes_json' %}?user={{ selected_user }}&date={{ selected_date }}";
+const MAP_CENTER = [6.2442, -75.5812];
+
+const map = L.map('route-map').setView(MAP_CENTER, 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap', maxZoom: 19
+}).addTo(map);
+
+fetch(ROUTE_JSON_URL)
+  .then(r => r.json())
+  .then(data => {
+    const points = data.points;
+    const tasks  = data.tasks;
+
+    // Actualizar stats
+    document.getElementById('stat-points').textContent = points.length || '0';
+    document.getElementById('stat-tasks').textContent  = tasks.length  || '0';
+    if (points.length) {
+      document.getElementById('stat-start').textContent = points[0].t;
+      document.getElementById('stat-end').textContent   = points[points.length - 1].t;
+    }
+
+    if (points.length) {
+      // Polilínea de la ruta
+      const latlngs = points.map(p => [p.lat, p.lng]);
+      const line = L.polyline(latlngs, { color: '#0EA5E9', weight: 4, opacity: .8 }).addTo(map);
+      map.fitBounds(line.getBounds(), { padding: [30, 30] });
+
+      // Marcador inicio
+      L.circleMarker([points[0].lat, points[0].lng], {
+        radius: 8, color: '#10B981', fillColor: '#10B981', fillOpacity: 1, weight: 2
+      }).addTo(map).bindPopup(`<b>Inicio</b> · ${points[0].t}`);
+
+      // Marcador fin
+      const last = points[points.length - 1];
+      L.circleMarker([last.lat, last.lng], {
+        radius: 8, color: '#EF4444', fillColor: '#EF4444', fillOpacity: 1, weight: 2
+      }).addTo(map).bindPopup(`<b>Último registro</b> · ${last.t}`);
+    } else {
+      document.getElementById('stat-start').textContent = 'Sin datos';
+      document.getElementById('stat-end').textContent   = 'Sin datos';
+    }
+
+    // Marcadores de tareas completadas
+    tasks.forEach((t, i) => {
+      // Buscar el punto GPS más cercano en tiempo para posicionar el marker
+      // Si no hay coords del punto, skip (la tarea puede no tener lat/lng propio)
+      const taskIcon = L.divIcon({
+        html: `<div style="background:#F59E0B;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);">${i+1}</div>`,
+        className: '', iconSize: [28, 28], iconAnchor: [14, 14]
+      });
+      // Posicionar sobre el punto GPS más cercano a la hora de completación
+      if (points.length && t.time) {
+        // Encontrar punto más cercano
+        const tMin = t.time.split(':').reduce((a, v, i) => a + (i===0 ? +v*60 : +v), 0);
+        let best = points[0], bestDiff = Infinity;
+        points.forEach(p => {
+          const pMin = p.t.split(':').reduce((a, v, i) => a + (i===0 ? +v*60 : +v), 0);
+          const diff = Math.abs(pMin - tMin);
+          if (diff < bestDiff) { bestDiff = diff; best = p; }
+        });
+        L.marker([best.lat, best.lng], { icon: taskIcon }).addTo(map)
+          .bindPopup(`
+            <div style="min-width:180px;font-family:Inter,sans-serif;">
+              <div style="font-weight:700;font-size:.875rem;margin-bottom:.25rem;">${t.title}</div>
+              ${t.client ? `<div style="font-size:.75rem;color:#666;">👤 ${t.client}</div>` : ''}
+              ${t.address ? `<div style="font-size:.75rem;color:#666;">📍 ${t.address}</div>` : ''}
+              ${t.invoice ? `<div style="font-size:.75rem;color:#666;">📄 ${t.invoice}</div>` : ''}
+              <div style="font-size:.72rem;color:#999;margin-top:.25rem;">✓ Completada a las ${t.time}</div>
+            </div>
+          `);
+      }
+    });
+
+    // Lista de tareas en el panel
+    const listEl = document.getElementById('task-list-panel');
+    if (tasks.length === 0) {
+      listEl.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">Sin entregas completadas este día.</div>';
+    } else {
+      listEl.innerHTML = tasks.map((t, i) => `
+        <div style="padding:.75rem 1.125rem;border-bottom:1px solid var(--color-border);">
+          <div style="display:flex;align-items:center;gap:.625rem;">
+            <div style="width:1.5rem;height:1.5rem;border-radius:50%;background:rgba(245,158,11,.15);color:#F59E0B;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:.8rem;font-weight:600;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.title}</div>
+              ${t.client ? `<div style="font-size:.68rem;color:#F59E0B;margin-top:.1rem;">👤 ${t.client}</div>` : ''}
+              ${t.address ? `<div style="font-size:.68rem;color:var(--color-text-muted);">📍 ${t.address}</div>` : ''}
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:.68rem;font-weight:700;color:#10B981;">${t.time}</div>
+              ${t.invoice ? `<div style="font-size:.62rem;color:var(--color-text-muted);font-family:monospace;">${t.invoice}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.addEventListener('resize', () => map.invalidateSize());
+  })
+  .catch(() => {
+    document.getElementById('task-list-panel').innerHTML =
+      '<div style="padding:1.5rem;text-align:center;color:#EF4444;font-size:.8rem;">Error al cargar los datos.</div>';
+  });
+</script>
+
+{% else %}
+<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:3rem;text-align:center;color:var(--color-text-muted);">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="width:2.5rem;height:2.5rem;margin:0 auto .875rem;display:block;opacity:.4;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+  <p style="font-size:.875rem;">Selecciona un mensajero para ver su trazabilidad de ruta.</p>
+</div>
+{% endif %}
+
+{% endblock %}
