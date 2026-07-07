@@ -90,25 +90,63 @@
       </div>
     </div>
 
-    <div class="hp-hero-stats hp-fade-up" style="--d:.8s">
-      <div class="hp-hero-stat">
-        <span class="hp-stat-val"><span data-counter="3600" data-suffix="+">3,600+</span></span>
-        <span class="hp-stat-lbl">{% trans "Empresas atendidas" %}</span>
+    <div class="hp-hero-right hp-fade-up" style="--d:.8s">
+      <div class="hp-mockup">
+        <div class="hp-mockup-bar">
+          <span class="hp-mock-dot" style="background:#FF5F56"></span>
+          <span class="hp-mock-dot" style="background:#FFBD2E"></span>
+          <span class="hp-mock-dot" style="background:#27C93F"></span>
+          <span class="hp-mock-title">Panel — Solution Copiers ERP</span>
+        </div>
+        <div class="hp-mockup-body">
+          <div class="hp-mock-metrics">
+            <div class="hp-mock-metric">
+              <span class="hp-mock-val">3.6K</span>
+              <span class="hp-mock-lbl">{% trans "Empresas" %}</span>
+            </div>
+            <div class="hp-mock-metric">
+              <span class="hp-mock-val">98%</span>
+              <span class="hp-mock-lbl">{% trans "Satisfacción" %}</span>
+            </div>
+            <div class="hp-mock-metric">
+              <span class="hp-mock-val">24h</span>
+              <span class="hp-mock-lbl">{% trans "Soporte" %}</span>
+            </div>
+          </div>
+
+          <div class="hp-mock-chart-label">{% trans "Tickets resueltos" %} — {% trans "últimos 7 días" %}</div>
+          <div class="hp-mock-chart">
+            <div class="hp-mock-bar" style="--h:45%"></div>
+            <div class="hp-mock-bar" style="--h:62%"></div>
+            <div class="hp-mock-bar" style="--h:38%"></div>
+            <div class="hp-mock-bar" style="--h:78%"></div>
+            <div class="hp-mock-bar hp-mock-bar--hi" style="--h:91%"></div>
+            <div class="hp-mock-bar" style="--h:55%"></div>
+            <div class="hp-mock-bar hp-mock-bar--hi" style="--h:100%"></div>
+          </div>
+
+          <div class="hp-mock-activity">
+            <div class="hp-mock-act">
+              <span class="hp-mock-act-dot hp-mock-act-dot--green"></span>
+              {% trans "Cotización enviada — Cliente Bogotá" %}
+            </div>
+            <div class="hp-mock-act">
+              <span class="hp-mock-act-dot hp-mock-act-dot--blue"></span>
+              {% trans "Técnico en camino — Ricoh MP2014" %}
+            </div>
+            <div class="hp-mock-act">
+              <span class="hp-mock-act-dot hp-mock-act-dot--green"></span>
+              {% trans "Factura generada · $1.240.000 COP" %}
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="hp-hero-stat-div"></div>
-      <div class="hp-hero-stat">
-        <span class="hp-stat-val"><span data-counter="15" data-suffix="+">15+</span></span>
-        <span class="hp-stat-lbl">{% trans "Años de experiencia" %}</span>
-      </div>
-      <div class="hp-hero-stat-div"></div>
-      <div class="hp-hero-stat">
-        <span class="hp-stat-val"><span data-counter="98" data-suffix="%">98%</span></span>
-        <span class="hp-stat-lbl">{% trans "Satisfacción" %}</span>
-      </div>
-      <div class="hp-hero-stat-div"></div>
-      <div class="hp-hero-stat">
-        <span class="hp-stat-val">24<span class="text-base font-semibold">h</span></span>
-        <span class="hp-stat-lbl">{% trans "Atención técnica" %}</span>
+
+      <div class="hp-mock-badge">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" style="width:1rem;height:1rem;flex-shrink:0">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        {% trans "Distribuidor Oficial Ricoh · Antioquia" %}
       </div>
     </div>
   </div>
@@ -163,7 +201,7 @@
       <p class="mt-3">{% blocktrans %}Desde impresoras corporativas hasta software empresarial a la medida. Somos el integrador tecnológico que tu empresa necesita para crecer con tecnología confiable.{% endblocktrans %}</p>
     </div>
 
-    <div class="hp-services-grid">
+    <div class="hp-bento-grid">
 
       <a href="{% url 'catalog:rental_list' %}" class="hp-svc">
         <div class="hp-svc-icon">
@@ -991,5 +1029,30 @@
     </div>
   </div>
 </section>
+
+
+{# ================================================================== #}
+{# WHATSAPP FLOTANTE                                                   #}
+{# ================================================================== #}
+{% if site_settings.phone_whatsapp %}
+<a href="https://wa.me/{{ site_settings.phone_whatsapp|cut:'+'|cut:' ' }}?text=Hola, me interesa conocer más sobre sus servicios"
+   target="_blank" rel="noopener noreferrer"
+   class="hp-wa-float"
+   aria-label="{% trans 'Hablar por WhatsApp' %}">
+  <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+  </svg>
+  <span class="hp-wa-float-text">{% trans "Hablar por WhatsApp" %}</span>
+</a>
+{% else %}
+<a href="{% url 'core:contact' %}"
+   class="hp-wa-float"
+   aria-label="{% trans 'Contactar asesor' %}">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+  </svg>
+  <span class="hp-wa-float-text">{% trans "Hablar con un Asesor" %}</span>
+</a>
+{% endif %}
 
 {% endblock %}
