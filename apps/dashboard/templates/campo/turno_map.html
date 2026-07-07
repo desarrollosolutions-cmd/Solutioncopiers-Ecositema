@@ -161,7 +161,13 @@ if (DELIVERY_POINTS.length === 0) {
     idx++;
     statusEl.textContent = `Buscando ${idx}/${DELIVERY_POINTS.length}…`;
 
-    const query = expandAddress(pt.address) + ', Medellín, Colombia';
+    // Si la dirección ya menciona un municipio del Valle de Aburrá, no agregar ciudad
+    const MUNICIPIOS = ['medellín','bello','itagüí','itagui','envigado','sabaneta',
+      'la estrella','caldas','copacabana','girardota','barbosa'];
+    const addrLower = pt.address.toLowerCase();
+    const tieneMunicipio = MUNICIPIOS.some(m => addrLower.includes(m));
+    const suffix = tieneMunicipio ? ', Colombia' : ', Antioquia, Colombia';
+    const query = expandAddress(pt.address) + suffix;
     fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=co`, {
       headers: { 'Accept-Language': 'es', 'User-Agent': 'SolutionCopiers/1.0' }
     })
