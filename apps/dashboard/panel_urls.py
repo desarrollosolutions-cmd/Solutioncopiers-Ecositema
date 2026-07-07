@@ -55,4 +55,5 @@ urlpatterns = [
     path("turno/fin/",                       views.PanelShiftEndView.as_view(),          name="shift_end"),
     path("ubicacion/",                       views.PanelUbicacionView.as_view(),         name="ubicacion"),
     path("entregas/<int:pk>/completar/",     views.PanelDeliveryCompleteView.as_view(),  name="delivery_complete"),
+    path("turno/mapa/",                      views.PanelTurnoMapView.as_view(),          name="turno_map"),
 ]

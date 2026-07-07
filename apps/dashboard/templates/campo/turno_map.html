@@ -39,7 +39,7 @@ body{height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-serif;co
 <body>
 
 <div class="topbar">
-  <a href="{% url 'campo:turno' %}" class="back-btn">
+  <a href="{{ back_url|default:'/' }}" class="back-btn">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
     Volver
   </a>

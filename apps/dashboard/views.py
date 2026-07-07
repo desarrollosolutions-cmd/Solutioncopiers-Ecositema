@@ -18,7 +18,7 @@ from django.views.generic import (
     CreateView, DeleteView, DetailView,
     ListView, TemplateView, UpdateView,
 )
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 
 _auth_logger = logging.getLogger("apps.auth")
 
@@ -4481,6 +4481,35 @@ class CampoTurnoMapView(View):
         return render(request, self.template_name, {
             "field_user":     field_user,
             "delivery_tasks": delivery_tasks,
+            "back_url":       reverse("campo:turno"),
+        })
+
+
+@panel_decorator
+class PanelTurnoMapView(View):
+    """Mapa de entregas accesible desde el panel (/panel/turno/mapa/)."""
+    template_name = "campo/turno_map.html"
+
+    def get(self, request):
+        from apps.dashboard.models import DeliveryTask
+        from django.db.models import Case, When, IntegerField, Value
+        field_user = request.user.field_profile
+        delivery_tasks = (
+            DeliveryTask.objects
+            .filter(field_user=field_user)
+            .exclude(status="cancelled")
+            .annotate(_ord=Case(
+                When(status="pending", then=Value(0)),
+                When(status="done",    then=Value(1)),
+                default=Value(2),
+                output_field=IntegerField(),
+            ))
+            .order_by("_ord", "order", "created_at")[:30]
+        )
+        return render(request, self.template_name, {
+            "field_user":     field_user,
+            "delivery_tasks": delivery_tasks,
+            "back_url":       reverse("panel:turno"),
         })
 
 
