@@ -111,6 +111,22 @@ function focusMarker(idx) {
   if (m) { map.setView(m.getLatLng(), 16); m.openPopup(); }
 }
 
+// Expande abreviaturas colombianas para mejorar geocodificación
+function expandAddress(addr) {
+  return addr
+    .replace(/\bCr\.?\b/gi,  'Carrera')
+    .replace(/\bCra\.?\b/gi, 'Carrera')
+    .replace(/\bCl\.?\b/gi,  'Calle')
+    .replace(/\bCll\.?\b/gi, 'Calle')
+    .replace(/\bAv\.?\b/gi,  'Avenida')
+    .replace(/\bDg\.?\b/gi,  'Diagonal')
+    .replace(/\bTv\.?\b/gi,  'Transversal')
+    .replace(/\bCq\.?\b/gi,  'Circular')
+    .replace(/#/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 if (DELIVERY_POINTS.length === 0) {
   statusEl.textContent = 'Sin direcciones';
   statusEl.style.background = 'rgba(62,110,138,.15)';
@@ -123,8 +139,10 @@ if (DELIVERY_POINTS.length === 0) {
   function geocodeNext() {
     if (idx >= DELIVERY_POINTS.length) {
       if (found === 0) {
-        statusEl.textContent = 'Sin ubicaciones';
+        statusEl.textContent = 'No se encontraron ubicaciones';
+        statusEl.style.background = 'rgba(239,68,68,.1)';
         statusEl.style.color = '#EF4444';
+        statusEl.style.borderColor = 'rgba(239,68,68,.2)';
       } else {
         statusEl.textContent = `${found} punto${found !== 1 ? 's' : ''} en mapa`;
         statusEl.style.background = 'rgba(16,185,129,.1)';
@@ -143,8 +161,9 @@ if (DELIVERY_POINTS.length === 0) {
     idx++;
     statusEl.textContent = `Buscando ${idx}/${DELIVERY_POINTS.length}…`;
 
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(pt.address + ', Colombia')}&limit=1`, {
-      headers: { 'Accept-Language': 'es' }
+    const query = expandAddress(pt.address) + ', Medellín, Colombia';
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=co`, {
+      headers: { 'Accept-Language': 'es', 'User-Agent': 'SolutionCopiers/1.0' }
     })
     .then(r => r.json())
     .then(results => {
