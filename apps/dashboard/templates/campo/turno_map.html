@@ -70,6 +70,10 @@ body{height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-serif;co
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
         {{ dt.address }}
       </div>
+      <a href="https://maps.google.com/?q={{ dt.address|urlencode }},+Colombia"
+         target="_blank" style="font-size:.65rem;color:#0EA5E9;text-decoration:none;margin-top:.2rem;display:inline-block;">
+        Ver en Google Maps →
+      </a>
       {% else %}
       <div class="task-addr" style="color:#3E6E8A;">Sin dirección registrada</div>
       {% endif %}
@@ -152,62 +156,87 @@ if (DELIVERY_POINTS.length === 0) {
   statusEl.style.color = '#3E6E8A';
   statusEl.style.borderColor = 'rgba(62,110,138,.2)';
 } else {
+  // Coordenadas de los centros municipales como fallback
+  const CITY_COORDS = {
+    'Medellín':    [6.2442,  -75.5812],
+    'Bello':       [6.3368,  -75.5536],
+    'Itagüí':      [6.1845,  -75.5996],
+    'Envigado':    [6.1752,  -75.5939],
+    'Sabaneta':    [6.1513,  -75.6173],
+    'La Estrella': [6.1579,  -75.6434],
+    'Caldas':      [6.0929,  -75.6342],
+    'Copacabana':  [6.3494,  -75.5091],
+    'Girardota':   [6.3776,  -75.4459],
+    'Barbosa':     [6.4378,  -75.3317],
+  };
+
   let idx = 0;
   let found = 0;
 
+  function addMarker(pt, lat, lon, approx) {
+    const mapsQ = encodeURIComponent(pt.address + (approx ? ', ' + detectCity(pt) : '') + ', Colombia');
+    const marker = L.marker([+lat, +lon], { icon: makeIcon(pt.idx, pt.done) }).addTo(map);
+    marker.bindPopup(`
+      <div style="min-width:175px;font-family:Inter,sans-serif;">
+        <div style="font-weight:700;font-size:.875rem;margin-bottom:.25rem;">${pt.done ? '✓ ' : ''}${pt.title}</div>
+        ${pt.client ? `<div style="font-size:.72rem;color:#F59E0B;margin-bottom:.15rem;">👤 ${pt.client}</div>` : ''}
+        <div style="font-size:.72rem;color:#555;">📍 ${pt.address}</div>
+        ${approx ? `<div style="font-size:.65rem;color:#F59E0B;margin-top:.2rem;">⚠ Posición aproximada (centro municipal)</div>` : ''}
+        <a href="https://maps.google.com/?q=${mapsQ}" target="_blank"
+           style="display:block;margin-top:.5rem;font-size:.72rem;color:#0EA5E9;font-weight:600;">
+          Abrir en Google Maps →
+        </a>
+      </div>
+    `);
+    markersByIdx[pt.idx] = marker;
+    found++;
+  }
+
   function geocodeNext() {
     if (idx >= DELIVERY_POINTS.length) {
-      if (found === 0) {
-        statusEl.textContent = 'No se encontraron ubicaciones';
-        statusEl.style.background = 'rgba(239,68,68,.1)';
-        statusEl.style.color = '#EF4444';
-        statusEl.style.borderColor = 'rgba(239,68,68,.2)';
-      } else {
-        statusEl.textContent = `${found} punto${found !== 1 ? 's' : ''} en mapa`;
-        statusEl.style.background = 'rgba(16,185,129,.1)';
-        statusEl.style.color = '#10B981';
-        statusEl.style.borderColor = 'rgba(16,185,129,.2)';
-        if (found > 1) {
-          const bounds = L.latLngBounds(Object.values(markersByIdx).map(m => m.getLatLng()));
-          map.fitBounds(bounds, { padding: [40, 40] });
-        } else {
-          map.setView(Object.values(markersByIdx)[0].getLatLng(), 15);
-        }
+      statusEl.textContent = `${found} punto${found !== 1 ? 's' : ''} en mapa`;
+      statusEl.style.background = 'rgba(16,185,129,.1)';
+      statusEl.style.color = '#10B981';
+      statusEl.style.borderColor = 'rgba(16,185,129,.2)';
+      if (found > 1) {
+        map.fitBounds(L.latLngBounds(Object.values(markersByIdx).map(m => m.getLatLng())), { padding: [40, 40] });
+      } else if (found === 1) {
+        map.setView(Object.values(markersByIdx)[0].getLatLng(), 14);
       }
       return;
     }
-    const pt = DELIVERY_POINTS[idx];
-    idx++;
+    const pt = DELIVERY_POINTS[idx++];
     statusEl.textContent = `Buscando ${idx}/${DELIVERY_POINTS.length}…`;
 
-    // Usar query estructurada: calle + ciudad → mejor tasa de éxito en Colombia
     const city   = detectCity(pt);
     const street = extractStreet(pt.address);
-    const url = `https://nominatim.openstreetmap.org/search?format=json` +
-      `&street=${encodeURIComponent(street)}` +
-      `&city=${encodeURIComponent(city)}` +
-      `&country=Colombia&countrycodes=co&limit=1`;
-    fetch(url, {
-      headers: { 'Accept-Language': 'es', 'User-Agent': 'SolutionCopiers/1.0' }
-    })
-    .then(r => r.json())
-    .then(results => {
-      if (results && results[0]) {
-        const { lat, lon } = results[0];
-        const marker = L.marker([+lat, +lon], { icon: makeIcon(pt.idx, pt.done) }).addTo(map);
-        marker.bindPopup(`
-          <div style="min-width:165px;font-family:Inter,sans-serif;">
-            <div style="font-weight:700;font-size:.875rem;margin-bottom:.25rem;">${pt.done ? '✓ ' : ''}${pt.title}</div>
-            ${pt.client ? `<div style="font-size:.72rem;color:#F59E0B;">👤 ${pt.client}</div>` : ''}
-            <div style="font-size:.72rem;color:#666;margin-top:.15rem;">📍 ${pt.address}</div>
-          </div>
-        `);
-        markersByIdx[pt.idx] = marker;
-        found++;
-      }
-      setTimeout(geocodeNext, 1200);
-    })
-    .catch(() => setTimeout(geocodeNext, 1200));
+
+    // Intento 1: query estructurada (calle + ciudad)
+    const url1 = `https://nominatim.openstreetmap.org/search?format=json` +
+      `&street=${encodeURIComponent(street)}&city=${encodeURIComponent(city)}&country=Colombia&countrycodes=co&limit=1`;
+    // Intento 2: búsqueda libre simplificada
+    const url2 = `https://nominatim.openstreetmap.org/search?format=json` +
+      `&q=${encodeURIComponent(street + ', ' + city + ', Antioquia, Colombia')}&countrycodes=co&limit=1`;
+
+    fetch(url1, { headers: { 'Accept-Language': 'es' } })
+      .then(r => r.json())
+      .then(r1 => {
+        if (r1 && r1[0]) { addMarker(pt, r1[0].lat, r1[0].lon, false); return Promise.resolve(); }
+        // fallback: intento 2
+        return fetch(url2, { headers: { 'Accept-Language': 'es' } })
+          .then(r => r.json())
+          .then(r2 => {
+            if (r2 && r2[0]) { addMarker(pt, r2[0].lat, r2[0].lon, false); return; }
+            // fallback: centro del municipio
+            const coords = CITY_COORDS[city] || CITY_COORDS['Medellín'];
+            addMarker(pt, coords[0], coords[1], true);
+          });
+      })
+      .catch(() => {
+        const coords = CITY_COORDS[detectCity(pt)] || CITY_COORDS['Medellín'];
+        addMarker(pt, coords[0], coords[1], true);
+      })
+      .finally(() => setTimeout(geocodeNext, 1200));
   }
 
   geocodeNext();
