@@ -2224,14 +2224,42 @@ textarea.survey-input { padding-left: 0.875rem; }
   .hp-bento-grid > *:nth-child(4) { grid-column: 2 / 3; }
 }
 
-/* Card grande con más padding y texto mayor */
+/* Card grande con más padding, texto mayor y distribución vertical */
 @media (min-width: 1100px) {
   .hp-bento-grid > *:nth-child(2) {
     padding: 2.5rem;
-    justify-content: center;
+    justify-content: space-between;
   }
   .hp-bento-grid > *:nth-child(2) h3 { font-size: 1.375rem; }
-  .hp-bento-grid > *:nth-child(2) p  { font-size: 0.9375rem; }
+  .hp-bento-grid > *:nth-child(2) p  { font-size: 0.9375rem; flex: 0 !important; }
+}
+
+/* Bloque decorativo dentro de la card accent grande */
+.hp-svc-deco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 0.875rem;
+  padding: 1rem 1.125rem;
+  font-family: 'JetBrains Mono','Fira Code',ui-monospace,monospace;
+  font-size: 0.72rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.75);
+}
+.hp-svc-deco-line { display: flex; align-items: center; gap: 0.5rem; }
+.hp-svc-deco-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.hp-svc-deco-tag  {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  padding: 0.1rem 0.45rem;
+  border-radius: 0.3rem;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.9);
+  margin-left: auto;
 }
 
 /* =========================================================
