@@ -111,9 +111,27 @@ function focusMarker(idx) {
   if (m) { map.setView(m.getLatLng(), 16); m.openPopup(); }
 }
 
-// Expande abreviaturas colombianas para mejorar geocodificación
-function expandAddress(addr) {
-  return addr
+// Municipios del Valle de Aburrá — se detectan en título + dirección + cliente
+const MUNICIPIOS = {
+  'bello':'Bello', 'itagüí':'Itagüí', 'itagui':'Itagüí',
+  'envigado':'Envigado', 'sabaneta':'Sabaneta',
+  'la estrella':'La Estrella', 'caldas':'Caldas',
+  'copacabana':'Copacabana', 'girardota':'Girardota',
+  'barbosa':'Barbosa', 'medellín':'Medellín', 'medellin':'Medellín',
+};
+
+function detectCity(pt) {
+  const hay = (pt.address + ' ' + pt.title + ' ' + (pt.client||'')).toLowerCase();
+  for (const [k, v] of Object.entries(MUNICIPIOS)) {
+    if (hay.includes(k)) return v;
+  }
+  return 'Medellín';
+}
+
+// Expande abreviaturas y extrae solo la calle principal (Nominatim no
+// resuelve números de inmueble colombianos, pero sí la calle en la ciudad)
+function extractStreet(addr) {
+  let s = addr
     .replace(/\bCr\.?\b/gi,  'Carrera')
     .replace(/\bCra\.?\b/gi, 'Carrera')
     .replace(/\bCl\.?\b/gi,  'Calle')
@@ -122,9 +140,10 @@ function expandAddress(addr) {
     .replace(/\bDg\.?\b/gi,  'Diagonal')
     .replace(/\bTv\.?\b/gi,  'Transversal')
     .replace(/\bCq\.?\b/gi,  'Circular')
-    .replace(/#/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/#/g, ' ').replace(/\s+/g, ' ').trim();
+  // Tomar solo "Carrera/Calle XX" sin el número de inmueble
+  const m = s.match(/^((?:Carrera|Calle|Avenida|Diagonal|Transversal|Circular)\s+[\d]+[A-Za-z]?)/i);
+  return m ? m[1] : s.split(',')[0].trim();
 }
 
 if (DELIVERY_POINTS.length === 0) {
@@ -161,14 +180,14 @@ if (DELIVERY_POINTS.length === 0) {
     idx++;
     statusEl.textContent = `Buscando ${idx}/${DELIVERY_POINTS.length}…`;
 
-    // Si la dirección ya menciona un municipio del Valle de Aburrá, no agregar ciudad
-    const MUNICIPIOS = ['medellín','bello','itagüí','itagui','envigado','sabaneta',
-      'la estrella','caldas','copacabana','girardota','barbosa'];
-    const addrLower = pt.address.toLowerCase();
-    const tieneMunicipio = MUNICIPIOS.some(m => addrLower.includes(m));
-    const suffix = tieneMunicipio ? ', Colombia' : ', Antioquia, Colombia';
-    const query = expandAddress(pt.address) + suffix;
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=co`, {
+    // Usar query estructurada: calle + ciudad → mejor tasa de éxito en Colombia
+    const city   = detectCity(pt);
+    const street = extractStreet(pt.address);
+    const url = `https://nominatim.openstreetmap.org/search?format=json` +
+      `&street=${encodeURIComponent(street)}` +
+      `&city=${encodeURIComponent(city)}` +
+      `&country=Colombia&countrycodes=co&limit=1`;
+    fetch(url, {
       headers: { 'Accept-Language': 'es', 'User-Agent': 'SolutionCopiers/1.0' }
     })
     .then(r => r.json())
