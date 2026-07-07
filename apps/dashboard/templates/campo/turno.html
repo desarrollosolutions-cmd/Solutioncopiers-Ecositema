@@ -90,12 +90,10 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
     <div class="topbar-role">{{ field_user.get_role_display }}</div>
   </div>
   <div style="display:flex;align-items:center;gap:.625rem;flex-shrink:0;">
-    {% if delivery_tasks %}
     <a href="{% url 'campo:turno_map' %}" style="background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25);color:#0EA5E9;border-radius:.625rem;padding:.45rem .75rem;font-size:.7rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:.3rem;white-space:nowrap;">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.85rem;height:.85rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
       Ruta en mapa
     </a>
-    {% endif %}
     <div style="text-align:right;">
       <div style="font-size:.7rem;color:#7AAEC8;" id="clock"></div>
       <div id="gps-pill" class="gps-pill"><span class="gps-spin"></span> Buscando GPS…</div>
