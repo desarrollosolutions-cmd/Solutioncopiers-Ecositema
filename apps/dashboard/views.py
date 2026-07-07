@@ -4635,7 +4635,6 @@ class CampoTaskCompleteView(View):
             status=DeliveryTask.Status.PENDING,
         )
         task.completion_notes     = request.POST.get("notes", "").strip()
-        task.completion_invoice   = request.POST.get("invoice", "").strip()
         task.completion_signature = request.POST.get("signature", "").strip()
         task.completion_photo_b64 = request.POST.get("photo_b64", "").strip()
         task.status               = DeliveryTask.Status.DONE
@@ -4680,13 +4679,14 @@ class CampoTaskListView(View):
         try:
             fu = FieldUser.objects.get(pk=request.POST.get("field_user_id"))
             DeliveryTask.objects.create(
-                field_user  = fu,
-                title       = request.POST.get("title", "").strip(),
-                description = request.POST.get("description", "").strip(),
-                address     = request.POST.get("address", "").strip(),
-                order       = int(request.POST.get("order") or 0),
-                due_date    = request.POST.get("due_date") or timezone.localdate(),
-                created_by  = request.user,
+                field_user         = fu,
+                title              = request.POST.get("title", "").strip(),
+                description        = request.POST.get("description", "").strip(),
+                address            = request.POST.get("address", "").strip(),
+                order              = int(request.POST.get("order") or 0),
+                due_date           = request.POST.get("due_date") or timezone.localdate(),
+                created_by         = request.user,
+                completion_invoice = request.POST.get("invoice_ref", "").strip(),
             )
         except Exception as e:
             from django.contrib import messages as dj_msg
@@ -4840,7 +4840,6 @@ class PanelDeliveryCompleteView(View):
             return JsonResponse({"ok": False, "error": "Sin perfil de campo"}, status=403)
         task = get_object_or_404(DeliveryTask, pk=pk, field_user=fu, status=DeliveryTask.Status.PENDING)
         task.completion_notes     = request.POST.get("notes", "").strip()
-        task.completion_invoice   = request.POST.get("invoice", "").strip()
         task.completion_signature = request.POST.get("signature", "").strip()
         task.completion_photo_b64 = request.POST.get("photo_b64", "").strip()
         task.status               = DeliveryTask.Status.DONE

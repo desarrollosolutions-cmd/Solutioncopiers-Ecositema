@@ -4,6 +4,9 @@
 
 {% block content %}
 <style>
+@media(max-width:1024px){
+  .cq-form-grid{grid-template-columns:1fr 1fr 1fr !important;}
+}
 @media(max-width:768px){
   .cq-form-grid{grid-template-columns:1fr 1fr !important;}
   .cq-form-grid .cq-submit{grid-column:1/-1;}
@@ -33,7 +36,7 @@
   <div style="font-size:.8125rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1rem;">Nueva tarea de entrega</div>
   <form method="post" action="{% url 'dashboard:campo_tasks' %}">
     {% csrf_token %}
-    <div class="cq-form-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:.75rem;align-items:end;">
+    <div class="cq-form-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr auto;gap:.75rem;align-items:end;">
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Mensajero / Técnico</label>
         <select name="field_user_id" required class="da-input" style="width:100%;">
@@ -50,6 +53,10 @@
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Dirección</label>
         <input type="text" name="address" class="da-input" style="width:100%;" placeholder="Calle / Barrio / Ciudad">
+      </div>
+      <div>
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;"># Factura / Remisión</label>
+        <input type="text" name="invoice_ref" class="da-input" style="width:100%;" placeholder="Ej: FAC-001">
       </div>
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Fecha</label>

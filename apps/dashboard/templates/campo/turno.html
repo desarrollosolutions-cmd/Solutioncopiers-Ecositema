@@ -236,10 +236,6 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
       <textarea name="notes" id="modal-notes" class="modal-input modal-textarea"
         placeholder="¿Qué se entregó? ¿Hay observaciones?"></textarea>
 
-      <label class="modal-label"># Factura o remisión (opcional)</label>
-      <input type="text" name="invoice" id="modal-invoice" class="modal-input"
-        placeholder="Ej: FAC-001, REM-2345">
-
       <label class="modal-label">Foto del comprobante</label>
       <label class="photo-label" id="campo-photo-label" onclick="document.getElementById('campo-photo-input').click()">
         <span>📷</span>
@@ -474,7 +470,6 @@ function openComplete(taskId, title) {
   document.getElementById('modal-task-id').value = taskId;
   document.getElementById('modal-task-title').textContent = title;
   document.getElementById('modal-notes').value = '';
-  document.getElementById('modal-invoice').value = '';
   clearCampoPhoto();
   clearCampoSig();
   document.getElementById('confirm-text').textContent = 'Confirmar entrega';
@@ -497,7 +492,6 @@ function submitComplete(e) {
   fd.append('csrfmiddlewaretoken', CSRF);
   fd.append('task_id',  taskId);
   fd.append('notes',    document.getElementById('modal-notes').value);
-  fd.append('invoice',  document.getElementById('modal-invoice').value);
   fd.append('photo_b64', _campoPhotoB64);
   if (_campoSigCanvas && !_campoSigEmpty) {
     fd.append('signature', _campoSigCanvas.toDataURL('image/png'));
