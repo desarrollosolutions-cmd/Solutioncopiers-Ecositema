@@ -140,6 +140,7 @@ urlpatterns = [
     path("campo/tareas/<int:pk>/",           views.CampoTaskDetailView.as_view(),       name="campo_task_detail"),
     path("campo/rutas/",                     views.CampoRouteHistoryView.as_view(),     name="campo_routes"),
     path("campo/rutas/json/",                views.CampoRouteJsonView.as_view(),        name="campo_routes_json"),
+    path("campo/rutas/exportar/",            views.CampoRouteExportView.as_view(),      name="campo_routes_export"),
 
     # Contabilidad Colombia
     path("contabilidad/",                           billing_views.ContabilidadView.as_view(),       name="contabilidad"),

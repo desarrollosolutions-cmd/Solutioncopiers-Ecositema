@@ -4817,6 +4817,70 @@ class CampoRouteHistoryView(TemplateView):
 
 
 @da_decorator
+class CampoRouteExportView(View):
+    """Exporta en CSV el reporte diario de rutas: GPS + entregas de todos los mensajeros."""
+
+    def get(self, request):
+        import csv
+        from apps.dashboard.models import FieldLocationLog, DeliveryTask, FieldUser
+
+        date_str = request.GET.get("date", timezone.localdate().isoformat())
+
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="ruta_{date_str}.csv"'
+        response.write("﻿")  # BOM para Excel
+
+        writer = csv.writer(response)
+
+        # ── Sección 1: Puntos GPS ──────────────────────────────────────────
+        writer.writerow(["PUNTOS GPS"])
+        writer.writerow(["Mensajero", "Rol", "Fecha", "Hora", "Latitud", "Longitud"])
+
+        logs = (
+            FieldLocationLog.objects
+            .filter(shift_date=date_str)
+            .select_related("user__field_profile")
+            .order_by("user__first_name", "recorded_at")
+        )
+        for log in logs:
+            name = log.user.get_full_name() or log.user.username
+            try:
+                role = log.user.field_profile.get_role_display()
+            except Exception:
+                role = ""
+            writer.writerow([
+                name, role, date_str,
+                log.recorded_at.strftime("%H:%M:%S"),
+                float(log.latitude), float(log.longitude),
+            ])
+
+        writer.writerow([])  # separador
+
+        # ── Sección 2: Entregas completadas ───────────────────────────────
+        writer.writerow(["ENTREGAS COMPLETADAS"])
+        writer.writerow(["Mensajero", "Rol", "Tarea", "Cliente", "Dirección",
+                          "Factura / Remisión", "Método de pago", "Hora completada"])
+
+        tasks = (
+            DeliveryTask.objects
+            .filter(status="done", completed_at__date=date_str)
+            .select_related("field_user__user")
+            .order_by("field_user__user__first_name", "completed_at")
+        )
+        for t in tasks:
+            name = t.field_user.user.get_full_name() or t.field_user.user.username
+            role = t.field_user.get_role_display()
+            writer.writerow([
+                name, role, t.title, t.client_name, t.address,
+                t.completion_invoice,
+                t.get_payment_method_display() if t.payment_method else "",
+                t.completed_at.strftime("%H:%M:%S") if t.completed_at else "",
+            ])
+
+        return response
+
+
+@da_decorator
 class CampoRouteJsonView(View):
     def get(self, request):
         from apps.dashboard.models import FieldLocationLog, DeliveryTask, FieldUser

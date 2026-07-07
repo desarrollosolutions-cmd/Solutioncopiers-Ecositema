@@ -8,9 +8,17 @@
     <h1 class="da-page-title">Trazabilidad de rutas</h1>
     <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">Recorrido GPS de cada mensajero por día</p>
   </div>
-  <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+  <div style="display:flex;gap:.625rem;flex-wrap:wrap;align-items:center;">
     <a href="{% url 'dashboard:campo_map' %}" class="da-btn da-btn-secondary">Mapa en vivo</a>
     <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Tareas</a>
+    <a href="{% url 'dashboard:campo_routes_export' %}?date={{ selected_date|default:'' }}"
+       class="da-btn da-btn-primary"
+       style="display:flex;align-items:center;gap:.4rem;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+      </svg>
+      Exportar CSV
+    </a>
   </div>
 </div>
 
