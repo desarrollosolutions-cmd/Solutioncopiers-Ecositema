@@ -5,13 +5,7 @@
 {% block content %}
 <div class="pn-page-header">
   <h1 class="pn-page-title">Mi Turno</h1>
-  <div style="display:flex;align-items:center;gap:.75rem;">
-    <a href="{% url 'panel:turno_map' %}" class="pn-btn pn-btn-secondary" style="font-size:.78rem;padding:.45rem .875rem;">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-      Ruta en mapa
-    </a>
-    <span style="font-size:.78rem;color:var(--color-text-muted);">{% now "l j \d\e F, H:i" %}</span>
-  </div>
+  <span style="font-size:.78rem;color:var(--color-text-muted);">{% now "l j \d\e F, H:i" %}</span>
 </div>
 
 {# ── Estado de turno ── #}
@@ -107,7 +101,14 @@
     </div>
     <div style="flex:1;min-width:0;">
       <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">{{ dt.title }}</div>
-      {% if dt.address %}<div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.1rem;">📍 {{ dt.address }}</div>{% endif %}
+      {% if dt.address %}
+      <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.1rem;">📍 {{ dt.address }}</div>
+      <a href="https://maps.google.com/?q={{ dt.address|urlencode }},+Colombia" target="_blank"
+         style="font-size:.68rem;color:var(--color-primary);text-decoration:none;font-weight:600;margin-top:.2rem;display:inline-flex;align-items:center;gap:.2rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.7rem;height:.7rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        Ver en Google Maps
+      </a>
+      {% endif %}
       {% if dt.due_date %}<div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.1rem;">📅 {{ dt.due_date|date:"d/m/Y" }}</div>{% endif %}
       {% if dt.status == 'done' %}
       <div style="font-size:.68rem;color:#10B981;margin-top:.25rem;font-weight:600;">✓ Completada{% if dt.completed_at %} · {{ dt.completed_at|time:"H:i" }}{% endif %}{% if dt.completion_invoice %} · Fact: {{ dt.completion_invoice }}{% endif %}</div>

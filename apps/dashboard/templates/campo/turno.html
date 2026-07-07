@@ -89,15 +89,9 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
     <div class="topbar-name">{{ request.user.get_full_name|default:request.user.username }}</div>
     <div class="topbar-role">{{ field_user.get_role_display }}</div>
   </div>
-  <div style="display:flex;align-items:center;gap:.625rem;flex-shrink:0;">
-    <a href="{% url 'campo:turno_map' %}" style="background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25);color:#0EA5E9;border-radius:.625rem;padding:.45rem .75rem;font-size:.7rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:.3rem;white-space:nowrap;">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.85rem;height:.85rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-      Ruta en mapa
-    </a>
-    <div style="text-align:right;">
-      <div style="font-size:.7rem;color:#7AAEC8;" id="clock"></div>
-      <div id="gps-pill" class="gps-pill"><span class="gps-spin"></span> Buscando GPS…</div>
-    </div>
+  <div style="text-align:right;flex-shrink:0;">
+    <div style="font-size:.7rem;color:#7AAEC8;" id="clock"></div>
+    <div id="gps-pill" class="gps-pill"><span class="gps-spin"></span> Buscando GPS…</div>
   </div>
 </div>
 
@@ -155,7 +149,12 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
       {% if dt.address %}<div class="dtask-addr">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.7rem;height:.7rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
         {{ dt.address }}
-      </div>{% endif %}
+      </div>
+      <a href="https://maps.google.com/?q={{ dt.address|urlencode }},+Colombia" target="_blank"
+         style="font-size:.65rem;color:#0EA5E9;text-decoration:none;font-weight:600;margin-top:.15rem;display:inline-flex;align-items:center;gap:.25rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.65rem;height:.65rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        Ver en Google Maps
+      </a>{% endif %}
       {% if dt.payment_method %}<div class="dtask-addr" style="color:#10B981;">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.7rem;height:.7rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
         {{ dt.get_payment_method_display }}
