@@ -4433,11 +4433,18 @@ class CampoTurnoView(View):
         ).select_related("lead").order_by("priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
+        from django.db.models import Case, When, IntegerField, Value
         delivery_tasks = (
             DeliveryTask.objects
             .filter(field_user=field_user)
             .exclude(status="cancelled")
-            .order_by("status", "order", "created_at")[:30]
+            .annotate(_ord=Case(
+                When(status="pending", then=Value(0)),
+                When(status="done",    then=Value(1)),
+                default=Value(2),
+                output_field=IntegerField(),
+            ))
+            .order_by("_ord", "order", "created_at")[:30]
         )
 
         return render(request, self.template_name, {
@@ -4892,11 +4899,18 @@ class PanelTurnoView(View):
         ).select_related("lead").order_by("priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
+        from django.db.models import Case, When, IntegerField, Value
         delivery_tasks = (
             DeliveryTask.objects
             .filter(field_user=field_user)
             .exclude(status="cancelled")
-            .order_by("status", "order", "created_at")[:30]
+            .annotate(_ord=Case(
+                When(status="pending", then=Value(0)),
+                When(status="done",    then=Value(1)),
+                default=Value(2),
+                output_field=IntegerField(),
+            ))
+            .order_by("_ord", "order", "created_at")[:30]
         )
 
         ctx = _panel_base_ctx(request)
