@@ -4663,14 +4663,17 @@ class CampoTaskListView(View):
         if date_str:
             qs = qs.filter(due_date=date_str)
 
+        from apps.leads.models import Lead
         return render(request, self.template_name, {
-            "tasks":        qs[:300],
-            "field_users":  FieldUser.objects.select_related("user").order_by("user__first_name"),
-            "filter_user":  fu_pk,
-            "filter_status": status,
-            "filter_date":  date_str,
-            "today":        timezone.localdate().isoformat(),
+            "tasks":          qs[:300],
+            "field_users":    FieldUser.objects.select_related("user").order_by("user__first_name"),
+            "filter_user":    fu_pk,
+            "filter_status":  status,
+            "filter_date":    date_str,
+            "today":          timezone.localdate().isoformat(),
             "status_choices": DeliveryTask.Status.choices,
+            "leads":          Lead.objects.values_list("full_name", "company_name").order_by("full_name")[:500],
+            "payment_choices": DeliveryTask.PaymentMethod.choices,
         })
 
     def post(self, request):
@@ -4687,6 +4690,8 @@ class CampoTaskListView(View):
                 due_date           = request.POST.get("due_date") or timezone.localdate(),
                 created_by         = request.user,
                 completion_invoice = request.POST.get("invoice_ref", "").strip(),
+                client_name        = request.POST.get("client_name", "").strip(),
+                payment_method     = request.POST.get("payment_method", "").strip(),
             )
         except Exception as e:
             from django.contrib import messages as dj_msg

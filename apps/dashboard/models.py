@@ -264,6 +264,11 @@ class DeliveryTask(models.Model):
         DONE      = "done",      "Completada"
         CANCELLED = "cancelled", "Cancelada"
 
+    class PaymentMethod(models.TextChoices):
+        CASH = "efectivo", "Efectivo"
+        BANK = "banco",    "Banco"
+        CXC  = "cxc",      "CXC"
+
     field_user         = models.ForeignKey(
         FieldUser, on_delete=models.CASCADE, related_name="delivery_tasks"
     )
@@ -277,6 +282,9 @@ class DeliveryTask(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
         related_name="created_delivery_tasks"
     )
+    client_name        = models.CharField("cliente", max_length=200, blank=True)
+    payment_method     = models.CharField("método de pago", max_length=20,
+                             choices=PaymentMethod.choices, blank=True)
     created_at         = models.DateTimeField(auto_now_add=True)
     completed_at       = models.DateTimeField(null=True, blank=True)
     completion_notes     = models.TextField("notas de entrega", blank=True)

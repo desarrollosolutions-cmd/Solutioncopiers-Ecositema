@@ -36,7 +36,14 @@
   <div style="font-size:.8125rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1rem;">Nueva tarea de entrega</div>
   <form method="post" action="{% url 'dashboard:campo_tasks' %}">
     {% csrf_token %}
-    <div class="cq-form-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr auto;gap:.75rem;align-items:end;">
+    {# Datalist con clientes existentes #}
+    <datalist id="leads-list">
+      {% for name, company in leads %}
+      <option value="{{ name }}{% if company %} — {{ company }}{% endif %}">
+      {% endfor %}
+    </datalist>
+
+    <div class="cq-form-grid" style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr) auto;gap:.75rem;align-items:end;">
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Mensajero / Técnico</label>
         <select name="field_user_id" required class="da-input" style="width:100%;">
@@ -51,12 +58,26 @@
         <input type="text" name="title" required class="da-input" style="width:100%;" placeholder="Ej: Entregar insumos cliente X">
       </div>
       <div>
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Cliente</label>
+        <input type="text" name="client_name" class="da-input" style="width:100%;"
+          list="leads-list" placeholder="Nombre o empresa" autocomplete="off">
+      </div>
+      <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Dirección</label>
         <input type="text" name="address" class="da-input" style="width:100%;" placeholder="Calle / Barrio / Ciudad">
       </div>
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;"># Factura / Remisión</label>
         <input type="text" name="invoice_ref" class="da-input" style="width:100%;" placeholder="Ej: FAC-001">
+      </div>
+      <div>
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Método de pago</label>
+        <select name="payment_method" class="da-input" style="width:100%;">
+          <option value="">— Seleccionar —</option>
+          {% for val, label in payment_choices %}
+          <option value="{{ val }}">{{ label }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Fecha</label>

@@ -121,6 +121,24 @@
       <span style="font-size:.8rem;font-weight:700;padding:.35rem .875rem;border-radius:9999px;background:rgba(107,114,128,.1);color:#6B7280;border:1px solid rgba(107,114,128,.15);">Cancelada</span>
       {% endif %}
       <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.5rem;font-size:.78rem;">
+        {% if task.client_name %}
+        <div style="display:flex;justify-content:space-between;gap:.5rem;">
+          <span style="color:var(--color-text-muted);flex-shrink:0;">Cliente</span>
+          <span style="font-weight:600;text-align:right;">{{ task.client_name }}</span>
+        </div>
+        {% endif %}
+        {% if task.completion_invoice %}
+        <div style="display:flex;justify-content:space-between;gap:.5rem;">
+          <span style="color:var(--color-text-muted);flex-shrink:0;">Factura</span>
+          <span style="font-weight:600;font-family:monospace;">{{ task.completion_invoice }}</span>
+        </div>
+        {% endif %}
+        {% if task.payment_method %}
+        <div style="display:flex;justify-content:space-between;gap:.5rem;">
+          <span style="color:var(--color-text-muted);flex-shrink:0;">Pago</span>
+          <span style="font-weight:600;">{{ task.get_payment_method_display }}</span>
+        </div>
+        {% endif %}
         <div style="display:flex;justify-content:space-between;">
           <span style="color:var(--color-text-muted);">Creada</span>
           <span>{{ task.created_at|date:"d/m/Y H:i" }}</span>
