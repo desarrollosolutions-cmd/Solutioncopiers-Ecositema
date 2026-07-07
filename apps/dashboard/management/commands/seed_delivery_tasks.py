@@ -113,6 +113,12 @@ TASKS = [
 class Command(BaseCommand):
     help = "Limpia entregas existentes y crea 10 tareas de prueba"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--clear-only", action="store_true",
+            help="Solo borra todas las tareas, sin crear nuevas"
+        )
+
     def handle(self, *args, **options):
         from apps.dashboard.models import DeliveryTask, FieldUser
         from django.contrib.auth import get_user_model
@@ -121,6 +127,10 @@ class Command(BaseCommand):
         # 1. Limpiar
         deleted, _ = DeliveryTask.objects.all().delete()
         self.stdout.write(self.style.WARNING(f"  Eliminadas {deleted} tarea(s) existentes."))
+
+        if options["clear_only"]:
+            self.stdout.write(self.style.SUCCESS("  Base de datos de entregas limpia."))
+            return
 
         # 2. Obtener usuario admin para created_by
         admin = User.objects.filter(is_staff=True).first()

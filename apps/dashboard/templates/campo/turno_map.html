@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#070E18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Mapa de ruta — Campo</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-serif;color:#E4F1FA;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+.topbar{background:#101E30;border-bottom:1px solid #192D42;padding:.875rem 1.125rem;display:flex;align-items:center;gap:.875rem;flex-shrink:0;}
+.back-btn{background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);color:#0EA5E9;border-radius:.625rem;padding:.5rem .875rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.375rem;text-decoration:none;white-space:nowrap;}
+.back-btn svg{width:.875rem;height:.875rem;}
+.topbar-title{font-size:.9rem;font-weight:700;}
+.topbar-sub{font-size:.65rem;color:#3E6E8A;margin-top:.1rem;}
+#map{flex:1;min-height:0;}
+.bottom-panel{background:#101E30;border-top:1px solid #192D42;max-height:42vh;overflow-y:auto;flex-shrink:0;}
+.panel-header{padding:.75rem 1.125rem;border-bottom:1px solid #192D42;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#101E30;z-index:1;}
+.panel-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#3E6E8A;}
+.status-chip{font-size:.65rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:rgba(14,165,233,.1);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);}
+.task-row{padding:.75rem 1.125rem;border-bottom:1px solid #0D1A27;display:flex;gap:.75rem;align-items:flex-start;cursor:pointer;transition:background .15s;}
+.task-row:active{background:rgba(255,255,255,.03);}
+.task-row.done{opacity:.5;}
+.task-num{width:2rem;height:2rem;border-radius:.625rem;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.task-num.pending{background:rgba(245,158,11,.12);color:#F59E0B;}
+.task-num.done{background:rgba(16,185,129,.12);color:#10B981;}
+.task-info{flex:1;min-width:0;}
+.task-title{font-size:.8rem;font-weight:600;color:#E4F1FA;line-height:1.4;}
+.task-addr{font-size:.68rem;color:#7AAEC8;margin-top:.2rem;display:flex;align-items:center;gap:.25rem;}
+.task-addr svg{width:.65rem;height:.65rem;flex-shrink:0;}
+.task-client{font-size:.68rem;color:#F59E0B;margin-top:.15rem;}
+.empty-state{padding:3rem 1.5rem;text-align:center;color:#3E6E8A;font-size:.85rem;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="{% url 'campo:turno' %}" class="back-btn">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    Volver
+  </a>
+  <div>
+    <div class="topbar-title">Ruta en mapa</div>
+    <div class="topbar-sub">{{ delivery_tasks|length }} entrega{{ delivery_tasks|length|pluralize:"s" }} · toca un marcador para detalles</div>
+  </div>
+</div>
+
+<div id="map"></div>
+
+<div class="bottom-panel">
+  <div class="panel-header">
+    <span class="panel-title">Puntos de entrega</span>
+    <span class="status-chip" id="geocode-status">Cargando…</span>
+  </div>
+  {% if delivery_tasks %}
+  {% for dt in delivery_tasks %}
+  <div class="task-row {% if dt.status == 'done' %}done{% endif %}" id="row-{{ dt.pk }}" onclick="focusMarker({{ forloop.counter }})">
+    <div class="task-num {% if dt.status == 'done' %}done{% else %}pending{% endif %}">
+      {% if dt.status == 'done' %}✓{% else %}{{ forloop.counter }}{% endif %}
+    </div>
+    <div class="task-info">
+      <div class="task-title">{{ dt.title }}</div>
+      {% if dt.client_name %}<div class="task-client">{{ dt.client_name }}</div>{% endif %}
+      {% if dt.address %}
+      <div class="task-addr">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+        {{ dt.address }}
+      </div>
+      {% else %}
+      <div class="task-addr" style="color:#3E6E8A;">Sin dirección registrada</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty-state">No tienes entregas asignadas.</div>
+  {% endif %}
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const DELIVERY_POINTS = [
+  {% for dt in delivery_tasks %}{% if dt.address %}
+  { idx: {{ forloop.counter }}, pk: {{ dt.pk }}, title: "{{ dt.title|escapejs }}", address: "{{ dt.address|escapejs }}", client: "{{ dt.client_name|escapejs }}", done: {% if dt.status == 'done' %}true{% else %}false{% endif %} },
+  {% endif %}{% endfor %}
+];
+
+const map = L.map('map', { zoomControl: true }).setView([6.2442, -75.5812], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap', maxZoom: 19
+}).addTo(map);
+
+const markersByIdx = {};
+const statusEl = document.getElementById('geocode-status');
+
+function makeIcon(num, isDone) {
+  const bg = isDone ? '#10B981' : '#F59E0B';
+  const label = isDone ? '✓' : num;
+  return L.divIcon({
+    html: `<div style="background:${bg};color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;border:2.5px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.5);">${label}</div>`,
+    className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -34]
+  });
+}
+
+function focusMarker(idx) {
+  const m = markersByIdx[idx];
+  if (m) { map.setView(m.getLatLng(), 16); m.openPopup(); }
+}
+
+if (DELIVERY_POINTS.length === 0) {
+  statusEl.textContent = 'Sin direcciones';
+  statusEl.style.background = 'rgba(62,110,138,.15)';
+  statusEl.style.color = '#3E6E8A';
+  statusEl.style.borderColor = 'rgba(62,110,138,.2)';
+} else {
+  let idx = 0;
+  let found = 0;
+
+  function geocodeNext() {
+    if (idx >= DELIVERY_POINTS.length) {
+      if (found === 0) {
+        statusEl.textContent = 'Sin ubicaciones';
+        statusEl.style.color = '#EF4444';
+      } else {
+        statusEl.textContent = `${found} punto${found !== 1 ? 's' : ''} en mapa`;
+        statusEl.style.background = 'rgba(16,185,129,.1)';
+        statusEl.style.color = '#10B981';
+        statusEl.style.borderColor = 'rgba(16,185,129,.2)';
+        if (found > 1) {
+          const bounds = L.latLngBounds(Object.values(markersByIdx).map(m => m.getLatLng()));
+          map.fitBounds(bounds, { padding: [40, 40] });
+        } else {
+          map.setView(Object.values(markersByIdx)[0].getLatLng(), 15);
+        }
+      }
+      return;
+    }
+    const pt = DELIVERY_POINTS[idx];
+    idx++;
+    statusEl.textContent = `Buscando ${idx}/${DELIVERY_POINTS.length}…`;
+
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(pt.address + ', Colombia')}&limit=1`, {
+      headers: { 'Accept-Language': 'es' }
+    })
+    .then(r => r.json())
+    .then(results => {
+      if (results && results[0]) {
+        const { lat, lon } = results[0];
+        const marker = L.marker([+lat, +lon], { icon: makeIcon(pt.idx, pt.done) }).addTo(map);
+        marker.bindPopup(`
+          <div style="min-width:165px;font-family:Inter,sans-serif;">
+            <div style="font-weight:700;font-size:.875rem;margin-bottom:.25rem;">${pt.done ? '✓ ' : ''}${pt.title}</div>
+            ${pt.client ? `<div style="font-size:.72rem;color:#F59E0B;">👤 ${pt.client}</div>` : ''}
+            <div style="font-size:.72rem;color:#666;margin-top:.15rem;">📍 ${pt.address}</div>
+          </div>
+        `);
+        markersByIdx[pt.idx] = marker;
+        found++;
+      }
+      setTimeout(geocodeNext, 1200);
+    })
+    .catch(() => setTimeout(geocodeNext, 1200));
+  }
+
+  geocodeNext();
+}
+</script>
+</body>
+</html>

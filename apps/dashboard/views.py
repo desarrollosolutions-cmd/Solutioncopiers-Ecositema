@@ -4458,6 +4458,33 @@ class CampoTurnoView(View):
 
 
 @campo_decorator
+class CampoTurnoMapView(View):
+    """Página dedicada con el mapa de puntos de entrega del mensajero."""
+    template_name = "campo/turno_map.html"
+
+    def get(self, request):
+        from apps.dashboard.models import DeliveryTask
+        from django.db.models import Case, When, IntegerField, Value
+        field_user = request.user.field_profile
+        delivery_tasks = (
+            DeliveryTask.objects
+            .filter(field_user=field_user)
+            .exclude(status="cancelled")
+            .annotate(_ord=Case(
+                When(status="pending", then=Value(0)),
+                When(status="done",    then=Value(1)),
+                default=Value(2),
+                output_field=IntegerField(),
+            ))
+            .order_by("_ord", "order", "created_at")[:30]
+        )
+        return render(request, self.template_name, {
+            "field_user":     field_user,
+            "delivery_tasks": delivery_tasks,
+        })
+
+
+@campo_decorator
 class CampoUbicacionUpdateView(View):
     LOG_INTERVAL_SECONDS = 120  # guardar punto de ruta cada 2 minutos
 
