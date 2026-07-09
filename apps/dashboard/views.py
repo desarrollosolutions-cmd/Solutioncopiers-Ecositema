@@ -662,6 +662,31 @@ def _next_ticket_number():
     return f"{prefix}{seq:04d}"
 
 
+def _create_delivery_task_for_ticket(ticket, created_by):
+    """Genera un DeliveryTask en la ruta del técnico al asignarle un ticket."""
+    from apps.dashboard.models import DeliveryTask
+    if not ticket.assigned_to:
+        return
+    try:
+        field_user = ticket.assigned_to.field_profile
+    except Exception:
+        return  # El técnico no tiene perfil de campo activo
+    due_date = ticket.scheduled_for.date() if ticket.scheduled_for else None
+    DeliveryTask.objects.create(
+        field_user=field_user,
+        title=f"{ticket.get_issue_type_display()} — {ticket.ticket_number}",
+        description=(
+            f"Cliente: {ticket.lead.full_name}\n"
+            f"Equipo: {ticket.equipment_description}\n\n"
+            f"{ticket.description}"
+        ).strip(),
+        address=ticket.lead.city or "",
+        client_name=ticket.lead.full_name,
+        due_date=due_date,
+        created_by=created_by,
+    )
+
+
 @da_decorator
 class TicketListView(ListView):
     template_name = "dashboard/tickets/list.html"
@@ -749,6 +774,7 @@ class TicketCreateView(View):
                 assigned_to         = assigned,
                 scheduled_for       = request.POST.get("scheduled_for") or None,
             )
+            _create_delivery_task_for_ticket(ticket, request.user)
             from django.contrib import messages
             messages.success(request, f"Ticket {ticket.ticket_number} creado.")
             return redirect("dashboard:ticket_detail", pk=ticket.pk)
@@ -798,6 +824,7 @@ class TicketDetailView(View):
             ticket.contract = None
             if request.POST.get("contract"):
                 ticket.contract = RentalContract.objects.get(pk=request.POST["contract"])
+            prev_assigned = ticket.assigned_to
             if request.user.is_superuser:
                 ticket.assigned_to = None
                 if request.POST.get("assigned_to"):
@@ -813,6 +840,9 @@ class TicketDetailView(View):
             if ticket.status == "resolved" and old_status != "resolved":
                 ticket.resolved_at = tz.now()
             ticket.save()
+            # Si se asignó técnico por primera vez o cambió, crear tarea en su ruta
+            if ticket.assigned_to and ticket.assigned_to != prev_assigned:
+                _create_delivery_task_for_ticket(ticket, request.user)
             from django.contrib import messages
             messages.success(request, "Ticket actualizado.")
             return redirect("dashboard:ticket_detail", pk=pk)
@@ -2549,6 +2579,7 @@ class PanelTicketCreateView(View):
             assigned_to=assigned_to,
             scheduled_for=scheduled_for,
         )
+        _create_delivery_task_for_ticket(ticket, request.user)
         _log_activity(request, "create_ticket", f"Creo ticket #{ticket.ticket_number} para {lead.full_name}", related_pk=ticket.pk)
         return redirect("panel:ticket_detail", pk=ticket.pk)
 
