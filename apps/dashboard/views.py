@@ -504,12 +504,15 @@ class ContractCreateView(View):
 
     def _get_context(self, data=None):
         from apps.leads.models import Lead, RentalContract
-        from apps.catalog.models import Copier
+        from apps.catalog.models import Copier, CopierUnit
         return {
-            "lead_list":   Lead.objects.order_by("full_name"),
-            "copier_list": Copier.objects.filter(status="published").order_by("name"),
+            "lead_list":    Lead.objects.order_by("full_name"),
+            "copier_list":  Copier.objects.filter(status="published").order_by("name"),
+            "unit_list":    CopierUnit.objects.select_related("copier").filter(
+                                status=CopierUnit.UnitStatus.AVAILABLE
+                            ).order_by("copier__brand", "serial_number"),
             "status_choices": RentalContract.Status.choices,
-            "next_number": _next_contract_number(),
+            "next_number":  _next_contract_number(),
             "is_edit": False,
         }
 
@@ -518,15 +521,22 @@ class ContractCreateView(View):
 
     def post(self, request):
         from apps.leads.models import Lead, RentalContract
-        from apps.catalog.models import Copier
+        from apps.catalog.models import Copier, CopierUnit
         try:
             lead   = Lead.objects.get(pk=request.POST["lead"])
             copier = None
             if request.POST.get("copier"):
                 copier = Copier.objects.get(pk=request.POST["copier"])
+            unit = None
+            if request.POST.get("unit"):
+                unit = CopierUnit.objects.get(pk=request.POST["unit"])
+                # Auto-completar modelo si no se eligió uno del catálogo
+                if not copier and unit.copier_id:
+                    copier = unit.copier
             contract = RentalContract.objects.create(
                 lead=lead,
                 copier=copier,
+                unit=unit,
                 equipment_description=request.POST.get("equipment_description", ""),
                 contract_number=request.POST.get("contract_number") or _next_contract_number(),
                 status=request.POST.get("status", "active"),
@@ -559,7 +569,7 @@ class ContractDetailView(View):
 
     def _get_context(self, contract):
         from apps.leads.models import Lead, RentalContract, MeterReading
-        from apps.catalog.models import Copier
+        from apps.catalog.models import Copier, CopierUnit
         import json
 
         readings = list(MeterReading.objects.filter(contract=contract).order_by("-reading_date")[:24])
@@ -593,10 +603,21 @@ class ContractDetailView(View):
             "included": included,
         } for r in chart_src])
 
+        # Unidades disponibles + la actualmente asignada (para que aparezca en el select)
+        unit_qs = CopierUnit.objects.select_related("copier").filter(
+            status=CopierUnit.UnitStatus.AVAILABLE
+        ).order_by("copier__brand", "serial_number")
+        if contract.unit_id:
+            from django.db.models import Q as _Q
+            unit_qs = CopierUnit.objects.select_related("copier").filter(
+                _Q(status=CopierUnit.UnitStatus.AVAILABLE) | _Q(pk=contract.unit_id)
+            ).order_by("copier__brand", "serial_number")
+
         return {
             "contract":       contract,
             "lead_list":      Lead.objects.order_by("full_name"),
             "copier_list":    Copier.objects.filter(status="published").order_by("name"),
+            "unit_list":      unit_qs,
             "status_choices": RentalContract.Status.choices,
             "meter_readings": readings,
             "is_edit":        True,
@@ -615,13 +636,28 @@ class ContractDetailView(View):
 
     def post(self, request, pk):
         from apps.leads.models import Lead, RentalContract
-        from apps.catalog.models import Copier
+        from apps.catalog.models import Copier, CopierUnit
         contract = self._get_contract(pk)
         try:
             contract.lead   = Lead.objects.get(pk=request.POST["lead"])
             contract.copier = None
             if request.POST.get("copier"):
                 contract.copier = Copier.objects.get(pk=request.POST["copier"])
+            # Unidad física
+            new_unit_id = request.POST.get("unit") or None
+            prev_unit_id = contract.unit_id
+            contract.unit = CopierUnit.objects.get(pk=new_unit_id) if new_unit_id else None
+            # Si se cambia la unidad, liberar la anterior
+            if prev_unit_id and prev_unit_id != contract.unit_id:
+                other_active = RentalContract.objects.filter(
+                    unit_id=prev_unit_id, status=RentalContract.Status.ACTIVE
+                ).exclude(pk=pk).exists()
+                if not other_active:
+                    CopierUnit.objects.filter(pk=prev_unit_id).update(
+                        status=CopierUnit.UnitStatus.AVAILABLE
+                    )
+            if not contract.copier and contract.unit_id:
+                contract.copier = contract.unit.copier
             contract.equipment_description = request.POST.get("equipment_description", "")
             contract.contract_number       = request.POST.get("contract_number", contract.contract_number)
             contract.status      = request.POST.get("status", contract.status)

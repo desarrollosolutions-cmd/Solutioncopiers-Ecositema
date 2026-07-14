@@ -74,8 +74,33 @@
         <div class="da-card-header">Equipo entregado</div>
         <div class="da-card-body">
           <div style="display:flex;flex-direction:column;gap:.875rem;">
+
+            {# ── Unidad física (serial) ── #}
             <div class="da-field">
-              <label>Fotocopiadora del catálogo <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+              <label>
+                Unidad física (serial)
+                {% if is_edit and contract.unit %}
+                  <span style="font-size:.72rem;font-weight:400;margin-left:.5rem;padding:.15rem .5rem;border-radius:.25rem;background:color-mix(in srgb,#10B981 10%,transparent);color:#10B981;">
+                    En campo
+                  </span>
+                {% endif %}
+              </label>
+              <select name="unit" class="da-input" id="unit-select">
+                <option value="">— Sin unidad asignada —</option>
+                {% for u in unit_list %}
+                <option value="{{ u.pk }}"
+                  data-desc="{{ u.copier.brand }} {{ u.copier.model_number }} — SN: {{ u.serial_number }}"
+                  {% if is_edit and contract.unit_id == u.pk %}selected{% endif %}>
+                  {{ u.copier.brand }} {{ u.copier.model_number }} · SN: {{ u.serial_number }}
+                  {% if u.status == "in_field" %} [En campo]{% endif %}
+                </option>
+                {% endfor %}
+              </select>
+              <span style="font-size:.68rem;color:var(--color-text-muted);">Al seleccionar, la unidad pasa automáticamente a estado "En campo"</span>
+            </div>
+
+            <div class="da-field">
+              <label>Fotocopiadora del catálogo <span style="color:var(--color-text-muted);font-weight:400;">(opcional — se completa al elegir la unidad)</span></label>
               <select name="copier" class="da-input">
                 <option value="">— Seleccionar del catálogo —</option>
                 {% for cop in copier_list %}
@@ -86,8 +111,11 @@
               </select>
             </div>
             <div class="da-field">
-              <label>Descripción completa del equipo (marca, modelo, serial)</label>
-              <input type="text" name="equipment_description" value="{% if is_edit %}{{ contract.equipment_description }}{% endif %}" class="da-input" placeholder="Ej: Ricoh MP 2555SP — S/N: X12345678" required>
+              <label>Descripción completa del equipo <span style="color:var(--color-text-muted);font-weight:400;">(marca, modelo, serial)</span></label>
+              <input type="text" name="equipment_description" id="equip-desc"
+                value="{% if is_edit %}{{ contract.equipment_description }}{% endif %}"
+                class="da-input" placeholder="Ej: Ricoh MP 2555SP — S/N: X12345678" required>
+              <span style="font-size:.68rem;color:var(--color-text-muted);">Se auto-completa al elegir una unidad del inventario</span>
             </div>
           </div>
         </div>
@@ -401,6 +429,14 @@
 </div>
 
 <script>
+// ── Auto-completar descripción al elegir unidad ──
+document.getElementById('unit-select').addEventListener('change', function() {
+  var opt = this.options[this.selectedIndex];
+  var desc = opt.getAttribute('data-desc') || '';
+  var descField = document.getElementById('equip-desc');
+  if (desc && descField) { descField.value = desc; }
+});
+
 // ── Preview cálculo antes de guardar ──
 const INCLUDED = {{ copies_included|default:0 }};
 const RATE     = {{ contract.copy_overage_rate|default:"0" }};

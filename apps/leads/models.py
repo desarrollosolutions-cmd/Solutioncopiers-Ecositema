@@ -201,6 +201,12 @@ class RentalContract(TimeStampedModel):
         null=True, blank=True, related_name="rental_contracts",
         verbose_name=_("fotocopiadora"),
     )
+    unit = models.ForeignKey(
+        "catalog.CopierUnit", on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="rental_contracts",
+        verbose_name=_("unidad física (serial)"),
+        help_text=_("Unidad específica entregada al cliente."),
+    )
     equipment_description = models.CharField(
         _("descripción del equipo"), max_length=300,
         help_text=_("Marca, modelo y serial del equipo entregado."),
@@ -233,6 +239,21 @@ class RentalContract(TimeStampedModel):
 
     def __str__(self):
         return f"{self.contract_number} — {self.lead.full_name}"
+
+    def save(self, *args, **kwargs):
+        # Sincroniza el status de la unidad física con el del contrato
+        if self.unit_id:
+            from apps.catalog.models import CopierUnit
+            if self.status == self.Status.ACTIVE:
+                CopierUnit.objects.filter(pk=self.unit_id).update(status=CopierUnit.UnitStatus.IN_FIELD)
+            elif self.status in (self.Status.EXPIRED, self.Status.CANCELLED):
+                # Solo libera si no tiene otro contrato activo apuntando a la misma unidad
+                other_active = RentalContract.objects.filter(
+                    unit_id=self.unit_id, status=self.Status.ACTIVE
+                ).exclude(pk=self.pk).exists()
+                if not other_active:
+                    CopierUnit.objects.filter(pk=self.unit_id).update(status=CopierUnit.UnitStatus.AVAILABLE)
+        super().save(*args, **kwargs)
 
     @property
     def days_until_expiry(self):
