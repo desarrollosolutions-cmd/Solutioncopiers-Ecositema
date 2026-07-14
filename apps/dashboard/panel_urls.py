@@ -24,9 +24,10 @@ urlpatterns = [
     path("tareas/<int:pk>/toggle/",            views.PanelTaskToggleView.as_view(),    name="task_toggle"),
 
     # Tickets
-    path("tickets/",           views.PanelTicketListView.as_view(),   name="tickets"),
-    path("tickets/nuevo/",     views.PanelTicketCreateView.as_view(), name="ticket_create"),
-    path("tickets/<int:pk>/",  views.PanelTicketDetailView.as_view(), name="ticket_detail"),
+    path("tickets/",                     views.PanelTicketListView.as_view(),         name="tickets"),
+    path("tickets/nuevo/",               views.PanelTicketCreateView.as_view(),       name="ticket_create"),
+    path("tickets/<int:pk>/",            views.PanelTicketDetailView.as_view(),       name="ticket_detail"),
+    path("tickets/<int:pk>/estado/",     views.PanelTicketStatusUpdateView.as_view(), name="ticket_status"),
 
     # Contratos
     path("contratos/", views.PanelContractListView.as_view(), name="contracts"),

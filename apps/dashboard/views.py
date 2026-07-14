@@ -770,6 +770,7 @@ class TicketCreateView(View):
                 priority            = request.POST.get("priority", "medium"),
                 status              = request.POST.get("status", "open"),
                 description         = request.POST.get("description", ""),
+                address             = request.POST.get("address", ""),
                 resolution_notes    = request.POST.get("resolution_notes", ""),
                 assigned_to         = assigned,
                 scheduled_for       = request.POST.get("scheduled_for") or None,
@@ -833,6 +834,7 @@ class TicketDetailView(View):
             ticket.priority           = request.POST.get("priority", ticket.priority)
             ticket.status             = request.POST.get("status", ticket.status)
             ticket.description        = request.POST.get("description", "")
+            ticket.address            = request.POST.get("address", ticket.address)
             ticket.resolution_notes   = request.POST.get("resolution_notes", "")
             ticket.scheduled_for      = request.POST.get("scheduled_for") or None
             if ticket.status == "resolved" and old_status != "resolved":
@@ -2493,7 +2495,36 @@ class PanelTicketDetailView(View):
 
         ticket.save()
         _log_activity(request, "update_ticket", f"Actualizo ticket #{ticket.ticket_number} estado: {ticket.status}", related_pk=pk)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            from django.http import JsonResponse
+            return JsonResponse({"ok": True, "status": ticket.status})
         return redirect("panel:ticket_detail", pk=pk)
+
+
+@panel_decorator
+class PanelTicketStatusUpdateView(View):
+    """POST /panel/tickets/<pk>/estado/ — actualización AJAX de estado desde el turno."""
+
+    def post(self, request, pk):
+        if not request.user.has_perm("dashboard.panel_tickets"):
+            from django.http import JsonResponse
+            return JsonResponse({"ok": False, "error": "Sin permiso"}, status=403)
+        from apps.leads.models import ServiceTicket
+        from django.http import JsonResponse
+        ticket = get_object_or_404(ServiceTicket, pk=pk)
+        new_status = request.POST.get("status", "")
+        valid = [s for s, _ in ServiceTicket.Status.choices]
+        if new_status in valid:
+            ticket.status = new_status
+            notes = request.POST.get("resolution_notes", "").strip()
+            if notes:
+                ticket.resolution_notes = notes
+            if new_status in ("resolved", "closed") and not ticket.resolved_at:
+                ticket.resolved_at = timezone.now()
+            ticket.save()
+            _log_activity(request, "update_ticket", f"Turno — ticket #{ticket.ticket_number} → {ticket.status}", related_pk=pk)
+            return JsonResponse({"ok": True, "status": ticket.status})
+        return JsonResponse({"ok": False, "error": "Estado inválido"}, status=400)
 
 
 @panel_decorator
@@ -2571,6 +2602,7 @@ class PanelTicketCreateView(View):
             priority=request.POST.get("priority", "medium"),
             status="open",
             description=request.POST.get("description", ""),
+            address=request.POST.get("address", ""),
             assigned_to=assigned_to,
             scheduled_for=scheduled_for,
         )

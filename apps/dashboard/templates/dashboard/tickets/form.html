@@ -86,6 +86,10 @@
               <label>Descripción del problema</label>
               <textarea name="description" class="da-input" rows="4" required style="resize:vertical;">{% if is_edit %}{{ ticket.description }}{% endif %}</textarea>
             </div>
+            <div class="da-field da-form-full">
+              <label>Dirección de visita <span style="color:var(--color-text-muted);font-weight:400;">(dónde debe ir el técnico)</span></label>
+              <input type="text" name="address" value="{% if is_edit %}{{ ticket.address }}{% endif %}" class="da-input" placeholder="Ej: Calle 50 # 12-34, Medellín">
+            </div>
           </div>
         </div>
       </div>

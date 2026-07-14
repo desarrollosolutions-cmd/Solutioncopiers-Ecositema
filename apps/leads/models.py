@@ -299,6 +299,7 @@ class ServiceTicket(TimeStampedModel):
         default=Status.OPEN, db_index=True,
     )
     description = models.TextField(_("descripción del problema"))
+    address = models.CharField(_("dirección de visita"), max_length=300, blank=True)
     resolution_notes = models.TextField(_("notas de resolución"), blank=True)
     assigned_to = models.ForeignKey(
         "auth.User", on_delete=models.SET_NULL, null=True, blank=True,

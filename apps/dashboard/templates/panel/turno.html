@@ -129,16 +129,40 @@
     <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-muted);padding:.5rem 0 .25rem;">Tickets de servicio</div>
   </div>
   {% for ticket in tickets %}
-  <a href="{% url 'panel:ticket_detail' ticket.pk %}" style="display:flex;align-items:center;gap:.875rem;padding:.75rem 1.25rem;text-decoration:none;transition:background .15s;border-top:1px solid color-mix(in srgb,var(--color-border) 55%,transparent);" onmouseover="this.style.background='color-mix(in srgb,var(--color-primary) 4%,transparent)'" onmouseout="this.style.background=''">
-    <div style="width:2rem;height:2rem;border-radius:.5rem;background:color-mix(in srgb,var(--color-primary) 10%,transparent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg fill="none" stroke="var(--color-primary)" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+  <div style="padding:.875rem 1.25rem;border-top:1px solid color-mix(in srgb,var(--color-border) 55%,transparent);">
+    <div style="display:flex;align-items:flex-start;gap:.875rem;">
+      <div style="width:2rem;height:2rem;border-radius:.5rem;background:color-mix(in srgb,var(--color-primary) 10%,transparent);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;">
+        <svg fill="none" stroke="var(--color-primary)" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">{{ ticket.equipment_description|default:ticket.description|truncatechars:70 }}</div>
+        <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.15rem;">
+          {{ ticket.lead.full_name }} · {{ ticket.ticket_number }}
+          {% if ticket.scheduled_for %} · <span style="color:var(--color-warning);">{{ ticket.scheduled_for|date:"d/m H:i" }}</span>{% endif %}
+        </div>
+        {% if ticket.address %}
+        <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;display:flex;align-items:center;gap:.25rem;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.75rem;height:.75rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          {{ ticket.address }}
+        </div>
+        <a href="https://maps.google.com/?q={{ ticket.address|urlencode }},+Colombia" target="_blank"
+           style="font-size:.68rem;color:var(--color-primary);text-decoration:none;font-weight:600;margin-top:.15rem;display:inline-flex;align-items:center;gap:.2rem;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.7rem;height:.7rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          Ver en Google Maps
+        </a>
+        {% endif %}
+        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;">
+          <span class="pn-badge pn-badge-{{ ticket.status }}" id="tbadge-{{ ticket.pk }}">{{ ticket.get_status_display }}</span>
+          <button onclick="openTicketModal({{ ticket.pk }}, '{{ ticket.ticket_number|escapejs }}', '{{ ticket.status }}')"
+            style="font-size:.7rem;font-weight:700;padding:.25rem .75rem;border-radius:.375rem;border:1.5px solid var(--color-primary);background:transparent;color:var(--color-primary);cursor:pointer;display:inline-flex;align-items:center;gap:.3rem;transition:background .15s;"
+            onmouseover="this.style.background='color-mix(in srgb,var(--color-primary) 8%,transparent)'" onmouseout="this.style.background='transparent'">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.75rem;height:.75rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            Gestionar
+          </button>
+        </div>
+      </div>
     </div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ ticket.equipment_description|default:ticket.description }}</div>
-      <div style="font-size:.72rem;color:var(--color-text-muted);">{{ ticket.lead.full_name }} · {{ ticket.ticket_number }}{% if ticket.scheduled_for %} · <span style="color:var(--color-warning);">{{ ticket.scheduled_for|date:"d/m H:i" }}</span>{% endif %}</div>
-    </div>
-    <span class="pn-badge pn-badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
-  </a>
+  </div>
   {% endfor %}
   {% endif %}
 
@@ -235,6 +259,38 @@
   touch-action: manipulation;
 }
 </style>
+
+{# ── Modal gestionar ticket ── #}
+<div id="pn-ticket-modal" class="pndm-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this)closeTicketModal()">
+  <div class="pndm-sheet" onclick="event.stopPropagation()">
+    <div class="pndm-handle"></div>
+    <div style="font-size:.9375rem;font-weight:700;color:var(--color-text-primary);margin-bottom:.25rem;" id="pn-tmodal-title">Gestionar ticket</div>
+    <div style="font-size:.75rem;color:var(--color-text-muted);margin-bottom:1.25rem;" id="pn-tmodal-num"></div>
+
+    <div style="margin-bottom:1rem;">
+      <label class="pndm-label">Cambiar estado</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;" id="pn-status-btns">
+        <button type="button" data-status="in_progress"
+          style="padding:.625rem;border-radius:.625rem;border:1.5px solid color-mix(in srgb,#7C3AED 40%,var(--color-border));background:color-mix(in srgb,#7C3AED 6%,transparent);color:#7C3AED;font-size:.78rem;font-weight:700;cursor:pointer;"
+          onclick="setTicketStatus('in_progress')">▶ En proceso</button>
+        <button type="button" data-status="waiting_parts"
+          style="padding:.625rem;border-radius:.625rem;border:1.5px solid color-mix(in srgb,#D97706 40%,var(--color-border));background:color-mix(in srgb,#D97706 6%,transparent);color:#D97706;font-size:.78rem;font-weight:700;cursor:pointer;"
+          onclick="setTicketStatus('waiting_parts')">⏳ Esperando repuestos</button>
+        <button type="button" data-status="resolved"
+          style="padding:.625rem;border-radius:.625rem;border:1.5px solid color-mix(in srgb,#10B981 40%,var(--color-border));background:color-mix(in srgb,#10B981 6%,transparent);color:#10B981;font-size:.78rem;font-weight:700;cursor:pointer;grid-column:1/-1;"
+          onclick="setTicketStatus('resolved')">✓ Marcar como Resuelto</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+      <label class="pndm-label" for="pn-tnotes">Notas de resolución (opcional)</label>
+      <textarea class="pndm-input pndm-input-ta" id="pn-tnotes" rows="3" placeholder="Describe lo que hiciste, repuestos usados, observaciones…"></textarea>
+    </div>
+
+    <button type="button" id="pn-tbtn-confirm" class="pndm-btn-confirm" onclick="submitTicketUpdate()">Guardar cambios</button>
+    <button type="button" class="pndm-btn-cancel" onclick="closeTicketModal()">Cancelar</button>
+  </div>
+</div>
 
 <div id="pn-delivery-modal" class="pndm-overlay" role="dialog" aria-modal="true">
   <div class="pndm-sheet" onclick="event.stopPropagation()">
@@ -442,6 +498,83 @@ function submitDelivery() {
 document.getElementById('pn-delivery-modal').addEventListener('click', function(e) {
   if (e.target === this) closeDModal();
 });
+
+/* ── Gestionar ticket ── */
+let _currentTicketId = null;
+let _currentTicketStatus = null;
+
+const STATUS_LABELS = {
+  open: 'Abierto', in_progress: 'En proceso',
+  waiting_parts: 'Esperando repuestos', resolved: 'Resuelto', closed: 'Cerrado'
+};
+const STATUS_CLASSES = {
+  open: 'pn-badge-open', in_progress: 'pn-badge-in_progress',
+  waiting_parts: 'pn-badge-waiting_parts', resolved: 'pn-badge-resolved', closed: 'pn-badge-closed'
+};
+
+function openTicketModal(pk, num, status) {
+  _currentTicketId = pk;
+  _currentTicketStatus = status;
+  document.getElementById('pn-tmodal-title').textContent = 'Gestionar ticket';
+  document.getElementById('pn-tmodal-num').textContent = num;
+  document.getElementById('pn-tnotes').value = '';
+  // Resaltar botón del estado actual
+  document.querySelectorAll('#pn-status-btns button').forEach(function(btn) {
+    btn.style.opacity = btn.dataset.status === status ? '.4' : '1';
+    btn.style.pointerEvents = btn.dataset.status === status ? 'none' : '';
+  });
+  document.getElementById('pn-ticket-modal').classList.add('pndm-open');
+  document.body.style.position = 'fixed';
+  document.body.style.top = '-' + window.scrollY + 'px';
+  document.body.style.width = '100%';
+}
+
+function closeTicketModal() {
+  document.getElementById('pn-ticket-modal').classList.remove('pndm-open');
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+}
+
+function setTicketStatus(status) {
+  _currentTicketStatus = status;
+  document.querySelectorAll('#pn-status-btns button').forEach(function(btn) {
+    btn.style.opacity = btn.dataset.status === status ? '.4' : '1';
+    btn.style.pointerEvents = btn.dataset.status === status ? 'none' : '';
+  });
+}
+
+function submitTicketUpdate() {
+  if (!_currentTicketId) return;
+  const btn = document.getElementById('pn-tbtn-confirm');
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+  const fd = new FormData();
+  fd.append('csrfmiddlewaretoken', CSRF_PN);
+  fd.append('status', _currentTicketStatus);
+  fd.append('resolution_notes', document.getElementById('pn-tnotes').value);
+  fetch('/panel/tickets/' + _currentTicketId + '/estado/', { method: 'POST', body: fd })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      if (data.ok) {
+        // Actualizar badge en la tarjeta sin recargar
+        var badge = document.getElementById('tbadge-' + _currentTicketId);
+        if (badge) {
+          Object.values(STATUS_CLASSES).forEach(function(c) { badge.classList.remove(c); });
+          badge.classList.add(STATUS_CLASSES[_currentTicketStatus] || '');
+          badge.textContent = STATUS_LABELS[_currentTicketStatus] || _currentTicketStatus;
+        }
+        closeTicketModal();
+      } else {
+        btn.disabled = false; btn.textContent = 'Guardar cambios';
+        alert('Error al guardar');
+      }
+    })
+    .catch(function() {
+      btn.disabled = false; btn.textContent = 'Guardar cambios';
+      alert('Error de conexión');
+    });
+}
 
 // GPS automático cuando el turno está activo
 {% if location and location.is_on_shift %}
