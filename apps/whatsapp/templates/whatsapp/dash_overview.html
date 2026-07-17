@@ -1,0 +1,140 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}WhatsApp CRM — Administración{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div style="display:flex;align-items:center;gap:.75rem;">
+    <div style="width:2.5rem;height:2.5rem;border-radius:.625rem;background:color-mix(in srgb,#25D366 12%,transparent);border:1px solid color-mix(in srgb,#25D366 25%,transparent);display:flex;align-items:center;justify-content:center;">
+      <svg viewBox="0 0 24 24" fill="#25D366" style="width:1.25rem;height:1.25rem;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </div>
+    <h1 class="da-page-title">WhatsApp CRM</h1>
+  </div>
+  <a href="{% url 'wa:dash_labels' %}" class="da-btn da-btn-secondary">Gestionar etiquetas</a>
+</div>
+
+{# ── Métricas ── #}
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.875rem;margin-bottom:1.5rem;">
+  {% for key, color, icon, label in "total,var(--color-primary),📊,Total|new,#F59E0B,🆕,Nuevas|open,#25D366,✉️,Abiertas|pending,#3B82F6,⏳,Pendientes|resolved,var(--color-text-muted),✓,Resueltas|unread,#EF4444,🔴,Sin leer"|split:"|" %}
+  {% endfor %}
+  {% with m=metrics %}
+  <div class="da-card" style="padding:.875rem;text-align:center;">
+    <div style="font-size:1.5rem;font-weight:800;color:var(--color-primary);">{{ m.total }}</div>
+    <div style="font-size:.7rem;color:var(--color-text-muted);margin-top:.25rem;">Total</div>
+  </div>
+  <div class="da-card" style="padding:.875rem;text-align:center;">
+    <div style="font-size:1.5rem;font-weight:800;color:#F59E0B;">{{ m.new }}</div>
+    <div style="font-size:.7rem;color:var(--color-text-muted);margin-top:.25rem;">Nuevas</div>
+  </div>
+  <div class="da-card" style="padding:.875rem;text-align:center;">
+    <div style="font-size:1.5rem;font-weight:800;color:#25D366;">{{ m.open }}</div>
+    <div style="font-size:.7rem;color:var(--color-text-muted);margin-top:.25rem;">Abiertas</div>
+  </div>
+  <div class="da-card" style="padding:.875rem;text-align:center;">
+    <div style="font-size:1.5rem;font-weight:800;color:#3B82F6;">{{ m.pending }}</div>
+    <div style="font-size:.7rem;color:var(--color-text-muted);margin-top:.25rem;">Pendientes</div>
+  </div>
+  <div class="da-card" style="padding:.875rem;text-align:center;">
+    <div style="font-size:1.5rem;font-weight:800;color:var(--color-text-muted);">{{ m.resolved }}</div>
+    <div style="font-size:.7rem;color:var(--color-text-muted);margin-top:.25rem;">Resueltas</div>
+  </div>
+  <div class="da-card" style="padding:.875rem;text-align:center;">
+    <div style="font-size:1.5rem;font-weight:800;color:#EF4444;">{{ m.unread }}</div>
+    <div style="font-size:.7rem;color:var(--color-text-muted);margin-top:.25rem;">Sin leer</div>
+  </div>
+  {% endwith %}
+</div>
+
+{# ── Filtros ── #}
+<form method="get" style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+  <input type="text" name="q" value="{{ current_q }}" class="da-input" placeholder="Buscar contacto…" style="flex:1;min-width:180px;">
+  <select name="status" class="da-input" style="width:auto;" onchange="this.form.submit()">
+    <option value="">Todos los estados</option>
+    {% for val, lbl in status_choices %}
+    <option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <select name="label" class="da-input" style="width:auto;" onchange="this.form.submit()">
+    <option value="">Todas las etiquetas</option>
+    {% for lbl in labels %}
+    <option value="{{ lbl.pk }}" {% if current_label == lbl.pk|stringformat:"s" %}selected{% endif %}>{{ lbl.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="asesora" class="da-input" style="width:auto;" onchange="this.form.submit()">
+    <option value="">Todas las asesoras</option>
+    {% for u in asesoras %}
+    <option value="{{ u.pk }}" {% if current_asesora == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="da-btn da-btn-primary">Filtrar</button>
+</form>
+
+{# ── Tabla ── #}
+<div class="da-card">
+  <div style="overflow-x:auto;">
+    <table class="da-table">
+      <thead>
+        <tr>
+          <th>Contacto</th>
+          <th>Último mensaje</th>
+          <th>Estado</th>
+          <th>Etiquetas</th>
+          <th>Asesora</th>
+          <th>Sin leer</th>
+          <th>Asignar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for conv in conversations %}
+        <tr>
+          <td>
+            <a href="{% url 'wa:panel_conversation' conv.pk %}" style="font-weight:700;color:var(--color-primary);text-decoration:none;">
+              {{ conv.contact_name|default:conv.phone }}
+            </a>
+            <div style="font-size:.68rem;color:var(--color-text-muted);">{{ conv.phone }}</div>
+            {% if conv.lead %}<div style="font-size:.68rem;color:var(--color-text-muted);">→ {{ conv.lead.full_name }}</div>{% endif %}
+          </td>
+          <td style="font-size:.78rem;max-width:200px;">
+            <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--color-text-secondary);">{{ conv.last_message_preview|default:"—" }}</div>
+            {% if conv.last_message_at %}<div style="font-size:.65rem;color:var(--color-text-muted);">{{ conv.last_message_at|timesince }}</div>{% endif %}
+          </td>
+          <td>
+            <span style="font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;
+              background:{%if conv.status=='new'%}color-mix(in srgb,#F59E0B 12%,transparent){%elif conv.status=='open'%}color-mix(in srgb,#25D366 12%,transparent){%elif conv.status=='pending'%}color-mix(in srgb,#3B82F6 12%,transparent){%else%}var(--color-bg-alt){%endif%};
+              color:{%if conv.status=='new'%}#F59E0B{%elif conv.status=='open'%}#25D366{%elif conv.status=='pending'%}#3B82F6{%else%}var(--color-text-muted){%endif%};">
+              {{ conv.get_status_display }}
+            </span>
+          </td>
+          <td>
+            {% for lbl in conv.labels.all %}
+            <span style="font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:9999px;background:{{ lbl.color }}18;color:{{ lbl.color }};display:inline-block;margin:.1rem;">{{ lbl.name }}</span>
+            {% empty %}<span style="color:var(--color-text-muted);font-size:.72rem;">—</span>{% endfor %}
+          </td>
+          <td style="font-size:.78rem;">
+            {% if conv.assigned_to %}{{ conv.assigned_to.get_full_name|default:conv.assigned_to.username }}
+            {% else %}<span style="color:var(--color-text-muted);">Sin asignar</span>{% endif %}
+          </td>
+          <td style="text-align:center;">
+            {% if conv.unread_count %}<span style="background:#25D366;color:#fff;font-size:.65rem;font-weight:800;padding:.15rem .5rem;border-radius:9999px;">{{ conv.unread_count }}</span>
+            {% else %}<span style="color:var(--color-text-muted);">—</span>{% endif %}
+          </td>
+          <td>
+            <form method="post" action="{% url 'wa:dash_assign' conv.pk %}" style="display:flex;gap:.375rem;">
+              {% csrf_token %}
+              <select name="assigned_to" class="da-input" style="font-size:.72rem;padding:.25rem .5rem;">
+                <option value="">—</option>
+                {% for u in asesoras %}
+                <option value="{{ u.pk }}" {% if conv.assigned_to_id == u.pk %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="da-btn da-btn-secondary da-btn-sm">✓</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--color-text-muted);">Sin conversaciones</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "panel/_base.html" %}
+{% block title %}WhatsApp — Inbox{% endblock %}
+
+{% block content %}
+<style>
+.wa-inbox-wrap   { display:grid; grid-template-columns:300px 1fr; height:calc(100vh - 5rem); gap:0; border:1px solid var(--color-border); border-radius:.875rem; overflow:hidden; }
+.wa-sidebar      { border-right:1px solid var(--color-border); display:flex; flex-direction:column; background:var(--color-surface); }
+.wa-sidebar-head { padding:1rem; border-bottom:1px solid var(--color-border); }
+.wa-filter-row   { display:flex; gap:.375rem; flex-wrap:wrap; padding:.625rem 1rem; border-bottom:1px solid var(--color-border); }
+.wa-filter-chip  { font-size:.68rem; font-weight:700; padding:.2rem .6rem; border-radius:9999px; border:1.5px solid var(--color-border); background:transparent; color:var(--color-text-muted); cursor:pointer; transition:.15s; }
+.wa-filter-chip.active, .wa-filter-chip:hover { border-color:var(--color-primary); color:var(--color-primary); background:color-mix(in srgb,var(--color-primary) 8%,transparent); }
+.wa-conv-list    { flex:1; overflow-y:auto; }
+.wa-conv-item    { display:flex; gap:.75rem; align-items:flex-start; padding:.875rem 1rem; border-bottom:1px solid var(--color-border); cursor:pointer; text-decoration:none; transition:background .12s; }
+.wa-conv-item:hover { background:var(--color-bg-alt); }
+.wa-conv-item.unread { background:color-mix(in srgb,var(--color-primary) 4%,transparent); }
+.wa-conv-avatar  { width:2.5rem; height:2.5rem; border-radius:9999px; background:color-mix(in srgb,#25D366 15%,transparent); border:1.5px solid color-mix(in srgb,#25D366 30%,var(--color-border)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.875rem; color:#25D366; flex-shrink:0; }
+.wa-conv-body    { flex:1; min-width:0; }
+.wa-conv-name    { font-size:.8125rem; font-weight:700; color:var(--color-text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wa-conv-preview { font-size:.72rem; color:var(--color-text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:.15rem; }
+.wa-conv-meta    { display:flex; flex-direction:column; align-items:flex-end; gap:.25rem; flex-shrink:0; }
+.wa-conv-time    { font-size:.65rem; color:var(--color-text-muted); }
+.wa-badge        { background:#25D366; color:#fff; font-size:.6rem; font-weight:800; padding:.1rem .45rem; border-radius:9999px; }
+.wa-status-dot   { width:.5rem; height:.5rem; border-radius:9999px; display:inline-block; }
+.wa-empty        { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--color-text-muted); gap:.75rem; font-size:.875rem; }
+.wa-label-chip   { font-size:.6rem; font-weight:700; padding:.1rem .45rem; border-radius:9999px; }
+
+@media (max-width:768px) {
+  .wa-inbox-wrap { grid-template-columns:1fr; }
+}
+</style>
+
+<div class="pn-page-header" style="margin-bottom:1rem;">
+  <div style="display:flex;align-items:center;gap:.75rem;">
+    <div style="width:2.25rem;height:2.25rem;border-radius:.5rem;background:color-mix(in srgb,#25D366 15%,transparent);border:1.5px solid color-mix(in srgb,#25D366 30%,transparent);display:flex;align-items:center;justify-content:center;">
+      <svg viewBox="0 0 24 24" fill="#25D366" style="width:1.125rem;height:1.125rem;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </div>
+    <h1 class="pn-page-title" style="margin:0;">WhatsApp</h1>
+    {% if total_unread %}<span class="wa-badge">{{ total_unread }}</span>{% endif %}
+  </div>
+  <div style="display:flex;gap:.5rem;">
+    <a href="{% url 'wa:simulator' %}" class="pn-btn pn-btn-secondary" style="font-size:.78rem;">⚡ Simular mensaje</a>
+  </div>
+</div>
+
+<div class="wa-inbox-wrap">
+  {# ── Sidebar de conversaciones ── #}
+  <div class="wa-sidebar">
+    <div class="wa-sidebar-head">
+      <form method="get">
+        <input type="text" name="q" value="{{ current_q }}" class="pn-input" placeholder="Buscar contacto…" style="font-size:.8rem;">
+        <input type="hidden" name="status" value="{{ current_status }}">
+        <input type="hidden" name="mine" value="{{ mine }}">
+      </form>
+    </div>
+
+    {# Filtros de estado #}
+    <div class="wa-filter-row">
+      <a href="?mine={{ mine }}" class="wa-filter-chip {% if not current_status %}active{% endif %}">Todas</a>
+      {% for val, lbl in status_choices %}
+      <a href="?status={{ val }}&mine={{ mine }}" class="wa-filter-chip {% if current_status == val %}active{% endif %}">{{ lbl }}</a>
+      {% endfor %}
+    </div>
+
+    {# Filtro mías / todas #}
+    <div style="padding:.5rem 1rem;display:flex;gap:.5rem;border-bottom:1px solid var(--color-border);">
+      <a href="?mine=1&status={{ current_status }}" class="wa-filter-chip {% if mine == '1' %}active{% endif %}" style="font-size:.65rem;">Solo mis chats</a>
+      <a href="?mine=0&status={{ current_status }}" class="wa-filter-chip {% if mine == '0' %}active{% endif %}" style="font-size:.65rem;">Todas</a>
+    </div>
+
+    {# Lista de conversaciones #}
+    <div class="wa-conv-list">
+      {% for conv in conversations %}
+      <a href="{% url 'wa:panel_conversation' conv.pk %}" class="wa-conv-item {% if conv.unread_count %}unread{% endif %}">
+        <div class="wa-conv-avatar">{{ conv.contact_name|first|upper|default:"?" }}</div>
+        <div class="wa-conv-body">
+          <div class="wa-conv-name">
+            {{ conv.contact_name|default:conv.phone }}
+            {% for lbl in conv.labels.all %}
+            <span class="wa-label-chip" style="background:{{ lbl.color }}20;color:{{ lbl.color }};">{{ lbl.name }}</span>
+            {% endfor %}
+          </div>
+          <div class="wa-conv-preview">{{ conv.last_message_preview|default:"Sin mensajes" }}</div>
+        </div>
+        <div class="wa-conv-meta">
+          {% if conv.last_message_at %}
+          <span class="wa-conv-time">{{ conv.last_message_at|timesince|truncatewords:2 }}</span>
+          {% endif %}
+          {% if conv.unread_count %}
+          <span class="wa-badge">{{ conv.unread_count }}</span>
+          {% endif %}
+          <span class="wa-status-dot" style="background:{%if conv.status == 'new'%}#F59E0B{%elif conv.status == 'open'%}#25D366{%elif conv.status == 'pending'%}#3B82F6{%elif conv.status == 'resolved'%}var(--color-text-muted){%else%}#EF4444{%endif%};"></span>
+        </div>
+      </a>
+      {% empty %}
+      <div class="wa-empty">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="width:2.5rem;height:2.5rem;opacity:.3;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
+        No hay conversaciones
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# ── Panel derecho vacío cuando no hay conversación seleccionada ── #}
+  <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;color:var(--color-text-muted);background:var(--color-bg-alt);">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="width:4rem;height:4rem;opacity:.15;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
+    <p style="font-size:.875rem;">Selecciona una conversación</p>
+  </div>
+</div>
+{% endblock %}

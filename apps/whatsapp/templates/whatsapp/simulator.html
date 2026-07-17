@@ -1,0 +1,69 @@
+{% extends "panel/_base.html" %}
+{% block title %}Simulador WhatsApp{% endblock %}
+
+{% block content %}
+<div class="pn-page-header">
+  <h1 class="pn-page-title">⚡ Simulador de mensajes WhatsApp</h1>
+  <a href="{% url 'wa:panel_inbox' %}" class="pn-btn pn-btn-secondary">← Inbox</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;max-width:900px;">
+
+  {# Formulario de simulación #}
+  <div class="pn-card">
+    <div class="pn-card-header">Simular mensaje entrante</div>
+    <div class="pn-card-body">
+      <form method="post" style="display:flex;flex-direction:column;gap:.875rem;">
+        {% csrf_token %}
+        <div class="pn-field">
+          <label class="pn-label">Número de teléfono *</label>
+          <input type="text" name="phone" class="pn-input" placeholder="573001234567" required>
+          <span style="font-size:.68rem;color:var(--color-text-muted);">Formato internacional sin + (ej: 573001234567)</span>
+        </div>
+        <div class="pn-field">
+          <label class="pn-label">Nombre del contacto</label>
+          <input type="text" name="contact_name" class="pn-input" placeholder="Ej: Carlos Gómez">
+        </div>
+        <div class="pn-field">
+          <label class="pn-label">Mensaje *</label>
+          <textarea name="body" class="pn-input" rows="4" required placeholder="Hola, necesito información sobre sus equipos…"></textarea>
+        </div>
+        <button type="submit" class="pn-btn pn-btn-primary" style="justify-content:center;">
+          Simular mensaje entrante
+        </button>
+      </form>
+
+      <div style="margin-top:1.25rem;padding:.875rem;background:color-mix(in srgb,#F59E0B 8%,transparent);border:1px solid color-mix(in srgb,#F59E0B 25%,transparent);border-radius:.625rem;font-size:.72rem;color:var(--color-text-secondary);">
+        <strong style="color:#F59E0B;">Modo prototipo</strong><br>
+        Este simulador crea mensajes directamente en la base de datos, simulando lo que haría el webhook de Meta. Al conectar las API keys reales, los mensajes llegarán automáticamente desde WhatsApp.
+      </div>
+    </div>
+  </div>
+
+  {# Conversaciones recientes #}
+  <div class="pn-card">
+    <div class="pn-card-header">Conversaciones recientes</div>
+    <div class="pn-card-body" style="padding:0;">
+      {% for conv in conversations %}
+      <a href="{% url 'wa:panel_conversation' conv.pk %}" style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-bottom:1px solid var(--color-border);text-decoration:none;transition:background .12s;" onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background=''">
+        <div style="width:2rem;height:2rem;border-radius:9999px;background:color-mix(in srgb,#25D366 12%,transparent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;color:#25D366;flex-shrink:0;">
+          {{ conv.contact_name|first|upper|default:"?" }}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ conv.contact_name|default:conv.phone }}</div>
+          <div style="font-size:.7rem;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ conv.last_message_preview|default:"—" }}</div>
+        </div>
+        <span style="font-size:.65rem;padding:.15rem .5rem;border-radius:9999px;font-weight:700;background:{%if conv.status=='new'%}color-mix(in srgb,#F59E0B 12%,transparent){%elif conv.status=='open'%}color-mix(in srgb,#25D366 12%,transparent){%else%}var(--color-bg-alt){%endif%};color:{%if conv.status=='new'%}#F59E0B{%elif conv.status=='open'%}#25D366{%else%}var(--color-text-muted){%endif%};">
+          {{ conv.get_status_display }}
+        </span>
+      </a>
+      {% empty %}
+      <div style="padding:2rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">
+        Sin conversaciones aún. ¡Simula la primera!
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

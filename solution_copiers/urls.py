@@ -32,6 +32,9 @@ urlpatterns = [
     # --- Portal de campo (mensajeros / técnicos) ---
     path("campo/", include(("apps.dashboard.campo_urls", "campo"), namespace="campo")),
 
+    # --- Módulo WhatsApp CRM ---
+    path("whatsapp/", include(("apps.whatsapp.urls", "wa"), namespace="wa")),
+
     # --- Pagos y checkout público ---
     path("pago/", include(("apps.payments.urls", "payments"), namespace="payments")),
 

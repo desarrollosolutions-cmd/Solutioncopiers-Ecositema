@@ -1,0 +1,186 @@
+{% extends "panel/_base.html" %}
+{% block title %}{{ conv.contact_name|default:conv.phone }} — WhatsApp{% endblock %}
+
+{% block content %}
+<style>
+.wa-chat-wrap   { display:grid; grid-template-columns:1fr 280px; height:calc(100vh - 5rem); gap:0; border:1px solid var(--color-border); border-radius:.875rem; overflow:hidden; }
+.wa-chat-main   { display:flex; flex-direction:column; }
+.wa-chat-head   { padding:.875rem 1.25rem; border-bottom:1px solid var(--color-border); background:var(--color-surface); display:flex; align-items:center; gap:.875rem; }
+.wa-chat-avatar { width:2.5rem; height:2.5rem; border-radius:9999px; background:color-mix(in srgb,#25D366 12%,transparent); border:1.5px solid color-mix(in srgb,#25D366 25%,transparent); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.9rem; color:#25D366; flex-shrink:0; }
+.wa-chat-msgs   { flex:1; overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:.625rem; background:var(--color-bg-alt); }
+.wa-msg         { max-width:72%; display:flex; flex-direction:column; gap:.2rem; }
+.wa-msg.in      { align-self:flex-start; }
+.wa-msg.out     { align-self:flex-end; }
+.wa-bubble      { padding:.625rem .875rem; border-radius:.875rem; font-size:.8125rem; line-height:1.5; word-break:break-word; }
+.wa-msg.in  .wa-bubble  { background:var(--color-surface); border:1px solid var(--color-border); border-bottom-left-radius:.2rem; }
+.wa-msg.out .wa-bubble  { background:#25D366; color:#fff; border-bottom-right-radius:.2rem; }
+.wa-msg-meta    { font-size:.6rem; color:var(--color-text-muted); padding:0 .25rem; }
+.wa-msg.out .wa-msg-meta { text-align:right; }
+.wa-reply-box   { padding:.875rem 1.25rem; border-top:1px solid var(--color-border); background:var(--color-surface); display:flex; gap:.625rem; align-items:flex-end; }
+.wa-reply-input { flex:1; resize:none; border:1.5px solid var(--color-border); border-radius:.75rem; padding:.625rem .875rem; font-size:.8125rem; background:var(--color-bg-alt); color:var(--color-text-primary); outline:none; font-family:inherit; line-height:1.5; max-height:8rem; transition:border-color .15s; }
+.wa-reply-input:focus { border-color:var(--color-primary); }
+.wa-send-btn    { width:2.75rem; height:2.75rem; border-radius:9999px; background:#25D366; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:opacity .15s; }
+.wa-send-btn:hover { opacity:.85; }
+
+.wa-info-panel  { border-left:1px solid var(--color-border); background:var(--color-surface); overflow-y:auto; display:flex; flex-direction:column; }
+.wa-info-sect   { padding:1rem; border-bottom:1px solid var(--color-border); }
+.wa-info-title  { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--color-text-muted); margin-bottom:.625rem; }
+.wa-status-btn  { display:block; width:100%; text-align:left; padding:.5rem .75rem; border-radius:.5rem; border:1.5px solid var(--color-border); background:transparent; font-size:.75rem; font-weight:600; cursor:pointer; margin-bottom:.375rem; transition:.15s; color:var(--color-text-secondary); }
+.wa-status-btn:hover, .wa-status-btn.active { border-color:var(--color-primary); color:var(--color-primary); background:color-mix(in srgb,var(--color-primary) 6%,transparent); }
+.wa-label-chip  { display:inline-flex; align-items:center; gap:.3rem; font-size:.68rem; font-weight:700; padding:.2rem .6rem; border-radius:9999px; margin:.15rem; cursor:pointer; transition:.12s; }
+
+@media(max-width:900px) { .wa-info-panel { display:none; } .wa-chat-wrap { grid-template-columns:1fr; } }
+</style>
+
+<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.875rem;">
+  <a href="{% url 'wa:panel_inbox' %}" class="pn-btn pn-btn-secondary" style="font-size:.75rem;padding:.3rem .75rem;">← Inbox</a>
+  <span style="font-size:.78rem;color:var(--color-text-muted);">{{ conv.contact_name|default:conv.phone }}</span>
+</div>
+
+<div class="wa-chat-wrap">
+
+  {# ── Chat principal ── #}
+  <div class="wa-chat-main">
+
+    {# Header del chat #}
+    <div class="wa-chat-head">
+      <div class="wa-chat-avatar">{{ conv.contact_name|first|upper|default:"?" }}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.9rem;font-weight:700;color:var(--color-text-primary);">{{ conv.contact_name|default:conv.phone }}</div>
+        <div style="font-size:.7rem;color:var(--color-text-muted);">
+          {{ conv.phone }}
+          {% if conv.lead %} · <a href="{% url 'panel:client_detail' conv.lead.pk %}" style="color:var(--color-primary);">{{ conv.lead.full_name }}</a>{% endif %}
+        </div>
+      </div>
+      {# Estado badge #}
+      <span style="font-size:.7rem;font-weight:700;padding:.25rem .75rem;border-radius:9999px;
+        background:{%if conv.status=='new'%}color-mix(in srgb,#F59E0B 12%,transparent){%elif conv.status=='open'%}color-mix(in srgb,#25D366 12%,transparent){%elif conv.status=='pending'%}color-mix(in srgb,#3B82F6 12%,transparent){%elif conv.status=='resolved'%}color-mix(in srgb,var(--color-text-muted) 12%,transparent){%else%}color-mix(in srgb,#EF4444 12%,transparent){%endif%};
+        color:{%if conv.status=='new'%}#F59E0B{%elif conv.status=='open'%}#25D366{%elif conv.status=='pending'%}#3B82F6{%elif conv.status=='resolved'%}var(--color-text-muted){%else%}#EF4444{%endif%};">
+        {{ conv.get_status_display }}
+      </span>
+    </div>
+
+    {# Mensajes #}
+    <div class="wa-chat-msgs" id="msgs-container">
+      {% for msg in messages %}
+      <div class="wa-msg {% if msg.direction == 'inbound' %}in{% else %}out{% endif %}">
+        <div class="wa-bubble">{{ msg.body }}</div>
+        <div class="wa-msg-meta">
+          {{ msg.created_at|date:"d/m H:i" }}
+          {% if msg.direction == 'outbound' and msg.sent_by %}· {{ msg.sent_by.get_full_name|default:msg.sent_by.username }}{% endif %}
+          {% if msg.direction == 'outbound' %}
+            {% if msg.status == 'read' %} ✓✓{% elif msg.status == 'delivered' %} ✓✓{% elif msg.status == 'sent' %} ✓{% elif msg.status == 'failed' %} ✗{% endif %}
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div style="text-align:center;color:var(--color-text-muted);font-size:.8rem;padding:2rem;">Sin mensajes aún</div>
+      {% endfor %}
+    </div>
+
+    {# Caja de respuesta #}
+    <form method="post" class="wa-reply-box" id="reply-form">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="reply">
+      <textarea class="wa-reply-input" name="body" id="reply-body"
+        placeholder="Escribe un mensaje…" rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();document.getElementById('reply-form').submit();}"></textarea>
+      <button type="submit" class="wa-send-btn" aria-label="Enviar">
+        <svg fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5" style="width:1.1rem;height:1.1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+      </button>
+    </form>
+  </div>
+
+  {# ── Panel de info derecho ── #}
+  <div class="wa-info-panel">
+
+    {# Estado de la conversación #}
+    <div class="wa-info-sect">
+      <div class="wa-info-title">Estado</div>
+      <form method="post" id="status-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="set_status">
+        {% for val, lbl in status_choices %}
+        <button type="submit" name="status" value="{{ val }}"
+          class="wa-status-btn {% if conv.status == val %}active{% endif %}">
+          {%if val=='new'%}🟡{%elif val=='open'%}🟢{%elif val=='pending'%}🔵{%elif val=='resolved'%}⚪{%else%}🔴{%endif%} {{ lbl }}
+        </button>
+        {% endfor %}
+      </form>
+    </div>
+
+    {# Etiquetas #}
+    <div class="wa-info-sect">
+      <div class="wa-info-title">Etiquetas</div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="set_labels">
+        <div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.625rem;">
+          {% for lbl in labels %}
+          <label class="wa-label-chip" style="background:{{ lbl.color }}18;color:{{ lbl.color }};border:1.5px solid {{ lbl.color }}40;cursor:pointer;">
+            <input type="checkbox" name="labels" value="{{ lbl.pk }}" style="display:none;"
+              {% if lbl in conv.labels.all %}checked{% endif %}
+              onchange="this.closest('form').submit()">
+            {{ lbl.name }}
+          </label>
+          {% empty %}
+          <span style="font-size:.72rem;color:var(--color-text-muted);">Sin etiquetas — crea una en Dashadmin</span>
+          {% endfor %}
+        </div>
+      </form>
+    </div>
+
+    {# Asesora asignada #}
+    <div class="wa-info-sect">
+      <div class="wa-info-title">Asesora asignada</div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="assign">
+        <select name="assigned_to" class="pn-input" style="font-size:.78rem;" onchange="this.form.submit()">
+          <option value="">— Sin asignar —</option>
+          {% for u in asesoras %}
+          <option value="{{ u.pk }}" {% if conv.assigned_to_id == u.pk %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+
+    {# Cliente CRM vinculado #}
+    <div class="wa-info-sect">
+      <div class="wa-info-title">Cliente CRM</div>
+      {% if conv.lead %}
+      <a href="{% url 'panel:client_detail' conv.lead.pk %}" style="font-size:.8rem;font-weight:700;color:var(--color-primary);text-decoration:none;">
+        {{ conv.lead.full_name }}{% if conv.lead.company_name %}<br><span style="font-weight:400;color:var(--color-text-muted);">{{ conv.lead.company_name }}</span>{% endif %}
+      </a>
+      {% else %}
+      <span style="font-size:.75rem;color:var(--color-text-muted);">Sin vincular — se vincula automáticamente si el teléfono coincide</span>
+      {% endif %}
+    </div>
+
+    {# Info del contacto #}
+    <div class="wa-info-sect">
+      <div class="wa-info-title">Contacto</div>
+      <div style="font-size:.78rem;color:var(--color-text-secondary);">
+        <div style="margin-bottom:.25rem;"><span style="color:var(--color-text-muted);">Teléfono:</span> {{ conv.phone }}</div>
+        <div><span style="color:var(--color-text-muted);">Desde:</span> {{ conv.created_at|date:"d/m/Y" }}</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Scroll al fondo al cargar
+const mc = document.getElementById('msgs-container');
+if (mc) mc.scrollTop = mc.scrollHeight;
+
+// Auto-resize textarea
+const ta = document.getElementById('reply-body');
+if (ta) {
+  ta.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 128) + 'px';
+  });
+}
+</script>
+{% endblock %}
