@@ -1987,6 +1987,10 @@ panel_decorator = method_decorator(panel_required, name="dispatch")
 def _panel_base_ctx(request):
     """Contexto mínimo compartido por todas las vistas del panel."""
     from apps.leads.models import Quote, ServiceTicket
+    from apps.whatsapp.models import WhatsAppConversation
+    wa_unread = WhatsAppConversation.objects.filter(
+        assigned_to=request.user, unread_count__gt=0
+    ).count()
     return {
         "my_new_quotes": Quote.objects.filter(
             Q(assigned_to=request.user) | Q(assigned_to__isnull=True),
@@ -1996,6 +2000,7 @@ def _panel_base_ctx(request):
             assigned_to=request.user,
             status__in=("open", "in_progress", "waiting_parts")
         ).count(),
+        "wa_unread_total": wa_unread,
     }
 
 
