@@ -235,7 +235,8 @@ class DashWALabelsView(View):
 
     def get(self, request):
         return render(request, self.template_name, {
-            "labels": ConversationLabel.objects.all(),
+            "labels":        ConversationLabel.objects.all(),
+            "preset_colors": ["#25D366","#3B82F6","#F59E0B","#EF4444","#8B5CF6","#EC4899","#06B6D4","#10B981"],
         })
 
     def post(self, request):

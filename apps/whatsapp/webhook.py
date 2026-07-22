@@ -19,9 +19,6 @@ from .models import WhatsAppConversation, WhatsAppMessage
 
 logger = logging.getLogger(__name__)
 
-VERIFY_TOKEN = getattr(settings, "WHATSAPP_VERIFY_TOKEN", "prototipo_sc_2026")
-
-
 @method_decorator(csrf_exempt, name="dispatch")
 class WhatsAppWebhookView(View):
     """
@@ -30,10 +27,12 @@ class WhatsAppWebhookView(View):
     """
 
     def get(self, request):
+        # Leído en tiempo de petición para que override_settings funcione en tests
+        verify_token = getattr(settings, "WHATSAPP_VERIFY_TOKEN", "prototipo_sc_2026")
         mode      = request.GET.get("hub.mode")
         token     = request.GET.get("hub.verify_token")
         challenge = request.GET.get("hub.challenge")
-        if mode == "subscribe" and token == VERIFY_TOKEN:
+        if mode == "subscribe" and token == verify_token:
             logger.info("WhatsApp webhook verificado correctamente.")
             return HttpResponse(challenge, content_type="text/plain")
         return HttpResponse("Forbidden", status=403)

@@ -53,9 +53,13 @@
           <div style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ conv.contact_name|default:conv.phone }}</div>
           <div style="font-size:.7rem;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ conv.last_message_preview|default:"—" }}</div>
         </div>
-        <span style="font-size:.65rem;padding:.15rem .5rem;border-radius:9999px;font-weight:700;background:{%if conv.status=='new'%}color-mix(in srgb,#F59E0B 12%,transparent){%elif conv.status=='open'%}color-mix(in srgb,#25D366 12%,transparent){%else%}var(--color-bg-alt){%endif%};color:{%if conv.status=='new'%}#F59E0B{%elif conv.status=='open'%}#25D366{%else%}var(--color-text-muted){%endif%};">
-          {{ conv.get_status_display }}
-        </span>
+        {% if conv.status == 'new' %}
+        <span style="font-size:.65rem;padding:.15rem .5rem;border-radius:9999px;font-weight:700;background:color-mix(in srgb,#F59E0B 12%,transparent);color:#F59E0B;">{{ conv.get_status_display }}</span>
+        {% elif conv.status == 'open' %}
+        <span style="font-size:.65rem;padding:.15rem .5rem;border-radius:9999px;font-weight:700;background:color-mix(in srgb,#25D366 12%,transparent);color:#25D366;">{{ conv.get_status_display }}</span>
+        {% else %}
+        <span style="font-size:.65rem;padding:.15rem .5rem;border-radius:9999px;font-weight:700;background:var(--color-bg-alt);color:var(--color-text-muted);">{{ conv.get_status_display }}</span>
+        {% endif %}
       </a>
       {% empty %}
       <div style="padding:2rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">

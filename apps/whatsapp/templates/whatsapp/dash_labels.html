@@ -58,7 +58,7 @@
           </div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:.375rem;padding:.75rem;background:var(--color-bg-alt);border-radius:.5rem;">
-          {% for hex in "#25D366,#3B82F6,#F59E0B,#EF4444,#8B5CF6,#EC4899,#06B6D4,#10B981"|split:"," %}
+          {% for hex in preset_colors %}
           <div style="width:1.5rem;height:1.5rem;border-radius:9999px;background:{{ hex }};cursor:pointer;transition:.12s;border:2px solid transparent;"
             onclick="document.querySelector('input[name=color]').value='{{ hex }}'" title="{{ hex }}"></div>
           {% endfor %}
