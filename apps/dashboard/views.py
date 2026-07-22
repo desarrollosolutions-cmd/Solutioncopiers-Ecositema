@@ -3546,6 +3546,10 @@ Los contratos están en /panel/contratos/ y son de solo lectura para asesoras \
 - **Número de contrato**: identificador único (ej: SC-2024-001)
 - **Estado**: Pendiente de firma | Activo | Vencido | Cancelado
 - **Equipo**: marca, modelo y serial del equipo instalado
+- **Unidad física asignada**: serial/placa del equipo físico específico que se entregó al cliente. \
+  Cuando el administrador activa el contrato, el sistema cambia automáticamente el estado de esa \
+  unidad a "En campo". Al cancelar o vencer, vuelve a "Disponible". Esto permite saber en todo \
+  momento dónde está cada equipo del inventario.
 - **Fecha de inicio / vencimiento**: calcula cuántos días faltan para el vencimiento
 - **Cuota mensual**: lo que el cliente paga cada mes en COP
 - **Copias incluidas/mes**: el volumen de páginas que cubre el contrato
@@ -3571,21 +3575,105 @@ En /panel/insumos/ puedes ver el catálogo de insumos disponibles.
 - Los estados visuales son: 🔴 Agotado | 🟡 Stock bajo (1-5 unidades) | 🟢 Disponible
 - Si un insumo está agotado, avísale al admin para que lo pida y dale al cliente una fecha estimada.
 
+=== WHATSAPP CRM — GUÍA COMPLETA ===
+
+El módulo WhatsApp CRM te permite gestionar todas las conversaciones de WhatsApp con clientes \
+directamente desde el panel, sin salir del sistema. Lo encuentras en el menú lateral izquierdo \
+con el ícono de WhatsApp (burbuja verde). Si tienes mensajes sin leer, verás un badge numérico \
+verde en el ícono.
+
+**Dónde está:**
+- Inbox personal: /whatsapp/panel/inbox/ — tus conversaciones asignadas
+- Detalle de conversación: /whatsapp/panel/conversacion/[número]/
+
+**Inbox — cómo funciona:**
+El inbox muestra la lista de conversaciones. Cada conversación muestra:
+- Nombre del contacto y número de teléfono
+- Vista previa del último mensaje y hace cuánto llegó
+- Punto de color que indica el estado de la conversación
+- Etiquetas asignadas (chips de colores)
+- Badge rojo con el número de mensajes sin leer
+
+**Filtros del inbox:**
+- **Mis conversaciones** (activo por defecto): solo las que tienes asignadas a ti
+- **Todas**: todas las conversaciones del equipo (cuando el filtro "Mis conv." está desactivado)
+- **Por estado**: filtra por Nueva, Abierta, Pendiente, Resuelta o Spam
+- **Por etiqueta**: filtra por una etiqueta específica (Cotización, Postventa, etc.)
+- **Buscar**: busca por nombre del contacto o número de teléfono
+
+**Estados de una conversación:**
+- 🟡 **Nueva** (new) — mensaje recién llegado, aún sin atender. Actúa rápido.
+- 🟢 **Abierta** (open) — la estás atendiendo activamente.
+- 🔵 **Pendiente** (pending) — esperando que el cliente responda, pausaste temporalmente.
+- ⚪ **Resuelta** (resolved) — el tema se cerró satisfactoriamente.
+- 🔴 **Spam** — mensaje no deseado, lo sacas de tu flujo de trabajo.
+
+**Cómo responder a un cliente por WhatsApp:**
+1. Entra al inbox y haz clic en la conversación
+2. Lee el historial de mensajes (los del cliente salen a la izquierda en gris, los tuyos a la derecha en verde)
+3. Escribe tu mensaje en la caja de texto en la parte inferior
+4. Presiona Enter o el botón de enviar (flecha verde)
+5. El mensaje queda registrado en el historial con tu nombre y la hora
+
+**Nota importante (modo prototipo):** Actualmente el módulo está en modo prototipo — los mensajes \
+salientes se guardan en el sistema pero AÚN NO se envían por WhatsApp real. Cuando el administrador \
+configure las llaves de la API de Meta, los mensajes se enviarán automáticamente al cliente. \
+Por ahora, úsalo para tener el historial organizado y practicar el flujo.
+
+**Panel derecho de información (dentro de cada conversación):**
+
+1. **Estado** — cambia el estado de la conversación con un clic (los botones muestran el estado actual resaltado).
+
+2. **Etiquetas** — clasifica la conversación. Haz clic en una etiqueta para activarla/desactivarla. \
+   Las etiquetas se crean desde el admin (Dashadmin). Ejemplos útiles:
+   - Cotización: el cliente está pidiendo precio
+   - Postventa: tiene contrato y necesita algo
+   - Soporte: tiene un problema técnico
+   - Renovación: su contrato está por vencer
+
+3. **Asesora asignada** — elige quién es responsable de esta conversación desde el menú desplegable. \
+   La conversación aparecerá en el inbox de esa asesora.
+
+4. **Cliente CRM** — muestra si la conversación está vinculada a un cliente del CRM. \
+   El sistema vincula automáticamente cuando el número de teléfono del mensaje coincide con \
+   el teléfono de un Lead en la base de datos. Si no vincula automáticamente, puedes hacerlo \
+   manualmente ingresando el ID del cliente.
+
+**Simulador (solo para pruebas):**
+En /whatsapp/panel/simulador/ puedes inyectar mensajes de prueba simulando que un cliente \
+te escribió por WhatsApp. Útil para practicar el flujo antes de que la API esté activa.
+
+**Cuándo usar WhatsApp CRM:**
+- Cuando un cliente te escribe por WhatsApp en lugar de llamar
+- Para dar seguimiento escrito a una cotización enviada
+- Para confirmar datos antes de crear un contrato
+- Para soporte rápido de clientes con contrato activo
+- Para coordinar visitas técnicas con el cliente
+
+**Reglas de oro para WhatsApp CRM:**
+1. **Cambia el estado** — apenas leas un mensaje nuevo, cámbialo de "Nueva" a "Abierta"
+2. **Etiqueta siempre** — una conversación sin etiqueta es difícil de filtrar después
+3. **Vincula al cliente** — siempre verifica que la conversación esté vinculada al Lead correcto
+4. **No dejes "Pendiente" más de 24h** — si el cliente no responde, escríbele de nuevo o llama
+
 === RUTINA DIARIA RECOMENDADA ===
 
 **Al entrar al panel (mañana):**
 1. Revisa el HOME — ve cuántas cotizaciones tienes pendientes y si hay contratos por vencer.
 2. Revisa notificaciones (campana) — atiende primero tareas vencidas y leads sin actividad.
-3. Filtra Cotizaciones por "Mis cotizaciones" + estado "Nueva" — llama primero a los más recientes.
-4. Revisa cotizaciones en "Negociación" — son las más cerca de cerrar, dales seguimiento hoy.
+3. Revisa el **inbox de WhatsApp** (ícono verde en el menú) — atiende mensajes sin leer antes de empezar las llamadas.
+4. Filtra Cotizaciones por "Mis cotizaciones" + estado "Nueva" — llama primero a los más recientes.
+5. Revisa cotizaciones en "Negociación" — son las más cerca de cerrar, dales seguimiento hoy.
 
 **Durante el día:**
 - Después de CADA llamada o contacto, entra al detalle del cliente y registra una actividad.
+- Si el cliente te escribe por WhatsApp, respóndele desde el **inbox de WhatsApp** del panel — no desde el teléfono personal, para que quede el historial en el sistema.
 - Si el cliente pidió algo específico con fecha, crea una tarea de seguimiento.
 - Actualiza el estado de la cotización después de cada interacción significativa.
 - Consulta el perfil del cliente ANTES de llamar — revisa su historial para no repetir preguntas.
 
 **Al cerrar el día:**
+- Revisa el inbox de WhatsApp — deja todas las conversaciones activas en estado "Pendiente" o "Abierta", no "Nueva".
 - Revisa si quedó alguna cotización "Nueva" sin atender — asígnala o notifica al admin.
 - Deja notas claras en todas las cotizaciones activas para retomar al día siguiente.
 - Verifica que todas tus tareas de hoy estén marcadas como hechas.
