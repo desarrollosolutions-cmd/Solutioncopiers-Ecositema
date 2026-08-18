@@ -6,6 +6,9 @@ set -o errexit  # detiene el build ante el primer error
 echo "==> Instalando dependencias Python..."
 python -m pip install -r requirements.txt
 
+echo "==> Ejecutando migraciones de base de datos..."
+python manage.py migrate --no-input
+
 echo "==> Recolectando archivos estáticos..."
 python manage.py collectstatic --noinput
 
