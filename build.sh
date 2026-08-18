@@ -9,6 +9,17 @@ python -m pip install -r requirements.txt
 echo "==> Ejecutando migraciones de base de datos..."
 python manage.py migrate --no-input
 
+echo "==> Cargando datos iniciales si la base de datos está vacía..."
+python manage.py shell -c "
+from apps.catalog.models import Copier
+if not Copier.objects.exists():
+    from django.core.management import call_command
+    call_command('loaddata', 'fixtures/sqlite_full_export.json')
+    print('Fixture cargado.')
+else:
+    print('Base de datos ya tiene datos, omitiendo loaddata.')
+"
+
 echo "==> Recolectando archivos estáticos..."
 python manage.py collectstatic --noinput
 
