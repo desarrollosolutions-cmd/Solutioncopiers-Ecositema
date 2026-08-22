@@ -1829,6 +1829,13 @@ class EmployeeDetailView(View):
             employee.save(update_fields=["is_active"])
             return redirect("dashboard:employee_detail", pk=pk)
 
+        if action == "delete":
+            if not request.user.is_superuser:
+                from django.http import HttpResponseForbidden
+                return HttpResponseForbidden()
+            employee.delete()
+            return redirect("dashboard:employees")
+
         employee.first_name = request.POST.get("first_name", employee.first_name).strip()
         employee.last_name  = request.POST.get("last_name",  employee.last_name).strip()
         employee.email      = request.POST.get("email",      employee.email).strip()
