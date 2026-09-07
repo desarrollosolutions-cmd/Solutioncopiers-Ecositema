@@ -160,6 +160,77 @@
               {% for tech in technician_list %}<option value="{{ tech.pk }}" {% if is_edit and ticket.assigned_to_id == tech.pk %}selected{% endif %}>{{ tech.get_full_name|default:tech.username }}</option>{% endfor %}
             </select>
           </div>
+
+          {# ── Técnicos en tiempo real ── #}
+          <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+          <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--color-border);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+              <span style="font-size:.72rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.03em;">Técnicos en tiempo real</span>
+              <a href="{% url 'dashboard:campo_map' %}?role=tecnico" style="font-size:.7rem;color:var(--color-primary);text-decoration:none;">Ver mapa completo →</a>
+            </div>
+            <div id="tech-mini-map" style="height:190px;border-radius:.625rem;overflow:hidden;border:1px solid var(--color-border);"></div>
+            <div id="tech-mini-list" style="display:flex;flex-direction:column;gap:.375rem;margin-top:.625rem;">
+              {% for tech in technician_list %}
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:.75rem;">
+                <span style="color:var(--color-text-primary);">{{ tech.get_full_name|default:tech.username }}</span>
+                <span id="tech-status-{{ tech.pk }}" style="font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(107,114,128,.12);color:#6B7280;border:1px solid rgba(107,114,128,.2);">Inactivo</span>
+              </div>
+              {% empty %}
+              <div style="font-size:.75rem;color:var(--color-text-muted);">No hay técnicos registrados.</div>
+              {% endfor %}
+            </div>
+          </div>
+          <script>
+          (function() {
+            const map = L.map('tech-mini-map', { zoomControl: false, attributionControl: false }).setView([6.2442, -75.5812], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+            const markers = {};
+
+            function makeIcon() {
+              const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="34" viewBox="0 0 36 44">
+                <ellipse cx="18" cy="40" rx="8" ry="3" fill="rgba(0,0,0,.2)"/>
+                <circle cx="18" cy="18" r="16" fill="#10B981" stroke="#fff" stroke-width="2.5"/>
+                <circle cx="18" cy="18" r="7" fill="#fff" opacity=".9"/>
+                <polygon points="14,40 18,30 22,40" fill="#10B981"/>
+              </svg>`;
+              return L.divIcon({ html: svg, className: '', iconSize: [28, 34], iconAnchor: [14, 34], popupAnchor: [0, -34] });
+            }
+
+            function refreshTechMap() {
+              fetch('{% url "dashboard:campo_locations_json" %}?role=tecnico', { headers: {'X-Requested-With':'XMLHttpRequest'} })
+                .then(r => r.json())
+                .then(data => {
+                  document.querySelectorAll('[id^="tech-status-"]').forEach(el => {
+                    el.textContent = 'Inactivo';
+                    el.style.cssText = 'font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(107,114,128,.12);color:#6B7280;border:1px solid rgba(107,114,128,.2);';
+                  });
+                  Object.keys(markers).forEach(uid => {
+                    if (!data.locations.find(l => l.id == uid)) { map.removeLayer(markers[uid]); delete markers[uid]; }
+                  });
+                  data.locations.forEach(loc => {
+                    const popup = `<div style="font-family:Inter,sans-serif;"><div style="font-weight:700;font-size:.8rem;">${loc.name}</div><div style="font-size:.68rem;color:#999;">Hace ${loc.ago}</div></div>`;
+                    if (markers[loc.id]) {
+                      markers[loc.id].setLatLng([loc.lat, loc.lng]).setPopupContent(popup);
+                    } else {
+                      markers[loc.id] = L.marker([loc.lat, loc.lng], { icon: makeIcon() }).addTo(map).bindPopup(popup);
+                    }
+                    const st = document.getElementById('tech-status-' + loc.id);
+                    if (st) {
+                      st.textContent = 'En turno · hace ' + loc.ago;
+                      st.style.cssText = 'font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);';
+                    }
+                  });
+                })
+                .catch(() => {});
+            }
+
+            refreshTechMap();
+            setInterval(refreshTechMap, 30000);
+            setTimeout(() => map.invalidateSize(), 200);
+          })();
+          </script>
+
           {% else %}
           <div style="font-size:.8125rem;color:var(--color-text-muted);padding:.25rem 0;">
             {% if is_edit and ticket.assigned_to %}

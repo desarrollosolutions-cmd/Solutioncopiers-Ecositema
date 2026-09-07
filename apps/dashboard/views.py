@@ -4779,8 +4779,13 @@ class CampoMapView(TemplateView):
     def get_context_data(self, **kwargs):
         from apps.dashboard.models import FieldUser, FieldUserLocation
         ctx = super().get_context_data(**kwargs)
-        ctx["field_users"] = FieldUser.objects.select_related("user", "user__field_location").all()
+        role = self.request.GET.get("role", "")
+        field_users = FieldUser.objects.select_related("user", "user__field_location").all()
+        if role in (FieldUser.Role.MENSAJERO, FieldUser.Role.TECNICO):
+            field_users = field_users.filter(role=role)
+        ctx["field_users"] = field_users
         ctx["on_shift"] = FieldUserLocation.objects.filter(is_on_shift=True).count()
+        ctx["role_filter"] = role
         return ctx
 
 
@@ -4795,6 +4800,9 @@ class CampoLocationsJsonView(View):
             .filter(is_on_shift=True)
             .select_related("user", "user__field_profile")
         )
+        role = request.GET.get("role", "")
+        if role in (FieldUser.Role.MENSAJERO, FieldUser.Role.TECNICO):
+            locations = locations.filter(user__field_profile__role=role)
         data = []
         for loc in locations:
             fp = getattr(loc.user, "field_profile", None)

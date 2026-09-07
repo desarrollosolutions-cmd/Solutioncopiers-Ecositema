@@ -21,6 +21,21 @@
   </div>
 </div>
 
+<div style="display:flex;gap:.4rem;margin-bottom:1rem;">
+  <a href="?" style="font-size:.75rem;font-weight:600;padding:.4rem .875rem;border-radius:9999px;text-decoration:none;
+    {% if not role_filter %}background:var(--color-primary);color:#fff;{% else %}background:var(--color-bg-alt);color:var(--color-text-secondary);border:1px solid var(--color-border);{% endif %}">
+    Todos
+  </a>
+  <a href="?role=mensajero" style="font-size:.75rem;font-weight:600;padding:.4rem .875rem;border-radius:9999px;text-decoration:none;
+    {% if role_filter == 'mensajero' %}background:var(--color-primary);color:#fff;{% else %}background:var(--color-bg-alt);color:var(--color-text-secondary);border:1px solid var(--color-border);{% endif %}">
+    Mensajeros
+  </a>
+  <a href="?role=tecnico" style="font-size:.75rem;font-weight:600;padding:.4rem .875rem;border-radius:9999px;text-decoration:none;
+    {% if role_filter == 'tecnico' %}background:var(--color-primary);color:#fff;{% else %}background:var(--color-bg-alt);color:var(--color-text-secondary);border:1px solid var(--color-border);{% endif %}">
+    Técnicos
+  </a>
+</div>
+
 {# Mapa Leaflet #}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -72,6 +87,7 @@
 
 <script>
 const MAP_CENTER = [6.2442, -75.5812]; // Medellín por defecto
+const ROLE_FILTER = "{{ role_filter }}";
 
 const map = L.map('map').setView(MAP_CENTER, 12);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -96,7 +112,8 @@ function makeIcon(role) {
 
 function refreshMap() {
   document.getElementById('refresh-btn').style.opacity = '.5';
-  fetch('{% url "dashboard:campo_locations_json" %}', { headers: {'X-Requested-With':'XMLHttpRequest'} })
+  const url = '{% url "dashboard:campo_locations_json" %}' + (ROLE_FILTER ? '?role=' + ROLE_FILTER : '');
+  fetch(url, { headers: {'X-Requested-With':'XMLHttpRequest'} })
     .then(r => r.json())
     .then(data => {
       document.getElementById('counter').textContent = data.count;

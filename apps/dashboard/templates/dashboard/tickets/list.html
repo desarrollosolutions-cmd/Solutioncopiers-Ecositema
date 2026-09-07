@@ -52,10 +52,16 @@
 
 <div class="da-page-header">
   <h1 class="da-page-title">Servicio técnico</h1>
-  <a href="{% url 'dashboard:ticket_create' %}" class="da-btn da-btn-primary">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-    Nuevo ticket
-  </a>
+  <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+    <a href="{% url 'dashboard:campo_map' %}?role=tecnico" class="da-btn da-btn-secondary">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Técnicos en vivo
+    </a>
+    <a href="{% url 'dashboard:ticket_create' %}" class="da-btn da-btn-primary">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      Nuevo ticket
+    </a>
+  </div>
 </div>
 
 <form method="get" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-bottom:1.25rem;">
