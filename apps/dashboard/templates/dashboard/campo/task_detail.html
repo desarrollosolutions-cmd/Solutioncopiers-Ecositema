@@ -121,6 +121,14 @@
       <span style="font-size:.8rem;font-weight:700;padding:.35rem .875rem;border-radius:9999px;background:rgba(107,114,128,.1);color:#6B7280;border:1px solid rgba(107,114,128,.15);">Cancelada</span>
       {% endif %}
       <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.5rem;font-size:.78rem;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Tipo</span>
+          <span style="font-weight:600;">{{ task.get_task_type_display }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Prioridad</span>
+          <span style="font-weight:600;">{{ task.get_priority_display }}</span>
+        </div>
         {% if task.client_name %}
         <div style="display:flex;justify-content:space-between;gap:.5rem;">
           <span style="color:var(--color-text-muted);flex-shrink:0;">Cliente</span>

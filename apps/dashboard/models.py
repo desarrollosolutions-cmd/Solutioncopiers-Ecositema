@@ -264,6 +264,16 @@ class DeliveryTask(models.Model):
         DONE      = "done",      "Completada"
         CANCELLED = "cancelled", "Cancelada"
 
+    class TaskType(models.TextChoices):
+        DELIVERY = "entrega",     "Entrega"
+        PICKUP   = "recoleccion", "Recolección"
+
+    class Priority(models.TextChoices):
+        LOW    = "low",    "Baja"
+        MEDIUM = "medium", "Media"
+        HIGH   = "high",   "Alta"
+        URGENT = "urgent", "Urgente"
+
     class PaymentMethod(models.TextChoices):
         CASH = "efectivo", "Efectivo"
         BANK = "banco",    "Banco"
@@ -273,6 +283,8 @@ class DeliveryTask(models.Model):
         FieldUser, on_delete=models.CASCADE, related_name="delivery_tasks"
     )
     title              = models.CharField("título", max_length=200)
+    task_type          = models.CharField("tipo de tarea", max_length=15, choices=TaskType.choices, default=TaskType.DELIVERY, db_index=True)
+    priority           = models.CharField("prioridad", max_length=10, choices=Priority.choices, default=Priority.MEDIUM, db_index=True)
     description        = models.TextField("descripción", blank=True)
     address            = models.CharField("dirección", max_length=300, blank=True)
     order              = models.PositiveSmallIntegerField("orden", default=0)

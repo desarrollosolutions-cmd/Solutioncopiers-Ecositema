@@ -140,6 +140,7 @@ urlpatterns = [
     path("campo/tareas/",                    views.CampoTaskListView.as_view(),         name="campo_tasks"),
     path("campo/tareas/reordenar/",          views.CampoTaskReorderView.as_view(),      name="campo_task_reorder"),
     path("campo/tareas/<int:pk>/",           views.CampoTaskDetailView.as_view(),       name="campo_task_detail"),
+    path("campo/tareas/<int:pk>/prioridad/", views.CampoTaskPriorityMoveView.as_view(), name="campo_task_priority_move"),
     path("campo/rutas/",                     views.CampoRouteHistoryView.as_view(),     name="campo_routes"),
     path("campo/rutas/json/",                views.CampoRouteJsonView.as_view(),        name="campo_routes_json"),
     path("campo/rutas/exportar/",            views.CampoRouteExportView.as_view(),      name="campo_routes_export"),

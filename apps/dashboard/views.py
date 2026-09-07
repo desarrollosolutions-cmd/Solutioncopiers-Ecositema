@@ -5003,17 +5003,33 @@ class CampoTaskListView(View):
                 .order_by("order", "created_at")
             )
 
+        # ── Pipeline por urgencia (mismos filtros de user/status/date que la tabla) ──
+        task_list = list(qs[:300])
+        PRIORITY_META = [
+            {"key": "urgent", "label": "Urgente", "css_color": "var(--color-danger)"},
+            {"key": "high",   "label": "Alta",    "css_color": "#D97706"},
+            {"key": "medium", "label": "Media",   "css_color": "#2563EB"},
+            {"key": "low",    "label": "Baja",    "css_color": "var(--color-text-muted)"},
+        ]
+        for stage in PRIORITY_META:
+            stage_tasks = [t for t in task_list if t.priority == stage["key"]]
+            stage["tasks"] = stage_tasks
+            stage["count"] = len(stage_tasks)
+
         return render(request, self.template_name, {
-            "tasks":          qs[:300],
+            "tasks":          task_list,
             "field_users":    FieldUser.objects.select_related("user").order_by("user__first_name"),
             "filter_user":    fu_pk,
             "filter_status":  status,
             "filter_date":    date_str,
             "today":          timezone.localdate().isoformat(),
             "status_choices": DeliveryTask.Status.choices,
+            "task_type_choices": DeliveryTask.TaskType.choices,
+            "priority_choices":  DeliveryTask.Priority.choices,
             "leads":          Lead.objects.values_list("full_name", "company_name").order_by("full_name")[:500],
             "payment_choices": DeliveryTask.PaymentMethod.choices,
             "pending_queue":  pending_queue,
+            "priority_stages": PRIORITY_META,
         })
 
     def post(self, request):
@@ -5021,22 +5037,56 @@ class CampoTaskListView(View):
         from apps.dashboard.models import DeliveryTask, FieldUser
         try:
             fu = FieldUser.objects.get(pk=request.POST.get("field_user_id"))
+            task_type   = request.POST.get("task_type") or DeliveryTask.TaskType.DELIVERY
+            client_name = request.POST.get("client_name", "").strip()
+            title = dict(DeliveryTask.TaskType.choices).get(task_type, "Entrega")
+            if client_name:
+                title = f"{title} — {client_name}"
             DeliveryTask.objects.create(
                 field_user         = fu,
-                title              = request.POST.get("title", "").strip(),
+                title              = title,
+                task_type          = task_type,
+                priority           = request.POST.get("priority") or DeliveryTask.Priority.MEDIUM,
                 description        = request.POST.get("description", "").strip(),
                 address            = request.POST.get("address", "").strip(),
                 order              = int(request.POST.get("order") or 0),
                 due_date           = request.POST.get("due_date") or timezone.localdate(),
                 created_by         = request.user,
                 completion_invoice = request.POST.get("invoice_ref", "").strip(),
-                client_name        = request.POST.get("client_name", "").strip(),
+                client_name        = client_name,
                 payment_method     = request.POST.get("payment_method", "").strip(),
             )
         except Exception as e:
             from django.contrib import messages as dj_msg
             dj_msg.error(request, f"Error al crear tarea: {e}")
         return redirect("dashboard:campo_tasks")
+
+
+@da_decorator
+class CampoTaskPriorityMoveView(View):
+    """POST /dashadmin/campo/tareas/<pk>/prioridad/ — pipeline por urgencia de tareas de campo."""
+
+    def post(self, request, pk):
+        import json
+        from apps.dashboard.models import DeliveryTask
+        try:
+            data = json.loads(request.body)
+            new_priority = data.get("priority", "")
+        except Exception:
+            new_priority = request.POST.get("priority", "")
+        valid = dict(DeliveryTask.Priority.choices)
+        if new_priority not in valid:
+            return JsonResponse({"ok": False, "error": "Prioridad inválida"}, status=400)
+        task = get_object_or_404(DeliveryTask, pk=pk)
+        old_priority = task.priority
+        task.priority = new_priority
+        task.save(update_fields=["priority"])
+        return JsonResponse({
+            "ok": True, "pk": pk,
+            "priority": new_priority,
+            "label": valid[new_priority],
+            "old_priority": old_priority,
+        })
 
 
 @da_decorator

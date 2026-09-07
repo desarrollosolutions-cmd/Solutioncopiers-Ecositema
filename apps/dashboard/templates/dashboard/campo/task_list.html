@@ -14,6 +14,32 @@
 @media(max-width:480px){
   .cq-form-grid{grid-template-columns:1fr !important;}
 }
+
+/* ── Pipeline por urgencia (kanban) ── */
+.pipeline-board { display:flex; gap:.875rem; overflow-x:auto; padding-bottom:1rem; align-items:flex-start; min-height:50vh; margin-bottom:1.5rem; }
+.kb-col { flex:0 0 270px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:.875rem; display:flex; flex-direction:column; min-height:160px; transition:box-shadow .2s; }
+.kb-col.drag-over { border-color:var(--kb-col-color,var(--color-primary)); box-shadow:0 0 0 2px color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 20%,transparent); }
+.kb-col-head { padding:.875rem 1rem .75rem; border-bottom:1px solid var(--color-border); display:flex; align-items:center; gap:.625rem; border-radius:.875rem .875rem 0 0; background:color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 5%,var(--color-surface)); }
+.kb-col-title { font-size:.8125rem; font-weight:700; color:var(--color-text-primary); flex:1; }
+.kb-col-count { font-size:.65rem; font-weight:700; padding:.15rem .5rem; border-radius:9999px; background:color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 14%,transparent); color:var(--kb-col-color,var(--color-primary)); min-width:1.5rem; text-align:center; }
+.kb-col-body { padding:.625rem; flex:1; display:flex; flex-direction:column; gap:.5rem; min-height:80px; }
+.kb-col-body.drag-active { background:color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 4%,transparent); border-radius:0 0 .875rem .875rem; }
+.kb-card { background:var(--color-bg); border:1px solid var(--color-border); border-radius:.625rem; padding:.75rem; cursor:grab; transition:transform .18s,box-shadow .18s,border-color .18s,opacity .18s; position:relative; overflow:hidden; user-select:none; }
+.kb-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--kb-col-color,var(--color-primary)); border-radius:3px 0 0 3px; }
+.kb-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.12); }
+.kb-card:active, .kb-card.dragging { opacity:.45; cursor:grabbing; transform:scale(.97); }
+.kb-card-name { font-size:.8125rem; font-weight:700; color:var(--color-text-primary); margin-bottom:.125rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kb-card-meta { font-size:.72rem; color:var(--color-text-muted); margin-bottom:.5rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kb-card-footer { display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-top:.375rem; }
+.kb-card-tag { font-size:.62rem; font-weight:600; padding:.125rem .4rem; border-radius:.25rem; background:color-mix(in srgb,var(--color-primary) 10%,transparent); color:var(--color-primary); }
+.kb-card-date { font-size:.65rem; color:var(--color-text-muted); }
+.kb-drop-ghost { height:3px; border-radius:2px; background:var(--kb-col-color,var(--color-primary)); opacity:.6; margin:0 .25rem; display:none; }
+.kb-col-body.drag-active .kb-drop-ghost { display:block; }
+.kb-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem 1rem; color:var(--color-text-muted); font-size:.78rem; border:1.5px dashed var(--color-border); border-radius:.5rem; margin:.25rem; pointer-events:none; }
+#dt-toast { position:fixed; bottom:1.5rem; right:1.5rem; padding:.75rem 1.125rem; border-radius:.625rem; font-size:.8125rem; font-weight:600; z-index:9999; transform:translateY(80px); opacity:0; transition:transform .3s,opacity .3s; pointer-events:none; }
+#dt-toast.show { transform:translateY(0); opacity:1; }
+#dt-toast.ok  { background:color-mix(in srgb,var(--color-success) 12%,var(--color-surface)); color:var(--color-success); border:1px solid color-mix(in srgb,var(--color-success) 25%,transparent); }
+#dt-toast.err { background:color-mix(in srgb,var(--color-danger) 12%,var(--color-surface));  color:var(--color-danger);  border:1px solid color-mix(in srgb,var(--color-danger) 25%,transparent); }
 </style>
 <div class="da-page-header">
   <div>
@@ -43,7 +69,7 @@
       {% endfor %}
     </datalist>
 
-    <div class="cq-form-grid" style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr) auto;gap:.75rem;align-items:end;">
+    <div class="cq-form-grid" style="display:grid;grid-template-columns:repeat(4,1fr) repeat(4,1fr) auto;gap:.75rem;align-items:end;">
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Mensajero / Técnico</label>
         <select name="field_user_id" required class="da-input" style="width:100%;">
@@ -54,8 +80,20 @@
         </select>
       </div>
       <div>
-        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Tarea / Descripción *</label>
-        <input type="text" name="title" required class="da-input" style="width:100%;" placeholder="Ej: Entregar insumos cliente X">
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Tipo de tarea *</label>
+        <select name="task_type" required class="da-input" style="width:100%;">
+          {% for val, label in task_type_choices %}
+          <option value="{{ val }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Prioridad</label>
+        <select name="priority" class="da-input" style="width:100%;">
+          {% for val, label in priority_choices %}
+          <option value="{{ val }}" {% if val == "medium" %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Cliente</label>
@@ -89,6 +127,10 @@
           Asignar
         </button>
       </div>
+      <div style="grid-column:1/-1;">
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Detalle <span style="text-transform:none;font-weight:400;">(opcional — insumos, instrucciones, etc.)</span></label>
+        <input type="text" name="description" class="da-input" style="width:100%;" placeholder="Ej: 2 toners HP + 1 rodillo fusor">
+      </div>
     </div>
   </form>
 </div>
@@ -114,10 +156,46 @@
   {% if filter_user or filter_status or filter_date %}
   <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Limpiar</a>
   {% endif %}
+  <button type="button" class="da-btn da-btn-secondary" style="margin-left:auto;" onclick="dtToggleView()" id="dt-view-toggle">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v18M3 9h18"/></svg>
+    Vista pipeline
+  </button>
 </form>
 
+<div id="dt-pipeline-view" style="display:none;">
+  <div style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.75rem;">Pipeline por urgencia — arrastra una tarea entre columnas para cambiar su prioridad</div>
+  <div class="pipeline-board" id="dt-pipeline-board">
+    {% for stage in priority_stages %}
+    <div class="kb-col" data-stage="{{ stage.key }}" style="--kb-col-color:{{ stage.css_color }};">
+      <div class="kb-col-head">
+        <span class="kb-col-title">{{ stage.label }}</span>
+        <span class="kb-col-count" data-count="{{ stage.key }}">{{ stage.count }}</span>
+      </div>
+      <div class="kb-col-body" data-body="{{ stage.key }}">
+        <div class="kb-drop-ghost"></div>
+        {% for t in stage.tasks %}
+        <div class="kb-card" draggable="true" data-pk="{{ t.pk }}" data-stage="{{ stage.key }}"
+             data-move-url="{% url 'dashboard:campo_task_priority_move' t.pk %}"
+             onclick="if(!this.classList.contains('dragging')) window.location='{% url 'dashboard:campo_task_detail' t.pk %}'">
+          <div class="kb-card-name">{{ t.title }}</div>
+          <div class="kb-card-meta">{{ t.get_task_type_display }} · {{ t.field_user.user.get_full_name|default:t.field_user.user.username }}</div>
+          <div class="kb-card-footer">
+            <span class="kb-card-tag">{{ t.get_status_display }}</span>
+            <span class="kb-card-date">{{ t.due_date|date:"d/m/Y"|default:"Sin fecha" }}</span>
+          </div>
+        </div>
+        {% empty %}
+        <div class="kb-empty">Sin tareas</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div id="dt-toast"></div>
+</div>
+
 {% if filter_user and pending_queue %}
-{# ── Orden de ejecución (pipeline por urgencia) ── #}
+{# ── Orden de ejecución dentro del día (secuencia de visitas del mensajero/técnico filtrado) ── #}
 <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.25rem;margin-bottom:1.5rem;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;">
     <div>
@@ -193,7 +271,7 @@
 {% endif %}
 
 {# ── Lista ── #}
-<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
+<div id="dt-list-view" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
   <div style="overflow-x:auto;">
   <table style="width:100%;border-collapse:collapse;min-width:600px;">
     <thead>
@@ -201,6 +279,7 @@
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Tarea</th>
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Asignado a</th>
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Fecha</th>
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Prioridad</th>
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Estado</th>
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Completada</th>
         <th style="padding:.75rem 1.25rem;"></th>
@@ -211,7 +290,10 @@
       <tr style="border-bottom:1px solid var(--color-border);transition:background .15s;"
           onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='transparent'">
         <td style="padding:.875rem 1.25rem;">
-          <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">{{ task.title }}</div>
+          <div style="display:flex;align-items:center;gap:.4rem;">
+            <span style="font-size:.62rem;font-weight:700;padding:.15rem .5rem;border-radius:.3rem;{% if task.task_type == 'recoleccion' %}background:color-mix(in srgb,#8B5CF6 12%,transparent);color:#7C3AED;{% else %}background:color-mix(in srgb,#2563EB 10%,transparent);color:#2563EB;{% endif %}">{{ task.get_task_type_display }}</span>
+          </div>
+          <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);margin-top:.25rem;">{{ task.title }}</div>
           {% if task.address %}
           <div style="font-size:.7rem;color:var(--color-text-muted);margin-top:.15rem;">📍 {{ task.address }}</div>
           {% endif %}
@@ -222,6 +304,15 @@
         </td>
         <td style="padding:.875rem 1.25rem;font-size:.78rem;color:var(--color-text-secondary);">
           {{ task.due_date|date:"d/m/Y"|default:"Sin fecha" }}
+        </td>
+        <td style="padding:.875rem 1.25rem;">
+          <span style="font-size:.72rem;font-weight:700;padding:.25rem .65rem;border-radius:9999px;
+            {% if task.priority == 'urgent' %}background:color-mix(in srgb,var(--color-danger) 12%,transparent);color:var(--color-danger);border:1px solid color-mix(in srgb,var(--color-danger) 22%,transparent);
+            {% elif task.priority == 'high' %}background:color-mix(in srgb,#D97706 12%,transparent);color:#D97706;border:1px solid color-mix(in srgb,#D97706 22%,transparent);
+            {% elif task.priority == 'low' %}background:color-mix(in srgb,var(--color-text-muted) 10%,transparent);color:var(--color-text-muted);border:1px solid color-mix(in srgb,var(--color-text-muted) 18%,transparent);
+            {% else %}background:color-mix(in srgb,#2563EB 10%,transparent);color:#2563EB;border:1px solid color-mix(in srgb,#2563EB 18%,transparent);{% endif %}">
+            {{ task.get_priority_display }}
+          </span>
         </td>
         <td style="padding:.875rem 1.25rem;">
           {% if task.status == 'pending' %}
@@ -247,7 +338,7 @@
       </tr>
       {% empty %}
       <tr>
-        <td colspan="6" style="padding:3rem;text-align:center;color:var(--color-text-muted);font-size:.875rem;">
+        <td colspan="7" style="padding:3rem;text-align:center;color:var(--color-text-muted);font-size:.875rem;">
           No hay tareas con los filtros aplicados.
         </td>
       </tr>
@@ -256,4 +347,105 @@
   </table>
   </div>
 </div>
+
+<script>
+function dtToggleView() {
+  const list = document.getElementById('dt-list-view');
+  const pipeline = document.getElementById('dt-pipeline-view');
+  const btn = document.getElementById('dt-view-toggle');
+  const showingPipeline = pipeline.style.display !== 'none';
+  pipeline.style.display = showingPipeline ? 'none' : 'block';
+  list.style.display     = showingPipeline ? 'block' : 'none';
+  btn.lastChild.textContent = showingPipeline ? ' Vista pipeline' : ' Vista lista';
+}
+
+(function () {
+  const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+  let dragged = null, fromCol = null;
+
+  function updateCount(stageKey, delta) {
+    const el = document.querySelector(`#dt-pipeline-board [data-count="${stageKey}"]`);
+    if (!el) return;
+    el.textContent = parseInt(el.textContent, 10) + delta;
+  }
+
+  function showToast(msg, type) {
+    const t = document.getElementById('dt-toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  function removeEmpty(body) { body.querySelectorAll('.kb-empty').forEach(e => e.remove()); }
+
+  function maybeAddEmpty(body) {
+    if (body.querySelectorAll('.kb-card').length === 0) {
+      const ghost = body.querySelector('.kb-drop-ghost');
+      const empty = document.createElement('div');
+      empty.className = 'kb-empty';
+      empty.textContent = 'Sin tareas';
+      body.insertBefore(empty, ghost ? ghost.nextSibling : null);
+    }
+  }
+
+  document.querySelectorAll('#dt-pipeline-board .kb-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      dragged = card;
+      fromCol = card.dataset.stage;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.dataset.pk);
+    });
+    card.addEventListener('dragend', () => {
+      setTimeout(() => card.classList.remove('dragging'), 0);
+      document.querySelectorAll('#dt-pipeline-board .kb-col-body').forEach(b => b.classList.remove('drag-active'));
+      document.querySelectorAll('#dt-pipeline-board .kb-col').forEach(c => c.classList.remove('drag-over'));
+    });
+  });
+
+  document.querySelectorAll('#dt-pipeline-board .kb-col-body').forEach(body => {
+    const col = body.closest('.kb-col');
+    const toStage = body.dataset.body;
+
+    body.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      body.classList.add('drag-active');
+      col.classList.add('drag-over');
+    });
+    body.addEventListener('dragleave', e => {
+      if (!body.contains(e.relatedTarget)) { body.classList.remove('drag-active'); col.classList.remove('drag-over'); }
+    });
+    body.addEventListener('drop', e => {
+      e.preventDefault();
+      body.classList.remove('drag-active');
+      col.classList.remove('drag-over');
+      if (!dragged || toStage === fromCol) return;
+
+      const moveUrl = dragged.dataset.moveUrl;
+      const ghost = body.querySelector('.kb-drop-ghost');
+      removeEmpty(body);
+      dragged.dataset.stage = toStage;
+      body.insertBefore(dragged, ghost ? ghost.nextSibling : body.firstChild);
+      dragged.style.setProperty('--kb-col-color', col.style.getPropertyValue('--kb-col-color'));
+      updateCount(fromCol, -1);
+      updateCount(toStage, +1);
+      maybeAddEmpty(document.querySelector(`#dt-pipeline-board [data-body="${fromCol}"]`));
+
+      fetch(moveUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ priority: toStage }),
+      })
+      .then(r => r.json())
+      .then(data => showToast(data.ok ? `Prioridad → ${data.label}` : 'Error al actualizar', data.ok ? 'ok' : 'err'))
+      .catch(() => showToast('Error de red', 'err'));
+
+      fromCol = toStage;
+    });
+  });
+})();
+</script>
 {% endblock %}
