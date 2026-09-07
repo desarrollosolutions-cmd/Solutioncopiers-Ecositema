@@ -723,12 +723,13 @@ def _create_delivery_task_for_ticket(ticket, created_by):
     )
 
 
-def _filter_tickets_qs(request, qs, include_priority=True):
-    """Filtros compartidos entre la lista de tickets, el pipeline y la exportación."""
-    status   = request.GET.get("status", "")
-    priority = request.GET.get("priority", "")
-    date_str = request.GET.get("date", "").strip()
-    q        = request.GET.get("q", "").strip()
+def _filter_tickets_qs(request, qs, include_priority=True, params=None):
+    """Filtros compartidos entre la lista de tickets, el pipeline, la exportación y el borrado en lote."""
+    params   = params if params is not None else request.GET
+    status   = params.get("status", "")
+    priority = params.get("priority", "")
+    date_str = params.get("date", "").strip()
+    q        = params.get("q", "").strip()
     if status:
         qs = qs.filter(status=status)
     if include_priority and priority:
@@ -1214,6 +1215,59 @@ class ExportTicketsCSVView(View):
                 t.resolution_notes,
             ])
         return resp
+
+
+@da_decorator
+class ExportDeliveryTasksCSVView(View):
+    """Exporta a Excel (CSV) las tareas de campo con los mismos filtros de la lista: mensajero/técnico, estado y fecha."""
+
+    def get(self, request):
+        from apps.dashboard.models import DeliveryTask
+        import csv as csv_mod
+        qs = DeliveryTask.objects.select_related("field_user__user").order_by("-due_date", "order")
+        qs = _filter_delivery_tasks_qs(request.GET, qs)
+        resp   = _csv_response("tareas_campo.csv")
+        writer = csv_mod.writer(resp)
+        writer.writerow([
+            "Tarea", "Tipo", "Prioridad", "Cliente", "Dirección", "Asignado a", "Rol",
+            "Estado", "Fecha", "Método de pago", "# Factura/Remisión",
+            "Completada", "Notas de entrega",
+        ])
+        for t in qs:
+            writer.writerow([
+                t.title, t.get_task_type_display(), t.get_priority_display(),
+                t.client_name, t.address,
+                t.field_user.user.get_full_name() or t.field_user.user.username,
+                t.field_user.get_role_display(), t.get_status_display(),
+                t.due_date.strftime("%Y-%m-%d") if t.due_date else "",
+                t.get_payment_method_display(), t.completion_invoice,
+                t.completed_at.strftime("%Y-%m-%d %H:%M") if t.completed_at else "",
+                t.completion_notes,
+            ])
+        return resp
+
+
+@da_decorator
+class TicketBulkDeleteView(View):
+    """POST /dashadmin/tickets/limpiar/ — borra en lote los tickets filtrados, tras confirmar que ya se exportaron."""
+
+    def post(self, request):
+        from apps.leads.models import ServiceTicket
+        from django.contrib import messages
+        params = request.POST
+        has_filter = any(params.get(k, "").strip() for k in ("status", "priority", "date", "q"))
+        if not has_filter:
+            messages.error(request, "Debes aplicar al menos un filtro antes de eliminar en lote — no se permite borrar todo sin filtrar.")
+            return redirect("dashboard:tickets")
+        if params.get("confirm_exported") != "on":
+            messages.error(request, "Debes confirmar que ya exportaste estos datos antes de eliminarlos.")
+            return redirect("dashboard:tickets")
+        qs = ServiceTicket.objects.all()
+        qs = _filter_tickets_qs(request, qs, params=params)
+        count = qs.count()
+        qs.delete()
+        messages.success(request, f"Se eliminaron {count} ticket(s).")
+        return redirect("dashboard:tickets")
 
 
 # ---------------------------------------------------------------------------
@@ -5004,6 +5058,20 @@ class CampoTaskCompleteView(View):
         return JsonResponse({"ok": True, "task_id": task.pk})
 
 
+def _filter_delivery_tasks_qs(params, qs):
+    """Filtros compartidos entre la lista de tareas de campo y el borrado en lote."""
+    fu_pk    = params.get("user")
+    status   = params.get("status")
+    date_str = params.get("date")
+    if fu_pk:
+        qs = qs.filter(field_user__pk=fu_pk)
+    if status:
+        qs = qs.filter(status=status)
+    if date_str:
+        qs = qs.filter(due_date=date_str)
+    return qs
+
+
 @da_decorator
 class CampoTaskListView(View):
     template_name = "dashboard/campo/task_list.html"
@@ -5013,16 +5081,11 @@ class CampoTaskListView(View):
         qs = DeliveryTask.objects.select_related(
             "field_user__user", "created_by"
         ).order_by("-due_date", "field_user__user__first_name", "order")
+        qs = _filter_delivery_tasks_qs(request.GET, qs)
 
         fu_pk    = request.GET.get("user")
         status   = request.GET.get("status")
         date_str = request.GET.get("date")
-        if fu_pk:
-            qs = qs.filter(field_user__pk=fu_pk)
-        if status:
-            qs = qs.filter(status=status)
-        if date_str:
-            qs = qs.filter(due_date=date_str)
 
         from apps.leads.models import Lead
 
@@ -5035,6 +5098,7 @@ class CampoTaskListView(View):
             )
 
         # ── Pipeline por urgencia (mismos filtros de user/status/date que la tabla) ──
+        filtered_count = qs.count()
         task_list = list(qs[:300])
         PRIORITY_META = [
             {"key": "urgent", "label": "Urgente", "css_color": "var(--color-danger)"},
@@ -5061,6 +5125,7 @@ class CampoTaskListView(View):
             "payment_choices": DeliveryTask.PaymentMethod.choices,
             "pending_queue":  pending_queue,
             "priority_stages": PRIORITY_META,
+            "filtered_count": filtered_count,
         })
 
     def post(self, request):
@@ -5118,6 +5183,29 @@ class CampoTaskPriorityMoveView(View):
             "label": valid[new_priority],
             "old_priority": old_priority,
         })
+
+
+@da_decorator
+class CampoTaskBulkDeleteView(View):
+    """POST /dashadmin/campo/tareas/limpiar/ — borra en lote las tareas filtradas, tras confirmar que ya se exportaron."""
+
+    def post(self, request):
+        from apps.dashboard.models import DeliveryTask
+        from django.contrib import messages
+        params = request.POST
+        has_filter = any(params.get(k, "").strip() for k in ("user", "status", "date"))
+        if not has_filter:
+            messages.error(request, "Debes aplicar al menos un filtro antes de eliminar en lote — no se permite borrar todo sin filtrar.")
+            return redirect("dashboard:campo_tasks")
+        if params.get("confirm_exported") != "on":
+            messages.error(request, "Debes confirmar que ya exportaste estos datos antes de eliminarlos.")
+            return redirect("dashboard:campo_tasks")
+        qs = DeliveryTask.objects.all()
+        qs = _filter_delivery_tasks_qs(params, qs)
+        count = qs.count()
+        qs.delete()
+        messages.success(request, f"Se eliminaron {count} tarea(s).")
+        return redirect("dashboard:campo_tasks")
 
 
 @da_decorator

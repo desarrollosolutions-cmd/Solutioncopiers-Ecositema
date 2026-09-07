@@ -20,6 +20,7 @@ urlpatterns = [
     path("tickets/nuevo/",            views.TicketCreateView.as_view(),       name="ticket_create"),
     path("tickets/<int:pk>/",         views.TicketDetailView.as_view(),       name="ticket_detail"),
     path("tickets/<int:pk>/prioridad/", views.TicketPriorityMoveView.as_view(), name="ticket_priority_move"),
+    path("tickets/limpiar/",          views.TicketBulkDeleteView.as_view(),   name="tickets_bulk_delete"),
 
     # Contratos de alquiler
     path("contratos/",           views.ContractListView.as_view(),   name="contracts"),
@@ -40,6 +41,7 @@ urlpatterns = [
     path("exportar/cotizaciones/",views.ExportQuotesCSVView.as_view(),   name="export_quotes"),
     path("exportar/contratos/",  views.ExportContractsCSVView.as_view(), name="export_contracts"),
     path("exportar/tickets/",    views.ExportTicketsCSVView.as_view(),   name="export_tickets"),
+    path("exportar/tareas-campo/",views.ExportDeliveryTasksCSVView.as_view(), name="export_delivery_tasks"),
 
     # Cotizaciones
     path("cotizaciones/",                    views.QuoteListView.as_view(),          name="quotes"),
@@ -142,6 +144,7 @@ urlpatterns = [
     path("campo/tareas/reordenar/",          views.CampoTaskReorderView.as_view(),      name="campo_task_reorder"),
     path("campo/tareas/<int:pk>/",           views.CampoTaskDetailView.as_view(),       name="campo_task_detail"),
     path("campo/tareas/<int:pk>/prioridad/", views.CampoTaskPriorityMoveView.as_view(), name="campo_task_priority_move"),
+    path("campo/tareas/limpiar/",            views.CampoTaskBulkDeleteView.as_view(),   name="campo_tasks_bulk_delete"),
     path("campo/rutas/",                     views.CampoRouteHistoryView.as_view(),     name="campo_routes"),
     path("campo/rutas/json/",                views.CampoRouteJsonView.as_view(),        name="campo_routes_json"),
     path("campo/rutas/exportar/",            views.CampoRouteExportView.as_view(),      name="campo_routes_export"),
