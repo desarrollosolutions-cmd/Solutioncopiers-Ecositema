@@ -166,34 +166,6 @@
   </button>
 </form>
 
-<div style="margin-bottom:1.5rem;">
-  <button type="button" onclick="dtToggleCleanup()" style="background:none;border:none;color:var(--color-danger);font-size:.75rem;font-weight:600;cursor:pointer;padding:0;display:flex;align-items:center;gap:.35rem;">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-    Zona de limpieza (eliminar en lote)
-  </button>
-  <div id="dt-cleanup-panel" style="display:none;margin-top:.75rem;padding:1.125rem 1.25rem;border:1px solid color-mix(in srgb,var(--color-danger) 30%,transparent);border-radius:.75rem;background:color-mix(in srgb,var(--color-danger) 4%,transparent);">
-    <div style="font-size:.8rem;font-weight:700;color:var(--color-danger);margin-bottom:.5rem;">Eliminar tareas filtradas permanentemente</div>
-    <div style="font-size:.78rem;color:var(--color-text-secondary);margin-bottom:.875rem;line-height:1.5;">
-      Se eliminarán las <strong>{{ filtered_count }}</strong> tarea{{ filtered_count|pluralize:"s" }} que coinciden con los filtros actuales (mensajero/técnico, estado, fecha). Esta acción no se puede deshacer.
-      <a href="{% url 'dashboard:export_delivery_tasks' %}?{{ request.GET.urlencode }}" style="color:var(--color-primary);font-weight:600;">Exporta primero →</a>
-    </div>
-    <form method="post" action="{% url 'dashboard:campo_tasks_bulk_delete' %}"
-      onsubmit="return confirm('¿Eliminar permanentemente {{ filtered_count }} tarea(s)? Esta acción no se puede deshacer.');">
-      {% csrf_token %}
-      <input type="hidden" name="user" value="{{ filter_user }}">
-      <input type="hidden" name="status" value="{{ filter_status }}">
-      <input type="hidden" name="date" value="{{ filter_date }}">
-      <label style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;margin-bottom:.875rem;cursor:pointer;">
-        <input type="checkbox" name="confirm_exported" required style="width:1rem;height:1rem;">
-        Ya exporté estos datos a Excel
-      </label>
-      <button type="submit" class="da-btn" style="background:var(--color-danger);color:#fff;border:none;">
-        Eliminar {{ filtered_count }} tarea{{ filtered_count|pluralize:"s" }} filtrada{{ filtered_count|pluralize:"s" }}
-      </button>
-    </form>
-  </div>
-</div>
-
 <div id="dt-pipeline-view" style="display:none;">
   <div style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.75rem;">Pipeline por urgencia — arrastra una tarea entre columnas para cambiar su prioridad</div>
   <div class="pipeline-board" id="dt-pipeline-board">
@@ -303,11 +275,19 @@
 {% endif %}
 
 {# ── Lista ── #}
+<form id="dt-bulk-form" method="post" action="{% url 'dashboard:campo_tasks_bulk_delete' %}" onsubmit="return dtConfirmBulkDelete();">
+{% csrf_token %}
+<div id="dt-bulk-bar" style="display:none;align-items:center;gap:.875rem;padding:.75rem 1.125rem;margin-bottom:1rem;border-radius:.625rem;background:color-mix(in srgb,var(--color-danger) 8%,transparent);border:1px solid color-mix(in srgb,var(--color-danger) 25%,transparent);">
+  <span style="font-size:.8125rem;font-weight:600;color:var(--color-danger);"><span id="dt-bulk-count">0</span> tarea(s) seleccionada(s)</span>
+  <button type="submit" class="da-btn da-btn-sm" style="background:var(--color-danger);color:#fff;border:none;">Eliminar seleccionadas</button>
+</div>
+
 <div id="dt-list-view" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
   <div style="overflow-x:auto;">
   <table style="width:100%;border-collapse:collapse;min-width:600px;">
     <thead>
       <tr style="border-bottom:1px solid var(--color-border);">
+        <th style="padding:.75rem 1.25rem;width:2rem;"><input type="checkbox" id="dt-check-all" onclick="dtToggleAll(this)"></th>
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Tarea</th>
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Asignado a</th>
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Fecha</th>
@@ -321,6 +301,7 @@
       {% for task in tasks %}
       <tr style="border-bottom:1px solid var(--color-border);transition:background .15s;"
           onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='transparent'">
+        <td style="padding:.875rem 1.25rem;"><input type="checkbox" class="dt-row-check" name="selected" value="{{ task.pk }}" onclick="dtUpdateBulkBar()"></td>
         <td style="padding:.875rem 1.25rem;">
           <div style="display:flex;align-items:center;gap:.4rem;">
             <span style="font-size:.62rem;font-weight:700;padding:.15rem .5rem;border-radius:.3rem;{% if task.task_type == 'recoleccion' %}background:color-mix(in srgb,#8B5CF6 12%,transparent);color:#7C3AED;{% else %}background:color-mix(in srgb,#2563EB 10%,transparent);color:#2563EB;{% endif %}">{{ task.get_task_type_display }}</span>
@@ -370,7 +351,7 @@
       </tr>
       {% empty %}
       <tr>
-        <td colspan="7" style="padding:3rem;text-align:center;color:var(--color-text-muted);font-size:.875rem;">
+        <td colspan="8" style="padding:3rem;text-align:center;color:var(--color-text-muted);font-size:.875rem;">
           No hay tareas con los filtros aplicados.
         </td>
       </tr>
@@ -379,11 +360,25 @@
   </table>
   </div>
 </div>
+</form>
 
 <script>
-function dtToggleCleanup() {
-  const panel = document.getElementById('dt-cleanup-panel');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+function dtUpdateBulkBar() {
+  const checked = document.querySelectorAll('.dt-row-check:checked');
+  const bar = document.getElementById('dt-bulk-bar');
+  document.getElementById('dt-bulk-count').textContent = checked.length;
+  bar.style.display = checked.length > 0 ? 'flex' : 'none';
+}
+
+function dtToggleAll(master) {
+  document.querySelectorAll('.dt-row-check').forEach(cb => cb.checked = master.checked);
+  dtUpdateBulkBar();
+}
+
+function dtConfirmBulkDelete() {
+  const n = document.querySelectorAll('.dt-row-check:checked').length;
+  if (n === 0) return false;
+  return confirm(`¿Eliminar permanentemente ${n} tarea(s) seleccionada(s)? Esta acción no se puede deshacer.`);
 }
 
 function dtToggleView() {

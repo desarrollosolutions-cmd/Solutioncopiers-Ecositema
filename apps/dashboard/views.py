@@ -1249,21 +1249,16 @@ class ExportDeliveryTasksCSVView(View):
 
 @da_decorator
 class TicketBulkDeleteView(View):
-    """POST /dashadmin/tickets/limpiar/ — borra en lote los tickets filtrados, tras confirmar que ya se exportaron."""
+    """POST /dashadmin/tickets/limpiar/ — borra los tickets seleccionados (checkboxes) en la lista."""
 
     def post(self, request):
         from apps.leads.models import ServiceTicket
         from django.contrib import messages
-        params = request.POST
-        has_filter = any(params.get(k, "").strip() for k in ("status", "priority", "date", "q"))
-        if not has_filter:
-            messages.error(request, "Debes aplicar al menos un filtro antes de eliminar en lote — no se permite borrar todo sin filtrar.")
+        pks = request.POST.getlist("selected")
+        if not pks:
+            messages.error(request, "Selecciona al menos un ticket para eliminar.")
             return redirect("dashboard:tickets")
-        if params.get("confirm_exported") != "on":
-            messages.error(request, "Debes confirmar que ya exportaste estos datos antes de eliminarlos.")
-            return redirect("dashboard:tickets")
-        qs = ServiceTicket.objects.all()
-        qs = _filter_tickets_qs(request, qs, params=params)
+        qs = ServiceTicket.objects.filter(pk__in=pks)
         count = qs.count()
         qs.delete()
         messages.success(request, f"Se eliminaron {count} ticket(s).")
@@ -5187,21 +5182,16 @@ class CampoTaskPriorityMoveView(View):
 
 @da_decorator
 class CampoTaskBulkDeleteView(View):
-    """POST /dashadmin/campo/tareas/limpiar/ — borra en lote las tareas filtradas, tras confirmar que ya se exportaron."""
+    """POST /dashadmin/campo/tareas/limpiar/ — borra las tareas seleccionadas (checkboxes) en la lista."""
 
     def post(self, request):
         from apps.dashboard.models import DeliveryTask
         from django.contrib import messages
-        params = request.POST
-        has_filter = any(params.get(k, "").strip() for k in ("user", "status", "date"))
-        if not has_filter:
-            messages.error(request, "Debes aplicar al menos un filtro antes de eliminar en lote — no se permite borrar todo sin filtrar.")
+        pks = request.POST.getlist("selected")
+        if not pks:
+            messages.error(request, "Selecciona al menos una tarea para eliminar.")
             return redirect("dashboard:campo_tasks")
-        if params.get("confirm_exported") != "on":
-            messages.error(request, "Debes confirmar que ya exportaste estos datos antes de eliminarlos.")
-            return redirect("dashboard:campo_tasks")
-        qs = DeliveryTask.objects.all()
-        qs = _filter_delivery_tasks_qs(params, qs)
+        qs = DeliveryTask.objects.filter(pk__in=pks)
         count = qs.count()
         qs.delete()
         messages.success(request, f"Se eliminaron {count} tarea(s).")
