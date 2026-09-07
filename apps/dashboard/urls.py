@@ -39,6 +39,7 @@ urlpatterns = [
     path("exportar/leads/",      views.ExportLeadsCSVView.as_view(),     name="export_leads"),
     path("exportar/cotizaciones/",views.ExportQuotesCSVView.as_view(),   name="export_quotes"),
     path("exportar/contratos/",  views.ExportContractsCSVView.as_view(), name="export_contracts"),
+    path("exportar/tickets/",    views.ExportTicketsCSVView.as_view(),   name="export_tickets"),
 
     # Cotizaciones
     path("cotizaciones/",                    views.QuoteListView.as_view(),          name="quotes"),

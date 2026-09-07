@@ -103,11 +103,16 @@
     <option value="">Todas las prioridades</option>
     {% for val, lbl in priority_choices %}<option value="{{ val }}" {% if current_priority == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
   </select>
+  <input type="date" name="date" class="da-input" style="width:auto;padding:.5rem .875rem;" value="{{ current_date }}" title="Fecha programada (visita)">
   <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
-  {% if current_q or current_status or current_priority %}
+  {% if current_q or current_status or current_priority or current_date %}
   <a href="{% url 'dashboard:tickets' %}" class="da-btn da-btn-secondary">Limpiar</a>
   {% endif %}
-  <button type="button" class="da-btn da-btn-secondary" style="margin-left:auto;" onclick="tktToggleView()" id="tkt-view-toggle">
+  <a href="{% url 'dashboard:export_tickets' %}?{{ request.GET.urlencode }}" class="da-btn da-btn-secondary" style="margin-left:auto;">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H8a2 2 0 01-2-2V5a2 2 0 012-2h6l6 6v11a2 2 0 01-2 2z"/></svg>
+    Exportar Excel
+  </a>
+  <button type="button" class="da-btn da-btn-secondary" onclick="tktToggleView()" id="tkt-view-toggle">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v18M3 9h18"/></svg>
     Vista pipeline
   </button>

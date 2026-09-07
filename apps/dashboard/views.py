@@ -723,6 +723,28 @@ def _create_delivery_task_for_ticket(ticket, created_by):
     )
 
 
+def _filter_tickets_qs(request, qs, include_priority=True):
+    """Filtros compartidos entre la lista de tickets, el pipeline y la exportación."""
+    status   = request.GET.get("status", "")
+    priority = request.GET.get("priority", "")
+    date_str = request.GET.get("date", "").strip()
+    q        = request.GET.get("q", "").strip()
+    if status:
+        qs = qs.filter(status=status)
+    if include_priority and priority:
+        qs = qs.filter(priority=priority)
+    if date_str:
+        qs = qs.filter(scheduled_for__date=date_str)
+    if q:
+        qs = qs.filter(
+            Q(lead__full_name__icontains=q) |
+            Q(lead__company_name__icontains=q) |
+            Q(ticket_number__icontains=q) |
+            Q(description__icontains=q)
+        )
+    return qs
+
+
 @da_decorator
 class TicketListView(ListView):
     template_name = "dashboard/tickets/list.html"
@@ -732,21 +754,7 @@ class TicketListView(ListView):
     def get_queryset(self):
         from apps.leads.models import ServiceTicket
         qs = ServiceTicket.objects.select_related("lead", "assigned_to", "contract").order_by("-created_at")
-        status   = self.request.GET.get("status", "")
-        priority = self.request.GET.get("priority", "")
-        q        = self.request.GET.get("q", "").strip()
-        if status:
-            qs = qs.filter(status=status)
-        if priority:
-            qs = qs.filter(priority=priority)
-        if q:
-            qs = qs.filter(
-                Q(lead__full_name__icontains=q) |
-                Q(lead__company_name__icontains=q) |
-                Q(ticket_number__icontains=q) |
-                Q(description__icontains=q)
-            )
-        return qs
+        return _filter_tickets_qs(self.request, qs)
 
     def get_context_data(self, **kwargs):
         from apps.leads.models import ServiceTicket
@@ -756,6 +764,7 @@ class TicketListView(ListView):
         ctx["current_status"]   = self.request.GET.get("status", "")
         ctx["current_priority"] = self.request.GET.get("priority", "")
         ctx["current_q"]        = self.request.GET.get("q", "")
+        ctx["current_date"]     = self.request.GET.get("date", "")
         ctx["count_open"]       = ServiceTicket.objects.filter(status="open").count()
         ctx["count_progress"]   = ServiceTicket.objects.filter(status="in_progress").count()
         ctx["count_waiting"]    = ServiceTicket.objects.filter(status="waiting_parts").count()
@@ -763,19 +772,9 @@ class TicketListView(ListView):
         from django.contrib.auth.models import User
         ctx["technicians"] = User.objects.filter(field_profile__role="tecnico")
 
-        # ── Pipeline por urgencia (ignora el filtro de prioridad, respeta estado y búsqueda) ──
+        # ── Pipeline por urgencia (ignora el filtro de prioridad, respeta estado/fecha/búsqueda) ──
         pipeline_qs = ServiceTicket.objects.select_related("lead", "assigned_to").order_by("-priority", "-created_at")
-        status = self.request.GET.get("status", "")
-        q      = self.request.GET.get("q", "").strip()
-        if status:
-            pipeline_qs = pipeline_qs.filter(status=status)
-        if q:
-            pipeline_qs = pipeline_qs.filter(
-                Q(lead__full_name__icontains=q) |
-                Q(lead__company_name__icontains=q) |
-                Q(ticket_number__icontains=q) |
-                Q(description__icontains=q)
-            )
+        pipeline_qs = _filter_tickets_qs(self.request, pipeline_qs, include_priority=False)
         all_tickets = list(pipeline_qs[:300])
         PRIORITY_META = [
             {"key": "urgent", "label": "Urgente", "css_color": "var(--color-danger)"},
@@ -1181,6 +1180,38 @@ class ExportContractsCSVView(View):
                 c.contract_number, c.lead.full_name, c.lead.company_name,
                 c.equipment_description, c.status, str(c.monthly_rate),
                 str(c.start_date), str(c.end_date) if c.end_date else "",
+            ])
+        return resp
+
+
+@da_decorator
+class ExportTicketsCSVView(View):
+    """Exporta a Excel (CSV) los tickets con los mismos filtros de la lista: estado, prioridad, fecha programada y búsqueda."""
+
+    def get(self, request):
+        from apps.leads.models import ServiceTicket
+        import csv as csv_mod
+        qs = ServiceTicket.objects.select_related("lead", "assigned_to").order_by("-created_at")
+        qs = _filter_tickets_qs(request, qs)
+        resp   = _csv_response("tickets.csv")
+        writer = csv_mod.writer(resp)
+        writer.writerow([
+            "N° Ticket", "Cliente", "Empresa", "Tipo de servicio", "Equipo", "Descripción",
+            "Prioridad", "Estado", "Técnico asignado", "Dirección",
+            "Fecha programada", "Creado", "Resuelto", "Notas de resolución",
+        ])
+        for t in qs:
+            assigned = ""
+            if t.assigned_to:
+                assigned = t.assigned_to.get_full_name() or t.assigned_to.username
+            writer.writerow([
+                t.ticket_number, t.lead.full_name, t.lead.company_name,
+                t.get_issue_type_display(), t.equipment_description, t.description,
+                t.get_priority_display(), t.get_status_display(), assigned, t.address,
+                t.scheduled_for.strftime("%Y-%m-%d %H:%M") if t.scheduled_for else "",
+                t.created_at.strftime("%Y-%m-%d"),
+                t.resolved_at.strftime("%Y-%m-%d %H:%M") if t.resolved_at else "",
+                t.resolution_notes,
             ])
         return resp
 
