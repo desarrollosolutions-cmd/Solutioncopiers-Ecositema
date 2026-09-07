@@ -762,6 +762,32 @@ class TicketListView(ListView):
         ctx["count_resolved"]   = ServiceTicket.objects.filter(status="resolved").count()
         from django.contrib.auth.models import User
         ctx["technicians"] = User.objects.filter(field_profile__role="tecnico")
+
+        # ── Pipeline por urgencia (ignora el filtro de prioridad, respeta estado y búsqueda) ──
+        pipeline_qs = ServiceTicket.objects.select_related("lead", "assigned_to").order_by("-priority", "-created_at")
+        status = self.request.GET.get("status", "")
+        q      = self.request.GET.get("q", "").strip()
+        if status:
+            pipeline_qs = pipeline_qs.filter(status=status)
+        if q:
+            pipeline_qs = pipeline_qs.filter(
+                Q(lead__full_name__icontains=q) |
+                Q(lead__company_name__icontains=q) |
+                Q(ticket_number__icontains=q) |
+                Q(description__icontains=q)
+            )
+        all_tickets = list(pipeline_qs[:300])
+        PRIORITY_META = [
+            {"key": "urgent", "label": "Urgente", "css_color": "var(--color-danger)"},
+            {"key": "high",   "label": "Alta",    "css_color": "#D97706"},
+            {"key": "medium", "label": "Media",   "css_color": "#2563EB"},
+            {"key": "low",    "label": "Baja",    "css_color": "var(--color-text-muted)"},
+        ]
+        for stage in PRIORITY_META:
+            stage_tickets = [t for t in all_tickets if t.priority == stage["key"]]
+            stage["tickets"] = stage_tickets
+            stage["count"]   = len(stage_tickets)
+        ctx["priority_stages"] = PRIORITY_META
         return ctx
 
 
@@ -883,6 +909,33 @@ class TicketDetailView(View):
             ctx = self._get_context(ticket)
             ctx["error"] = str(e)
             return render(request, self.template_name, ctx)
+
+
+@da_decorator
+class TicketPriorityMoveView(View):
+    """POST /dashadmin/tickets/<pk>/prioridad/ — drag & drop del pipeline por urgencia."""
+
+    def post(self, request, pk):
+        import json
+        from apps.leads.models import ServiceTicket
+        try:
+            data = json.loads(request.body)
+            new_priority = data.get("priority", "")
+        except Exception:
+            new_priority = request.POST.get("priority", "")
+        valid = dict(ServiceTicket.Priority.choices)
+        if new_priority not in valid:
+            return JsonResponse({"ok": False, "error": "Prioridad inválida"}, status=400)
+        ticket = get_object_or_404(ServiceTicket, pk=pk)
+        old_priority = ticket.priority
+        ticket.priority = new_priority
+        ticket.save(update_fields=["priority", "updated_at"])
+        return JsonResponse({
+            "ok": True, "pk": pk,
+            "priority": new_priority,
+            "label": valid[new_priority],
+            "old_priority": old_priority,
+        })
 
 
 # ---------------------------------------------------------------------------
@@ -4941,6 +4994,15 @@ class CampoTaskListView(View):
             qs = qs.filter(due_date=date_str)
 
         from apps.leads.models import Lead
+
+        # ── Cola de orden de ejecución (solo pendientes del mensajero/técnico filtrado) ──
+        pending_queue = []
+        if fu_pk:
+            pending_queue = list(
+                DeliveryTask.objects.filter(field_user__pk=fu_pk, status=DeliveryTask.Status.PENDING)
+                .order_by("order", "created_at")
+            )
+
         return render(request, self.template_name, {
             "tasks":          qs[:300],
             "field_users":    FieldUser.objects.select_related("user").order_by("user__first_name"),
@@ -4951,6 +5013,7 @@ class CampoTaskListView(View):
             "status_choices": DeliveryTask.Status.choices,
             "leads":          Lead.objects.values_list("full_name", "company_name").order_by("full_name")[:500],
             "payment_choices": DeliveryTask.PaymentMethod.choices,
+            "pending_queue":  pending_queue,
         })
 
     def post(self, request):
@@ -4974,6 +5037,38 @@ class CampoTaskListView(View):
             from django.contrib import messages as dj_msg
             dj_msg.error(request, f"Error al crear tarea: {e}")
         return redirect("dashboard:campo_tasks")
+
+
+@da_decorator
+class CampoTaskReorderView(View):
+    """POST /dashadmin/campo/tareas/reordenar/ — pipeline por urgencia de mensajeros/técnicos."""
+
+    def post(self, request):
+        import json
+        from apps.dashboard.models import DeliveryTask
+        try:
+            data = json.loads(request.body)
+            order_pks = data.get("order", [])
+        except Exception:
+            order_pks = []
+        if not order_pks:
+            return JsonResponse({"ok": False, "error": "Orden vacío"}, status=400)
+        tasks = {
+            t.pk: t for t in
+            DeliveryTask.objects.filter(pk__in=order_pks, status=DeliveryTask.Status.PENDING)
+        }
+        updated = []
+        for idx, raw_pk in enumerate(order_pks):
+            try:
+                task = tasks.get(int(raw_pk))
+            except (TypeError, ValueError):
+                task = None
+            if task and task.order != idx:
+                task.order = idx
+                task.save(update_fields=["order"])
+            if task:
+                updated.append(task.pk)
+        return JsonResponse({"ok": True, "updated": updated})
 
 
 @da_decorator

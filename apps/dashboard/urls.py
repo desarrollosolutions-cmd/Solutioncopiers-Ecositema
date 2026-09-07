@@ -16,9 +16,10 @@ urlpatterns = [
     path("reportes/", views.ReportsView.as_view(), name="reports"),
 
     # Tickets de servicio
-    path("tickets/",           views.TicketListView.as_view(),   name="tickets"),
-    path("tickets/nuevo/",     views.TicketCreateView.as_view(), name="ticket_create"),
-    path("tickets/<int:pk>/",  views.TicketDetailView.as_view(), name="ticket_detail"),
+    path("tickets/",                  views.TicketListView.as_view(),         name="tickets"),
+    path("tickets/nuevo/",            views.TicketCreateView.as_view(),       name="ticket_create"),
+    path("tickets/<int:pk>/",         views.TicketDetailView.as_view(),       name="ticket_detail"),
+    path("tickets/<int:pk>/prioridad/", views.TicketPriorityMoveView.as_view(), name="ticket_priority_move"),
 
     # Contratos de alquiler
     path("contratos/",           views.ContractListView.as_view(),   name="contracts"),
@@ -137,6 +138,7 @@ urlpatterns = [
     path("campo/usuarios/nuevo/",            views.CampoUserCreateView.as_view(),       name="campo_user_create"),
     path("campo/usuarios/<int:pk>/",         views.CampoUserDetailView.as_view(),       name="campo_user_detail"),
     path("campo/tareas/",                    views.CampoTaskListView.as_view(),         name="campo_tasks"),
+    path("campo/tareas/reordenar/",          views.CampoTaskReorderView.as_view(),      name="campo_task_reorder"),
     path("campo/tareas/<int:pk>/",           views.CampoTaskDetailView.as_view(),       name="campo_task_detail"),
     path("campo/rutas/",                     views.CampoRouteHistoryView.as_view(),     name="campo_routes"),
     path("campo/rutas/json/",                views.CampoRouteJsonView.as_view(),        name="campo_routes_json"),
