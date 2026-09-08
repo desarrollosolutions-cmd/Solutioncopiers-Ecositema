@@ -79,6 +79,10 @@
 <div class="da-page-header">
   <h1 class="da-page-title">Servicio técnico</h1>
   <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+    <button type="button" class="da-btn da-btn-secondary" onclick="location.reload()" title="Actualizar página">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Actualizar
+    </button>
     <a href="{% url 'dashboard:campo_map' %}?role=tecnico" class="da-btn da-btn-secondary">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       Técnicos en vivo
