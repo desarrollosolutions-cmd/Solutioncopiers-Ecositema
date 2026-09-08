@@ -263,6 +263,8 @@
 
 {# ── Modal gestionar ticket ── #}
 <div id="pn-ticket-modal" class="pndm-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this)closeTicketModal()">
+  <button type="button" onclick="closeTicketModal()" aria-label="Cerrar"
+    style="position:absolute;top:max(.75rem, env(safe-area-inset-top, .75rem));right:1rem;width:2rem;height:2rem;border-radius:9999px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:1.1rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1;">✕</button>
   <div class="pndm-sheet" onclick="event.stopPropagation()">
     <div class="pndm-handle"></div>
     <div style="font-size:.9375rem;font-weight:700;color:var(--color-text-primary);margin-bottom:.25rem;" id="pn-tmodal-title">Gestionar ticket</div>
@@ -294,6 +296,8 @@
 </div>
 
 <div id="pn-delivery-modal" class="pndm-overlay" role="dialog" aria-modal="true">
+  <button type="button" onclick="closeDModal()" aria-label="Cerrar"
+    style="position:absolute;top:max(.75rem, env(safe-area-inset-top, .75rem));right:1rem;width:2rem;height:2rem;border-radius:9999px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:1.1rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1;">✕</button>
   <div class="pndm-sheet" onclick="event.stopPropagation()">
     <div class="pndm-handle"></div>
     <div style="font-size:.9375rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1rem;" id="pn-dmodal-title">Confirmar entrega</div>

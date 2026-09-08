@@ -240,6 +240,8 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
 
 {# ── Modal completar tarea ── #}
 <div class="modal-overlay" id="complete-modal" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <button type="button" onclick="closeModal()" aria-label="Cerrar"
+    style="position:absolute;top:max(.75rem, env(safe-area-inset-top, .75rem));right:1rem;width:2rem;height:2rem;border-radius:9999px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:1.1rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1;">✕</button>
   <div class="modal-sheet">
     <div class="modal-title" id="modal-task-title">Completar entrega</div>
 
