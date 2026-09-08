@@ -1158,7 +1158,7 @@ class ExportLeadsCSVView(View):
         from apps.leads.models import Lead
         import csv as csv_mod
         resp   = _csv_response("leads.csv")
-        writer = csv_mod.writer(resp)
+        writer = csv_mod.writer(resp, delimiter=";")
         writer.writerow(["Nombre", "Empresa", "Email", "Teléfono", "Ciudad", "Tamaño", "Cargo", "Fuente", "Creado"])
         for lead in Lead.objects.order_by("-created_at"):
             writer.writerow([
@@ -1175,7 +1175,7 @@ class ExportQuotesCSVView(View):
         from apps.leads.models import Quote
         import csv as csv_mod
         resp   = _csv_response("cotizaciones.csv")
-        writer = csv_mod.writer(resp)
+        writer = csv_mod.writer(resp, delimiter=";")
         writer.writerow(["ID", "Cliente", "Empresa", "Email", "Área", "Estado", "Total", "Motivo pérdida", "Creado", "Cerrado"])
         for q in Quote.objects.select_related("lead").order_by("-created_at"):
             writer.writerow([
@@ -1194,7 +1194,7 @@ class ExportContractsCSVView(View):
         from apps.leads.models import RentalContract
         import csv as csv_mod
         resp   = _csv_response("contratos.csv")
-        writer = csv_mod.writer(resp)
+        writer = csv_mod.writer(resp, delimiter=";")
         writer.writerow(["Contrato", "Cliente", "Empresa", "Equipo", "Estado", "Cuota", "Inicio", "Vencimiento"])
         for c in RentalContract.objects.select_related("lead").order_by("-created_at"):
             writer.writerow([
@@ -1215,7 +1215,7 @@ class ExportTicketsCSVView(View):
         qs = ServiceTicket.objects.select_related("lead", "assigned_to").order_by("-created_at")
         qs = _filter_tickets_qs(request, qs)
         resp   = _csv_response("tickets.csv")
-        writer = csv_mod.writer(resp)
+        writer = csv_mod.writer(resp, delimiter=";")
         writer.writerow([
             "N° Ticket", "Cliente", "Empresa", "Tipo de servicio", "Equipo", "Descripción",
             "Prioridad", "Estado", "Técnico asignado", "Dirección",
@@ -1253,7 +1253,7 @@ class ExportDeliveryTasksCSVView(View):
         qs = DeliveryTask.objects.select_related("field_user__user").order_by("-due_date", "order")
         qs = _filter_delivery_tasks_qs(request.GET, qs)
         resp   = _csv_response("tareas_campo.csv")
-        writer = csv_mod.writer(resp)
+        writer = csv_mod.writer(resp, delimiter=";")
         writer.writerow([
             "Ruta", "Cliente / Prov", "Dirección", "Firma cliente", "Nro de factura",
             "Efectivo", "Banco", "Crédito (CXC)", "Vendedor", "Observaciones",
@@ -5410,7 +5410,7 @@ class CampoRouteExportView(View):
         response = HttpResponse(content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
         response.write("﻿")  # BOM para Excel
-        writer = csv.writer(response)
+        writer = csv.writer(response, delimiter=";")
 
         total_points    = sum(len(v) for v in logs_by_user.values())
         total_completed = sum(len(v) for v in tasks_by_user.values())

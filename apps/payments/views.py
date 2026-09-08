@@ -949,7 +949,7 @@ class LibroVentasView(CRMLoginMixin, View):
         from django.http import HttpResponse as HR
         resp = HR(content_type="text/csv; charset=utf-8-sig")
         resp["Content-Disposition"] = f'attachment; filename="libro_ventas_{label}.csv"'
-        w = csv.writer(resp)
+        w = csv.writer(resp, delimiter=";")
         w.writerow([
             "Nro. Factura", "Fecha", "NIT/Cédula cliente", "Cliente",
             "Subtotal", "IVA (19%)", "Total facturado",
@@ -1092,7 +1092,7 @@ class RetencionesSufridasView(CRMLoginMixin, View):
         from django.http import HttpResponse as HR
         resp = HR(content_type="text/csv; charset=utf-8-sig")
         resp["Content-Disposition"] = f'attachment; filename="retenciones_{label}.csv"'
-        w = csv.writer(resp)
+        w = csv.writer(resp, delimiter=";")
         w.writerow([
             "Factura", "Fecha", "NIT cliente", "Cliente",
             "Total facturado", "RteFuente %", "RteFuente $",

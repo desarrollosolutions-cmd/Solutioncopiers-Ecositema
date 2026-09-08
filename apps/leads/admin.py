@@ -18,7 +18,7 @@ def _export_csv(queryset, filename, fields):
     """Descarga CSV con los campos indicados como (header, callable/attr)."""
     response = HttpResponse(content_type="text/csv; charset=utf-8-sig")
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
-    writer = csv.writer(response)
+    writer = csv.writer(response, delimiter=";")
     writer.writerow([h for h, _ in fields])
     for obj in queryset:
         row = []
