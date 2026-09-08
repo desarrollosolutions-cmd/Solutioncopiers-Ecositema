@@ -131,11 +131,11 @@
   {% for ticket in tickets %}
   <div style="padding:.875rem 1.25rem;border-top:1px solid color-mix(in srgb,var(--color-border) 55%,transparent);">
     <div style="display:flex;align-items:flex-start;gap:.875rem;">
-      <div style="width:2rem;height:2rem;border-radius:.5rem;background:color-mix(in srgb,var(--color-primary) 10%,transparent);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;">
-        <svg fill="none" stroke="var(--color-primary)" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <div style="width:2rem;height:2rem;border-radius:.5rem;background:color-mix(in srgb,var(--color-primary) 10%,transparent);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;font-size:.8rem;font-weight:800;color:var(--color-primary);" title="Servicio N° {{ forloop.counter }} de la ruta">
+        {{ forloop.counter }}
       </div>
       <div style="flex:1;min-width:0;">
-        <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">{{ ticket.equipment_description|default:ticket.description|truncatechars:70 }}</div>
+        <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">Servicio #{{ forloop.counter }} — {{ ticket.equipment_description|default:ticket.description|truncatechars:55 }}</div>
         <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.15rem;">
           {{ ticket.lead.full_name }} · {{ ticket.ticket_number }}
           {% if ticket.scheduled_for %} · <span style="color:var(--color-warning);">{{ ticket.scheduled_for|date:"d/m H:i" }}</span>{% endif %}

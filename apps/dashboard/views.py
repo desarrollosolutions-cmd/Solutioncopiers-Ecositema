@@ -4893,7 +4893,7 @@ class CampoTurnoView(View):
         tickets = ServiceTicket.objects.filter(
             assigned_to=request.user,
             status__in=("open", "in_progress", "waiting_parts")
-        ).select_related("lead").order_by("priority", "created_at")[:20]
+        ).select_related("lead").order_by("order", "priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
         from django.db.models import Case, When, IntegerField, Value
@@ -5654,7 +5654,7 @@ class PanelTurnoView(View):
         tickets = ServiceTicket.objects.filter(
             assigned_to=request.user,
             status__in=("open", "in_progress", "waiting_parts")
-        ).select_related("lead").order_by("priority", "created_at")[:20]
+        ).select_related("lead").order_by("order", "priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
         from django.db.models import Case, When, IntegerField, Value

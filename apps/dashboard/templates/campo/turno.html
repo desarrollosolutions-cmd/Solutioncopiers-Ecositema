@@ -201,11 +201,11 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
   <a href="{% url 'campo:ticket_detail' ticket.pk %}" style="display:block;text-decoration:none;color:inherit;">
   {% endif %}
   <div class="task-card" style="{% if field_user.role == 'tecnico' %}cursor:pointer;transition:border-color .2s;{% endif %}">
-    <div class="task-icon" style="background:rgba(139,92,246,.12);color:#7C3AED;">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    <div class="task-icon" style="background:rgba(139,92,246,.12);color:#7C3AED;font-size:.85rem;font-weight:800;" title="Servicio N° {{ forloop.counter }} de la ruta">
+      {{ forloop.counter }}
     </div>
     <div class="task-body">
-      <div class="task-title">{{ ticket.equipment_description|default:ticket.description|truncatechars:80 }}</div>
+      <div class="task-title">Servicio #{{ forloop.counter }} — {{ ticket.equipment_description|default:ticket.description|truncatechars:65 }}</div>
       {% if ticket.lead %}<div class="task-sub">{{ ticket.lead.full_name }}</div>{% endif %}
       <span class="badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
       {% if field_user.role == "tecnico" %}
