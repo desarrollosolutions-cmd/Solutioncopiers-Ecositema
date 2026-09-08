@@ -342,6 +342,7 @@ class ServiceTicket(TimeStampedModel):
     )
     scheduled_for = models.DateTimeField(_("visita programada"), null=True, blank=True)
     resolved_at   = models.DateTimeField(_("resuelto el"), null=True, blank=True)
+    order         = models.PositiveSmallIntegerField(_("orden de ejecución"), default=0)
 
     # Transiciones válidas para el flujo de staff (panel/dashadmin). El portal de
     # técnicos (CampoTicketDetailView) usa su propio mapa, más estricto, sin reapertura.

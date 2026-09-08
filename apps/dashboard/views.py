@@ -736,6 +736,7 @@ def _filter_tickets_qs(request, qs, include_priority=True, params=None):
     status   = params.get("status", "")
     priority = params.get("priority", "")
     date_str = params.get("date", "").strip()
+    tecnico  = params.get("tecnico", "").strip()
     q        = params.get("q", "").strip()
     if status:
         qs = qs.filter(status=status)
@@ -743,6 +744,8 @@ def _filter_tickets_qs(request, qs, include_priority=True, params=None):
         qs = qs.filter(priority=priority)
     if date_str:
         qs = qs.filter(scheduled_for__date=date_str)
+    if tecnico:
+        qs = qs.filter(assigned_to__pk=tecnico)
     if q:
         qs = qs.filter(
             Q(lead__full_name__icontains=q) |
@@ -773,12 +776,24 @@ class TicketListView(ListView):
         ctx["current_priority"] = self.request.GET.get("priority", "")
         ctx["current_q"]        = self.request.GET.get("q", "")
         ctx["current_date"]     = self.request.GET.get("date", "")
+        ctx["current_tecnico"]  = self.request.GET.get("tecnico", "")
         ctx["count_open"]       = ServiceTicket.objects.filter(status="open").count()
         ctx["count_progress"]   = ServiceTicket.objects.filter(status="in_progress").count()
         ctx["count_waiting"]    = ServiceTicket.objects.filter(status="waiting_parts").count()
         ctx["count_resolved"]   = ServiceTicket.objects.filter(status="resolved").count()
         from django.contrib.auth.models import User
         ctx["technicians"] = User.objects.filter(field_profile__role="tecnico")
+
+        # ── Cola de orden de ejecución (solo tickets abiertos del técnico filtrado) ──
+        pending_queue = []
+        if ctx["current_tecnico"]:
+            pending_queue = list(
+                ServiceTicket.objects
+                .filter(assigned_to__pk=ctx["current_tecnico"], status__in=("open", "in_progress", "waiting_parts"))
+                .select_related("lead")
+                .order_by("order", "created_at")
+            )
+        ctx["pending_queue"] = pending_queue
 
         # ── Pipeline por urgencia (ignora el filtro de prioridad, respeta estado/fecha/búsqueda) ──
         pipeline_qs = ServiceTicket.objects.select_related("lead", "assigned_to").order_by("-priority", "-created_at")
@@ -1297,6 +1312,38 @@ class TicketBulkDeleteView(View):
         )
         messages.success(request, f"Se eliminaron {count} ticket(s).")
         return redirect("dashboard:tickets")
+
+
+@da_decorator
+class TicketReorderView(View):
+    """POST /dashadmin/tickets/reordenar/ — orden de ejecución de los tickets abiertos de un técnico."""
+
+    def post(self, request):
+        import json
+        from apps.leads.models import ServiceTicket
+        try:
+            data = json.loads(request.body)
+            order_pks = data.get("order", [])
+        except Exception:
+            order_pks = []
+        if not order_pks:
+            return JsonResponse({"ok": False, "error": "Orden vacío"}, status=400)
+        tickets = {
+            t.pk: t for t in
+            ServiceTicket.objects.filter(pk__in=order_pks, status__in=("open", "in_progress", "waiting_parts"))
+        }
+        updated = []
+        for idx, raw_pk in enumerate(order_pks):
+            try:
+                ticket = tickets.get(int(raw_pk))
+            except (TypeError, ValueError):
+                ticket = None
+            if ticket and ticket.order != idx:
+                ticket.order = idx
+                ticket.save(update_fields=["order"])
+            if ticket:
+                updated.append(ticket.pk)
+        return JsonResponse({"ok": True, "updated": updated})
 
 
 # ---------------------------------------------------------------------------

@@ -107,9 +107,13 @@
     <option value="">Todas las prioridades</option>
     {% for val, lbl in priority_choices %}<option value="{{ val }}" {% if current_priority == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
   </select>
+  <select name="tecnico" class="da-input" style="width:auto;padding:.5rem .875rem;">
+    <option value="">Todos los técnicos</option>
+    {% for tech in technicians %}<option value="{{ tech.pk }}" {% if current_tecnico == tech.pk|stringformat:"s" %}selected{% endif %}>{{ tech.get_full_name|default:tech.username }}</option>{% endfor %}
+  </select>
   <input type="date" name="date" class="da-input" style="width:auto;padding:.5rem .875rem;" value="{{ current_date }}" title="Fecha programada (visita)">
   <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
-  {% if current_q or current_status or current_priority or current_date %}
+  {% if current_q or current_status or current_priority or current_date or current_tecnico %}
   <a href="{% url 'dashboard:tickets' %}" class="da-btn da-btn-secondary">Limpiar</a>
   {% endif %}
   <a href="{% url 'dashboard:export_tickets' %}?{{ request.GET.urlencode }}" class="da-btn da-btn-secondary" style="margin-left:auto;">
@@ -152,6 +156,83 @@
   </div>
   <div id="tkt-toast"></div>
 </div>
+
+{% if current_tecnico and pending_queue %}
+{# ── Orden de ejecución (secuencia de visitas del técnico filtrado) ── #}
+<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.25rem;margin-bottom:1.5rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;">
+    <div>
+      <div style="font-size:.8125rem;font-weight:700;color:var(--color-text-primary);">Orden de ejecución</div>
+      <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.15rem;">Arrastra para priorizar — el primero es el próximo ticket que debe atender</div>
+    </div>
+  </div>
+  <div id="ticket-queue" style="display:flex;flex-direction:column;gap:.5rem;">
+    {% for t in pending_queue %}
+    <div class="ticket-queue-row" draggable="true" data-pk="{{ t.pk }}"
+      style="display:flex;align-items:center;gap:.75rem;padding:.7rem .875rem;border:1px solid var(--color-border);border-radius:.625rem;background:var(--color-bg);cursor:grab;user-select:none;transition:opacity .15s,box-shadow .15s;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;color:var(--color-text-muted);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8h16M4 16h16"/></svg>
+      <span class="ticket-queue-pos" style="font-size:.7rem;font-weight:700;color:var(--color-primary);min-width:1.25rem;">#{{ forloop.counter }}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.ticket_number }} · {{ t.lead.full_name }}</div>
+        {% if t.address %}<div style="font-size:.68rem;color:var(--color-text-muted);">📍 {{ t.address }}</div>{% endif %}
+      </div>
+      <span class="da-badge tkt-priority-{{ t.priority }}" style="flex-shrink:0;">{{ t.get_priority_display }}</span>
+      <a href="{% url 'dashboard:ticket_detail' t.pk %}" style="font-size:.7rem;color:var(--color-primary);text-decoration:none;flex-shrink:0;" draggable="false">Ver</a>
+    </div>
+    {% endfor %}
+  </div>
+  <div id="ticket-queue-toast" style="font-size:.72rem;color:var(--color-text-muted);margin-top:.625rem;height:1rem;"></div>
+</div>
+<script>
+(function () {
+  const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+  const queue = document.getElementById('ticket-queue');
+  const toast = document.getElementById('ticket-queue-toast');
+  let dragged = null;
+
+  function renumber() {
+    queue.querySelectorAll('.ticket-queue-row').forEach((row, i) => {
+      row.querySelector('.ticket-queue-pos').textContent = '#' + (i + 1);
+    });
+  }
+
+  function persistOrder() {
+    const order = Array.from(queue.querySelectorAll('.ticket-queue-row')).map(r => r.dataset.pk);
+    toast.textContent = 'Guardando orden…';
+    fetch('{% url "dashboard:ticket_reorder" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ order }),
+    })
+    .then(r => r.json())
+    .then(data => { toast.textContent = data.ok ? 'Orden guardado ✓' : 'Error al guardar el orden'; setTimeout(() => toast.textContent = '', 2000); })
+    .catch(() => { toast.textContent = 'Error de red al guardar el orden'; });
+  }
+
+  queue.querySelectorAll('.ticket-queue-row').forEach(row => {
+    row.addEventListener('dragstart', e => {
+      dragged = row;
+      setTimeout(() => row.style.opacity = '.4', 0);
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', row.dataset.pk);
+    });
+    row.addEventListener('dragend', () => {
+      row.style.opacity = '1';
+      dragged = null;
+      renumber();
+      persistOrder();
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!dragged || dragged === row) return;
+      const rect = row.getBoundingClientRect();
+      const before = (e.clientY - rect.top) < rect.height / 2;
+      queue.insertBefore(dragged, before ? row : row.nextSibling);
+    });
+  });
+})();
+</script>
+{% endif %}
 
 <form id="tkt-bulk-form" method="post" action="{% url 'dashboard:tickets_bulk_delete' %}" onsubmit="return tktConfirmBulkDelete();">
 {% csrf_token %}

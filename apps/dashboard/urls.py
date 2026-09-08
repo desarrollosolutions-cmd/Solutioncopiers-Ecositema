@@ -21,6 +21,7 @@ urlpatterns = [
     path("tickets/<int:pk>/",         views.TicketDetailView.as_view(),       name="ticket_detail"),
     path("tickets/<int:pk>/prioridad/", views.TicketPriorityMoveView.as_view(), name="ticket_priority_move"),
     path("tickets/limpiar/",          views.TicketBulkDeleteView.as_view(),   name="tickets_bulk_delete"),
+    path("tickets/reordenar/",        views.TicketReorderView.as_view(),      name="ticket_reorder"),
 
     # Contratos de alquiler
     path("contratos/",           views.ContractListView.as_view(),   name="contracts"),

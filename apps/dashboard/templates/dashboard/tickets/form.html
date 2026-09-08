@@ -78,6 +78,10 @@
                 {% for val, lbl in status_choices %}<option value="{{ val }}" {% if is_edit and ticket.status == val %}selected{% elif not is_edit and val == "open" %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
               </select>
             </div>
+            <div class="da-field">
+              <label>Fecha programada <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+              <input type="datetime-local" name="scheduled_for" value="{% if is_edit and ticket.scheduled_for %}{{ ticket.scheduled_for|date:'Y-m-d' }}T{{ ticket.scheduled_for|time:'H:i' }}{% endif %}" class="da-input">
+            </div>
             <div class="da-field da-form-full">
               <label>Equipo / Serial <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
               <input type="text" name="equipment_description" value="{% if is_edit %}{{ ticket.equipment_description }}{% endif %}" class="da-input" placeholder="Ej: Ricoh MP 2555SP — S/N: X12345">
@@ -98,10 +102,6 @@
         <div class="da-card-header">Resolución</div>
         <div class="da-card-body">
           <div style="display:flex;flex-direction:column;gap:.875rem;">
-            <div class="da-field">
-              <label>Visita programada <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
-              <input type="datetime-local" name="scheduled_for" value="{% if is_edit and ticket.scheduled_for %}{{ ticket.scheduled_for|date:'Y-m-d' }}T{{ ticket.scheduled_for|time:'H:i' }}{% endif %}" class="da-input">
-            </div>
             <div class="da-field">
               <label>Notas de resolución / trabajo realizado</label>
               <textarea name="resolution_notes" class="da-input" rows="5" placeholder="Describe qué se hizo, repuestos usados, estado final del equipo…" style="resize:vertical;">{% if is_edit %}{{ ticket.resolution_notes }}{% endif %}</textarea>
