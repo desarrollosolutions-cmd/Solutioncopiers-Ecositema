@@ -146,6 +146,12 @@
             <span class="kb-card-tag">{{ t.get_status_display }}</span>
             <span class="kb-card-date">{{ t.created_at|date:"d/m/Y" }}</span>
           </div>
+          <div style="display:flex;align-items:center;gap:.375rem;margin-top:.5rem;" draggable="false" onclick="event.stopPropagation()">
+            <label style="font-size:.62rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.03em;">Orden</label>
+            <input type="number" min="0" class="kb-order-input" value="{{ t.order }}"
+              data-order-url="{% url 'dashboard:ticket_set_order' t.pk %}"
+              style="width:3.5rem;padding:.25rem .4rem;border:1px solid var(--color-border);border-radius:.35rem;background:var(--color-bg);color:var(--color-text-primary);font-size:.72rem;">
+          </div>
         </div>
         {% empty %}
         <div class="kb-empty">Sin tickets</div>
@@ -432,6 +438,21 @@ function tktToggleView() {
       .catch(() => showToast('Error de red', 'err'));
 
       fromCol = toStage;
+    });
+  });
+
+  document.querySelectorAll('#pipeline-board .kb-order-input').forEach(input => {
+    input.addEventListener('change', () => {
+      const value = parseInt(input.value, 10);
+      if (isNaN(value) || value < 0) { showToast('Orden inválido', 'err'); return; }
+      fetch(input.dataset.orderUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ order: value }),
+      })
+      .then(r => r.json())
+      .then(data => showToast(data.ok ? `Orden → #${data.order}` : 'Error al guardar el orden', data.ok ? 'ok' : 'err'))
+      .catch(() => showToast('Error de red', 'err'));
     });
   });
 })();

@@ -1346,6 +1346,30 @@ class TicketReorderView(View):
         return JsonResponse({"ok": True, "updated": updated})
 
 
+@da_decorator
+class TicketSetOrderView(View):
+    """POST /dashadmin/tickets/<pk>/orden/ — numerar directamente el orden de un ticket desde el pipeline."""
+
+    def post(self, request, pk):
+        import json
+        from apps.leads.models import ServiceTicket
+        try:
+            data = json.loads(request.body)
+            value = data.get("order", None)
+        except Exception:
+            value = request.POST.get("order")
+        try:
+            value = int(value)
+            if value < 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            return JsonResponse({"ok": False, "error": "Orden inválido"}, status=400)
+        ticket = get_object_or_404(ServiceTicket, pk=pk)
+        ticket.order = value
+        ticket.save(update_fields=["order"])
+        return JsonResponse({"ok": True, "pk": pk, "order": value})
+
+
 # ---------------------------------------------------------------------------
 # COTIZACIONES
 # ---------------------------------------------------------------------------
