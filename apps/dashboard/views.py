@@ -1239,7 +1239,13 @@ class ExportTicketsCSVView(View):
 
 @da_decorator
 class ExportDeliveryTasksCSVView(View):
-    """Exporta a Excel (CSV) las tareas de campo con los mismos filtros de la lista: mensajero/técnico, estado y fecha."""
+    """Exporta a Excel (CSV) las tareas de campo con los mismos filtros de la lista: mensajero/técnico, estado y fecha.
+
+    Formato de tabla plana (una fila por tarea, columnas fijas) igual al control de
+    ruta diario que ya usa el negocio en Excel: Ruta, Cliente/Prov, Dirección, Firma
+    cliente, N° Factura, Efectivo/Banco/Crédito (marca la que aplique), Vendedor,
+    Observaciones -- con Tipo y Estado al final como columnas extra.
+    """
 
     def get(self, request):
         from apps.dashboard.models import DeliveryTask
@@ -1249,20 +1255,22 @@ class ExportDeliveryTasksCSVView(View):
         resp   = _csv_response("tareas_campo.csv")
         writer = csv_mod.writer(resp)
         writer.writerow([
-            "Tarea", "Tipo", "Prioridad", "Cliente", "Dirección", "Asignado a", "Rol",
-            "Estado", "Fecha", "Método de pago", "# Factura/Remisión",
-            "Completada", "Notas de entrega",
+            "Ruta", "Cliente / Prov", "Dirección", "Firma cliente", "Nro de factura",
+            "Efectivo", "Banco", "Crédito (CXC)", "Vendedor", "Observaciones",
+            "Tipo", "Estado",
         ])
         for t in qs:
             writer.writerow([
-                t.title, t.get_task_type_display(), t.get_priority_display(),
+                t.due_date.strftime("%d/%m/%Y") if t.due_date else "",
                 t.client_name, t.address,
+                "Sí" if t.completion_signature else "",
+                t.completion_invoice,
+                "X" if t.payment_method == DeliveryTask.PaymentMethod.CASH else "",
+                "X" if t.payment_method == DeliveryTask.PaymentMethod.BANK else "",
+                "X" if t.payment_method == DeliveryTask.PaymentMethod.CXC  else "",
                 t.field_user.user.get_full_name() or t.field_user.user.username,
-                t.field_user.get_role_display(), t.get_status_display(),
-                t.due_date.strftime("%Y-%m-%d") if t.due_date else "",
-                t.get_payment_method_display(), t.completion_invoice,
-                timezone.localtime(t.completed_at).strftime("%Y-%m-%d %H:%M") if t.completed_at else "",
-                t.completion_notes,
+                t.completion_notes or t.description,
+                t.get_task_type_display(), t.get_status_display(),
             ])
         return resp
 
