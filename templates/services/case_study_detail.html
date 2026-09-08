@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+    <div class="container-custom max-w-4xl">
+        <div class="silo-label mb-3">{{ case.client_industry }}</div>
+        <h1 class="font-display text-display-lg mb-2">{{ case.title }}</h1>
+        <p class="text-lg text-text-secondary mb-6">Cliente: {{ case.client_name }}</p>
+
+        <div class="w-full aspect-video rounded-2xl overflow-hidden mb-8">
+          {% if case.main_image %}
+            <img src="{{ case.main_image.url }}" alt="{{ case.main_image_alt|default:case.title }}"
+                 class="w-full h-full object-cover object-center" loading="lazy">
+          {% else %}
+            {% include "components/_img_placeholder.html" with aspect="aspect-video" label=case.title %}
+          {% endif %}
+        </div>
+
+        {% if case.results_metrics %}
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+          {% for metric in case.results_metrics %}
+          <div class="card-padded text-center">
+            <div class="font-display text-2xl text-primary mb-1">{{ metric.value }}</div>
+            <div class="text-xs text-text-muted uppercase tracking-wide">{{ metric.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-8 mb-10">
+          <div>
+            <h2 class="font-display text-2xl mb-3">El desafío</h2>
+            <p class="text-text-secondary">{{ case.challenge }}</p>
+          </div>
+          <div>
+            <h2 class="font-display text-2xl mb-3">La solución</h2>
+            <p class="text-text-secondary">{{ case.solution }}</p>
+          </div>
+          <div>
+            <h2 class="font-display text-2xl mb-3">Los resultados</h2>
+            <p class="text-text-secondary">{{ case.results }}</p>
+          </div>
+        </div>
+
+        {% if case.technologies_used.all %}
+        <div class="flex flex-wrap gap-2 mb-10">
+          {% for tech in case.technologies_used.all %}
+          <span class="silo-label software">{{ tech.name }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="flex flex-wrap gap-4 items-center">
+          <a href="{% url 'leads:wizard' %}" class="btn-primary">Solicitar cotización</a>
+          {% if case.project_url %}
+          <a href="{{ case.project_url }}" target="_blank" rel="noopener" class="text-primary underline">Ver proyecto →</a>
+          {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

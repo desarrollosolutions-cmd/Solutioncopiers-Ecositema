@@ -161,14 +161,19 @@ class Command(BaseCommand):
                         )
                         notifs_created += 1
 
-        # ── Contratos activos que ya vencieron (lote) ────────────────────
+        # ── Contratos activos que ya vencieron (red de seguridad) ────────
+        # Normalmente el loop de arriba ya cerró todo contrato vencido de forma
+        # individual (vía .save(), que libera el CopierUnit). Este bloque solo
+        # atrapa los que ese loop no haya alcanzado a procesar — por eso guarda
+        # uno por uno en vez de un .update() en lote, que no dispara save().
         past_due = RentalContract.objects.filter(
             status="active", end_date__lt=today
         )
         if not dry:
-            count = past_due.count()
-            past_due.update(status="expired")
-            expired_marked += count
+            for contract in past_due:
+                contract.status = "expired"
+                contract.save(update_fields=["status"])
+                expired_marked += 1
 
         mode = "[DRY RUN] " if dry else ""
         self.stdout.write(self.style.SUCCESS(

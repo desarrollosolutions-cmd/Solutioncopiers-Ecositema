@@ -145,7 +145,7 @@ class Quote(TimeStampedModel):
         FULL_OFFICE = "full_office", _("Solución integral de oficina")
 
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name="quotes")
+    lead = models.ForeignKey(Lead, on_delete=models.PROTECT, related_name="quotes")
     interest_area = models.CharField(max_length=20, choices=InterestArea.choices)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.NEW, db_index=True)
     estimated_total = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
@@ -176,6 +176,15 @@ class Quote(TimeStampedModel):
     )
     notes         = models.TextField(_("notas internas"), blank=True)
 
+    # Transiciones válidas para el flujo de staff (panel/dashadmin).
+    STATUS_TRANSITIONS = {
+        "new":       {"reviewing", "lost"},
+        "reviewing": {"sent", "lost", "new"},
+        "sent":      {"won", "lost", "reviewing"},
+        "won":       {"sent"},
+        "lost":      {"new"},
+    }
+
     class Meta:
         verbose_name = _("Cotización")
         verbose_name_plural = _("Cotizaciones")
@@ -183,6 +192,11 @@ class Quote(TimeStampedModel):
 
     def __str__(self):
         return f"Cotización #{self.public_id.hex[:8]} — {self.lead.full_name}"
+
+    def is_valid_status_transition(self, new_status):
+        if new_status == self.status:
+            return True
+        return new_status in self.STATUS_TRANSITIONS.get(self.status, set())
 
 
 class RentalContract(TimeStampedModel):
@@ -329,6 +343,16 @@ class ServiceTicket(TimeStampedModel):
     scheduled_for = models.DateTimeField(_("visita programada"), null=True, blank=True)
     resolved_at   = models.DateTimeField(_("resuelto el"), null=True, blank=True)
 
+    # Transiciones válidas para el flujo de staff (panel/dashadmin). El portal de
+    # técnicos (CampoTicketDetailView) usa su propio mapa, más estricto, sin reapertura.
+    STATUS_TRANSITIONS = {
+        "open":          {"in_progress", "waiting_parts", "closed"},
+        "in_progress":   {"waiting_parts", "resolved", "open"},
+        "waiting_parts": {"in_progress", "resolved"},
+        "resolved":      {"closed", "in_progress"},
+        "closed":        {"in_progress"},
+    }
+
     class Meta:
         verbose_name = _("Ticket de servicio")
         verbose_name_plural = _("Tickets de servicio")
@@ -340,6 +364,11 @@ class ServiceTicket(TimeStampedModel):
     @property
     def is_open(self):
         return self.status in ("open", "in_progress", "waiting_parts")
+
+    def is_valid_status_transition(self, new_status):
+        if new_status == self.status:
+            return True
+        return new_status in self.STATUS_TRANSITIONS.get(self.status, set())
 
 
 class MeterReading(TimeStampedModel):

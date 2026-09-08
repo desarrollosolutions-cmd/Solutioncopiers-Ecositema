@@ -891,10 +891,17 @@ class TicketDetailView(View):
                 if request.POST.get("assigned_to"):
                     ticket.assigned_to = User.objects.get(pk=request.POST["assigned_to"])
             old_status = ticket.status
+            new_status = request.POST.get("status", ticket.status)
+            if not ticket.is_valid_status_transition(new_status):
+                labels = dict(ServiceTicket.Status.choices)
+                raise ValueError(
+                    f"No puedes pasar de \"{labels.get(old_status, old_status)}\" "
+                    f"a \"{labels.get(new_status, new_status)}\" directamente."
+                )
             ticket.equipment_description = request.POST.get("equipment_description", "")
             ticket.issue_type         = request.POST.get("issue_type", ticket.issue_type)
             ticket.priority           = request.POST.get("priority", ticket.priority)
-            ticket.status             = request.POST.get("status", ticket.status)
+            ticket.status             = new_status
             ticket.description        = request.POST.get("description", "")
             ticket.address            = request.POST.get("address", ticket.address)
             ticket.resolution_notes   = request.POST.get("resolution_notes", "")
@@ -1320,7 +1327,15 @@ class QuoteStatusUpdateView(View):
         from apps.leads.models import Quote
         quote = get_object_or_404(Quote, pk=pk)
         new_status = request.POST.get("status")
-        if new_status in dict(Quote.Status.choices):
+        if new_status in dict(Quote.Status.choices) and not quote.is_valid_status_transition(new_status):
+            from django.contrib import messages
+            labels = dict(Quote.Status.choices)
+            messages.error(
+                request,
+                f'No se pudo pasar de "{labels.get(quote.status, quote.status)}" '
+                f'a "{labels.get(new_status, new_status)}" directamente.',
+            )
+        elif new_status in dict(Quote.Status.choices):
             quote.status = new_status
             update_fields = ["status"]
             if new_status in ("won", "lost"):
@@ -1433,6 +1448,11 @@ class QuotePipelineMoveView(View):
         valid = dict(Quote.Status.choices)
         if new_status not in valid:
             return JsonResponse({"ok": False, "error": "estado inválido"}, status=400)
+        if not quote.is_valid_status_transition(new_status):
+            return JsonResponse({
+                "ok": False,
+                "error": f'No puedes pasar de "{valid.get(quote.status, quote.status)}" a "{valid[new_status]}" directamente.',
+            }, status=400)
         STAGE_PROB = {"new": 10, "reviewing": 25, "sent": 50, "won": 100, "lost": 0}
         old_status = quote.status
         quote.status = new_status
@@ -2404,7 +2424,15 @@ class PanelQuoteDetailView(View):
 
         if action == "change_status":
             new_status = request.POST.get("status", "")
-            if new_status in dict(Quote.Status.choices):
+            if new_status in dict(Quote.Status.choices) and not quote.is_valid_status_transition(new_status):
+                from django.contrib import messages
+                labels = dict(Quote.Status.choices)
+                messages.error(
+                    request,
+                    f'No se pudo pasar de "{labels.get(quote.status, quote.status)}" '
+                    f'a "{labels.get(new_status, new_status)}" directamente.',
+                )
+            elif new_status in dict(Quote.Status.choices):
                 quote.status = new_status
                 quote.save(update_fields=["status"])
                 _log_activity(request, "update_quote", f"Cambió estado de cotización #{pk} a {new_status}", related_pk=pk)
@@ -2652,7 +2680,17 @@ class PanelTicketDetailView(View):
         ticket = get_object_or_404(ServiceTicket, pk=pk)
 
         # Todos con panel_tickets pueden cambiar estado y notas
-        ticket.status           = request.POST.get("status", ticket.status)
+        new_status = request.POST.get("status", ticket.status)
+        if ticket.is_valid_status_transition(new_status):
+            ticket.status = new_status
+        elif new_status != ticket.status:
+            from django.contrib import messages
+            labels = dict(ServiceTicket.Status.choices)
+            messages.error(
+                request,
+                f"No se pudo pasar de \"{labels.get(ticket.status, ticket.status)}\" "
+                f"a \"{labels.get(new_status, new_status)}\" directamente.",
+            )
         ticket.resolution_notes = request.POST.get("resolution_notes", ticket.resolution_notes)
 
         if ticket.status in ("resolved", "closed") and not ticket.resolved_at:
@@ -2695,6 +2733,12 @@ class PanelTicketStatusUpdateView(View):
         ticket = get_object_or_404(ServiceTicket, pk=pk)
         new_status = request.POST.get("status", "")
         valid = [s for s, _ in ServiceTicket.Status.choices]
+        if new_status in valid and not ticket.is_valid_status_transition(new_status):
+            labels = dict(ServiceTicket.Status.choices)
+            return JsonResponse({
+                "ok": False,
+                "error": f'No puedes pasar de "{labels.get(ticket.status, ticket.status)}" a "{labels.get(new_status, new_status)}" directamente.',
+            }, status=400)
         if new_status in valid:
             ticket.status = new_status
             notes = request.POST.get("resolution_notes", "").strip()
@@ -5555,8 +5599,11 @@ class PanelShiftEndView(View):
 
 @panel_decorator
 class PanelUbicacionView(View):
+    LOG_INTERVAL_SECONDS = 120  # guardar punto de ruta cada 2 minutos
+
     def post(self, request):
-        from apps.dashboard.models import FieldUserLocation
+        from apps.dashboard.models import FieldUserLocation, FieldLocationLog
+        from datetime import timedelta
         try:
             lat = float(request.POST.get("lat") or request.POST.get("latitude"))
             lng = float(request.POST.get("lng") or request.POST.get("longitude"))
@@ -5572,6 +5619,16 @@ class PanelUbicacionView(View):
                     "is_on_shift": True,
                 },
             )
+            # ── Registro de ruta (throttled) — igual que CampoUbicacionUpdateView ──
+            today  = timezone.localdate()
+            cutoff = timezone.now() - timedelta(seconds=self.LOG_INTERVAL_SECONDS)
+            if not FieldLocationLog.objects.filter(user=request.user, recorded_at__gte=cutoff).exists():
+                FieldLocationLog.objects.create(
+                    user=request.user, latitude=lat, longitude=lng, shift_date=today
+                )
+                FieldLocationLog.objects.filter(
+                    user=request.user, shift_date__lt=today - timedelta(days=90)
+                ).delete()
             return JsonResponse({"ok": True, "updated_at": loc.updated_at.isoformat()})
         except (TypeError, ValueError) as e:
             return JsonResponse({"ok": False, "error": str(e)}, status=400)

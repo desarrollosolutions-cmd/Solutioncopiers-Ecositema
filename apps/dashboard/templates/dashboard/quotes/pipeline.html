@@ -398,6 +398,9 @@
 
       const pk = dragged.dataset.pk;
       const moveUrl = dragged.dataset.moveUrl;
+      const originStage = fromCol;
+      const originBody = document.querySelector(`[data-body="${originStage}"]`);
+      const originColColor = originBody.closest('.kb-col').style.getPropertyValue('--kb-col-color');
 
       // Optimistic UI: move card immediately
       const ghost = body.querySelector('.kb-drop-ghost');
@@ -410,12 +413,9 @@
       const colColor = col.style.getPropertyValue('--kb-col-color');
       dragged.style.setProperty('--kb-col-color', colColor);
 
-      updateCount(fromCol, -1);
+      updateCount(originStage, -1);
       updateCount(toStage, +1);
-      maybeAddEmpty(
-        document.querySelector(`[data-body="${fromCol}"]`),
-        fromCol
-      );
+      maybeAddEmpty(originBody, originStage);
 
       // AJAX
       fetch(moveUrl, {
@@ -431,7 +431,16 @@
         if (data.ok) {
           showToast(`Movido a "${data.label}"`, 'ok');
         } else {
-          showToast('Error al actualizar', 'err');
+          // Revertir: el servidor rechazó la transición (ej. salto de etapa no permitido)
+          const originGhost = originBody.querySelector('.kb-drop-ghost');
+          removeEmptyPlaceholder(originBody);
+          dragged.dataset.stage = originStage;
+          originBody.insertBefore(dragged, originGhost ? originGhost.nextSibling : originBody.firstChild);
+          dragged.style.setProperty('--kb-col-color', originColColor);
+          updateCount(toStage, -1);
+          updateCount(originStage, +1);
+          maybeAddEmpty(body, toStage);
+          showToast(data.error || 'Error al actualizar', 'err');
         }
       })
       .catch(() => showToast('Error de red', 'err'));

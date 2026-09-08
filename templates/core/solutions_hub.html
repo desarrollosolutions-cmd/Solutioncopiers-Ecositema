@@ -177,11 +177,11 @@
     <h2 class="font-display text-display-md mb-10 text-center">Casos de éxito</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       {% for case in case_studies %}
-      <div class="card-padded">
-        {% if case.industry %}<div class="silo-label software mb-3">{{ case.industry }}</div>{% endif %}
+      <a href="{{ case.get_absolute_url }}" class="card-padded block hover:shadow-lg transition-shadow">
+        {% if case.client_industry %}<div class="silo-label software mb-3">{{ case.client_industry }}</div>{% endif %}
         <h3 class="font-display text-lg mb-2">{{ case.title }}</h3>
-        <p class="text-sm text-text-secondary">{{ case.summary|truncatewords:25 }}</p>
-      </div>
+        <p class="text-sm text-text-secondary">{{ case.challenge|truncatewords:25 }}</p>
+      </a>
       {% endfor %}
     </div>
   </div>

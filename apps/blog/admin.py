@@ -37,7 +37,7 @@ class PostAdmin(admin.ModelAdmin):
             "fields": ("excerpt", "content"),
         }),
         ("Imagen", {
-            "fields": ("image_hero", "image_card"),
+            "fields": ("main_image", "main_image_alt"),
         }),
         ("Publicación", {
             "fields": ("status", "is_featured", "published_at", "reading_time_min"),

@@ -153,4 +153,4 @@ class CaseStudy(
         return f"{self.title} — {self.client_name}"
 
     def get_absolute_url(self):
-        return reverse("core:home")  # placeholder
+        return reverse("services:case_study_detail", kwargs={"slug": self.slug})

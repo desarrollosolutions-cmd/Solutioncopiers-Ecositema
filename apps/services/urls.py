@@ -16,4 +16,6 @@ urlpatterns = [
 
     path("bases-de-datos-empresariales/", views.DatabaseServicesView.as_view(), name="database_services"),
     path("bases-de-datos-empresariales/<slug:slug>/", views.DatabaseServiceDetailView.as_view(), name="database_detail"),
+
+    path("casos-de-exito/<slug:slug>/", views.CaseStudyDetailView.as_view(), name="case_study_detail"),
 ]

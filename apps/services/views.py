@@ -83,6 +83,23 @@ class SoftwareServiceDetailView(SEOContextMixin, BreadcrumbMixin, JsonLDMixin, D
         ]
 
 
+@_DETAIL_CACHE
+class CaseStudyDetailView(SEOContextMixin, BreadcrumbMixin, JsonLDMixin, DetailView):
+    model = CaseStudy
+    template_name = "services/case_study_detail.html"
+    context_object_name = "case"
+
+    def get_queryset(self):
+        return CaseStudy.published.prefetch_related("technologies_used")
+
+    def get_breadcrumbs(self):
+        return [
+            ("Inicio", reverse("core:home")),
+            ("Soluciones Empresariales", reverse("core:solutions_hub")),
+            (self.object.title, ""),
+        ]
+
+
 @_LIST_CACHE
 class WebDesignView(_ServicePillarBaseView):
     model = WebService
