@@ -1229,9 +1229,9 @@ class ExportTicketsCSVView(View):
                 t.ticket_number, t.lead.full_name, t.lead.company_name,
                 t.get_issue_type_display(), t.equipment_description, t.description,
                 t.get_priority_display(), t.get_status_display(), assigned, t.address,
-                t.scheduled_for.strftime("%Y-%m-%d %H:%M") if t.scheduled_for else "",
-                t.created_at.strftime("%Y-%m-%d"),
-                t.resolved_at.strftime("%Y-%m-%d %H:%M") if t.resolved_at else "",
+                timezone.localtime(t.scheduled_for).strftime("%Y-%m-%d %H:%M") if t.scheduled_for else "",
+                timezone.localtime(t.created_at).strftime("%Y-%m-%d"),
+                timezone.localtime(t.resolved_at).strftime("%Y-%m-%d %H:%M") if t.resolved_at else "",
                 t.resolution_notes,
             ])
         return resp
@@ -1261,7 +1261,7 @@ class ExportDeliveryTasksCSVView(View):
                 t.field_user.get_role_display(), t.get_status_display(),
                 t.due_date.strftime("%Y-%m-%d") if t.due_date else "",
                 t.get_payment_method_display(), t.completion_invoice,
-                t.completed_at.strftime("%Y-%m-%d %H:%M") if t.completed_at else "",
+                timezone.localtime(t.completed_at).strftime("%Y-%m-%d %H:%M") if t.completed_at else "",
                 t.completion_notes,
             ])
         return resp
@@ -5425,8 +5425,8 @@ class CampoRouteExportView(View):
             user_tasks = tasks_by_user.get(fu.user_id, [])
             deliveries = sum(1 for t in user_tasks if t.task_type == "entrega")
             pickups    = sum(1 for t in user_tasks if t.task_type == "recoleccion")
-            turno_ini  = user_logs[0].recorded_at.strftime("%H:%M:%S") if user_logs else "—"
-            turno_fin  = user_logs[-1].recorded_at.strftime("%H:%M:%S") if user_logs else "—"
+            turno_ini  = timezone.localtime(user_logs[0].recorded_at).strftime("%H:%M:%S") if user_logs else "—"
+            turno_fin  = timezone.localtime(user_logs[-1].recorded_at).strftime("%H:%M:%S") if user_logs else "—"
 
             writer.writerow([f"{name.upper()} — {role}"])
             writer.writerow([
@@ -5441,7 +5441,7 @@ class CampoRouteExportView(View):
                 writer.writerow(["Hora", "Latitud", "Longitud"])
                 for log in user_logs:
                     writer.writerow([
-                        log.recorded_at.strftime("%H:%M:%S"),
+                        timezone.localtime(log.recorded_at).strftime("%H:%M:%S"),
                         float(log.latitude), float(log.longitude),
                     ])
 
@@ -5451,7 +5451,7 @@ class CampoRouteExportView(View):
                                   "Factura / Remisión", "Método de pago"])
                 for t in user_tasks:
                     writer.writerow([
-                        t.completed_at.strftime("%H:%M:%S") if t.completed_at else "",
+                        timezone.localtime(t.completed_at).strftime("%H:%M:%S") if t.completed_at else "",
                         t.get_task_type_display(), t.get_priority_display(),
                         t.title, t.client_name, t.address,
                         t.completion_invoice,
