@@ -507,6 +507,7 @@ document.getElementById('pn-delivery-modal').addEventListener('click', function(
 /* ── Gestionar ticket ── */
 let _currentTicketId = null;
 let _currentTicketStatus = null;
+let _originalTicketStatus = null;
 
 const STATUS_LABELS = {
   open: 'Abierto', in_progress: 'En proceso',
@@ -516,18 +517,39 @@ const STATUS_CLASSES = {
   open: 'pn-badge-open', in_progress: 'pn-badge-in_progress',
   waiting_parts: 'pn-badge-waiting_parts', resolved: 'pn-badge-resolved', closed: 'pn-badge-closed'
 };
+// Debe coincidir con ServiceTicket.STATUS_TRANSITIONS (apps/leads/models.py)
+const STATUS_TRANSITIONS = {
+  open:          ['in_progress', 'waiting_parts', 'closed'],
+  in_progress:   ['waiting_parts', 'resolved', 'open'],
+  waiting_parts: ['in_progress', 'resolved'],
+  resolved:      ['closed', 'in_progress'],
+  closed:        ['in_progress'],
+};
+
+function _refreshStatusButtons(selected) {
+  // "Permitido" se calcula siempre contra el estado ORIGINAL del ticket (con el
+  // que llegó abierto el modal), no contra la selección en curso.
+  const allowed = STATUS_TRANSITIONS[_originalTicketStatus] || [];
+  document.querySelectorAll('#pn-status-btns button').forEach(function(btn) {
+    const isSelected = btn.dataset.status === selected;
+    const isAllowed = allowed.indexOf(btn.dataset.status) !== -1;
+    const disabled = isSelected || !isAllowed;
+    btn.style.opacity = disabled ? '.35' : '1';
+    btn.style.pointerEvents = disabled ? 'none' : '';
+    btn.title = !isAllowed
+      ? `No puedes pasar de "${STATUS_LABELS[_originalTicketStatus]}" a "${STATUS_LABELS[btn.dataset.status]}" directamente`
+      : '';
+  });
+}
 
 function openTicketModal(pk, num, status) {
   _currentTicketId = pk;
   _currentTicketStatus = status;
+  _originalTicketStatus = status;
   document.getElementById('pn-tmodal-title').textContent = 'Gestionar ticket';
   document.getElementById('pn-tmodal-num').textContent = num;
   document.getElementById('pn-tnotes').value = '';
-  // Resaltar botón del estado actual
-  document.querySelectorAll('#pn-status-btns button').forEach(function(btn) {
-    btn.style.opacity = btn.dataset.status === status ? '.4' : '1';
-    btn.style.pointerEvents = btn.dataset.status === status ? 'none' : '';
-  });
+  _refreshStatusButtons(status);
   document.getElementById('pn-ticket-modal').classList.add('pndm-open');
   document.body.style.position = 'fixed';
   document.body.style.top = '-' + window.scrollY + 'px';
@@ -542,11 +564,10 @@ function closeTicketModal() {
 }
 
 function setTicketStatus(status) {
+  const allowed = STATUS_TRANSITIONS[_originalTicketStatus] || [];
+  if (allowed.indexOf(status) === -1) return;
   _currentTicketStatus = status;
-  document.querySelectorAll('#pn-status-btns button').forEach(function(btn) {
-    btn.style.opacity = btn.dataset.status === status ? '.4' : '1';
-    btn.style.pointerEvents = btn.dataset.status === status ? 'none' : '';
-  });
+  _refreshStatusButtons(status);
 }
 
 function submitTicketUpdate() {
@@ -559,8 +580,9 @@ function submitTicketUpdate() {
   fd.append('status', _currentTicketStatus);
   fd.append('resolution_notes', document.getElementById('pn-tnotes').value);
   fetch('/panel/tickets/' + _currentTicketId + '/estado/', { method: 'POST', body: fd })
-    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
-    .then(function(data) {
+    .then(function(r) { return r.json().then(function(data) { return { status: r.status, data: data }; }); })
+    .then(function(result) {
+      var data = result.data;
       if (data.ok) {
         // Actualizar badge en la tarjeta sin recargar
         var badge = document.getElementById('tbadge-' + _currentTicketId);
@@ -572,12 +594,12 @@ function submitTicketUpdate() {
         closeTicketModal();
       } else {
         btn.disabled = false; btn.textContent = 'Guardar cambios';
-        alert('Error al guardar');
+        alert(data.error || 'Error al guardar');
       }
     })
     .catch(function() {
       btn.disabled = false; btn.textContent = 'Guardar cambios';
-      alert('Error de conexión');
+      alert('Error de conexión — revisa tu red e intenta de nuevo.');
     });
 }
 
