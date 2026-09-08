@@ -638,6 +638,7 @@ class ContractDetailView(View):
         from apps.leads.models import Lead, RentalContract
         from apps.catalog.models import Copier, CopierUnit
         contract = self._get_contract(pk)
+        old_status = contract.status
         try:
             contract.lead   = Lead.objects.get(pk=request.POST["lead"])
             contract.copier = None
@@ -668,6 +669,12 @@ class ContractDetailView(View):
             contract.copy_overage_rate = request.POST.get("copy_overage_rate") or None
             contract.notes = request.POST.get("notes", "")
             contract.save()
+            if contract.status != old_status:
+                _log_activity(
+                    request, "update_contract",
+                    f"Cambió estado de contrato {contract.contract_number} de {old_status} a {contract.status}",
+                    related_pk=pk,
+                )
             from django.contrib import messages
             messages.success(request, "Contrato actualizado correctamente.")
             return redirect("dashboard:contract_detail", pk=pk)
@@ -909,6 +916,12 @@ class TicketDetailView(View):
             if ticket.status == "resolved" and old_status != "resolved":
                 ticket.resolved_at = tz.now()
             ticket.save()
+            if ticket.status != old_status:
+                _log_activity(
+                    request, "update_ticket",
+                    f"Cambió estado de ticket #{ticket.ticket_number} de {old_status} a {ticket.status}",
+                    related_pk=pk,
+                )
             from django.contrib import messages
             messages.success(request, "Ticket actualizado.")
             return redirect("dashboard:ticket_detail", pk=pk)
@@ -1266,8 +1279,14 @@ class TicketBulkDeleteView(View):
             messages.error(request, "Selecciona al menos un ticket para eliminar.")
             return redirect("dashboard:tickets")
         qs = ServiceTicket.objects.filter(pk__in=pks)
+        numbers = list(qs.values_list("ticket_number", flat=True))
         count = qs.count()
         qs.delete()
+        _log_activity(
+            request, "bulk_delete_tickets",
+            f"Eliminó {count} ticket(s) en lote: {', '.join(numbers[:20])}"
+            + (f" (+{count - 20} más)" if count > 20 else ""),
+        )
         messages.success(request, f"Se eliminaron {count} ticket(s).")
         return redirect("dashboard:tickets")
 
@@ -1351,6 +1370,11 @@ class QuoteStatusUpdateView(View):
                     quote.lost_category = lost_category
                     update_fields.append("lost_category")
             quote.save(update_fields=update_fields)
+            _log_activity(
+                request, "update_quote",
+                f"Cambió estado de cotización #{quote.pk} a {new_status}",
+                related_pk=pk,
+            )
         return redirect("dashboard:quote_detail", pk=pk)
 
 
@@ -1462,6 +1486,11 @@ class QuotePipelineMoveView(View):
         if new_status in ("won", "lost"):
             quote.closed_at = timezone.now()
         quote.save(update_fields=["status", "close_probability", "closed_at", "updated_at"])
+        _log_activity(
+            request, "update_quote",
+            f"Movió cotización #{quote.pk} de {old_status} a {new_status} (pipeline)",
+            related_pk=pk,
+        )
         return JsonResponse({
             "ok": True, "pk": pk,
             "status": new_status,
@@ -2578,6 +2607,8 @@ class PanelTaskCreateView(View):
 @panel_decorator
 class PanelTaskToggleView(View):
     def post(self, request, pk):
+        if not request.user.has_perm("dashboard.panel_actividades"):
+            return _panel_no_perm(request, "Actividades y tareas")
         from apps.leads.models import FollowUpTask
         task = get_object_or_404(FollowUpTask, pk=pk)
         task.is_done = not task.is_done
@@ -3093,6 +3124,7 @@ class PanelInvoiceStatusUpdateView(View):
         from apps.payments.views import _reduce_stock_for_invoice
         from django.contrib import messages as dj_messages
         invoice = get_object_or_404(Invoice, pk=pk, created_by=request.user)
+        old_status = invoice.status
         new_status = request.POST.get("status")
         if new_status in dict(Invoice.Status.choices):
             invoice.status = new_status
@@ -3101,6 +3133,12 @@ class PanelInvoiceStatusUpdateView(View):
             invoice.save(update_fields=["status", "paid_date"])
             if new_status in (Invoice.Status.ISSUED, Invoice.Status.PAID):
                 _reduce_stock_for_invoice(invoice, user=request.user)
+            if new_status != old_status:
+                _log_activity(
+                    request, "update_invoice",
+                    f"Cambió estado de factura {invoice.invoice_number} de {old_status} a {new_status}",
+                    related_pk=pk,
+                )
             dj_messages.success(request, "Estado de factura actualizado.")
         return redirect("panel:invoice_detail", pk=pk)
 
@@ -5236,8 +5274,14 @@ class CampoTaskBulkDeleteView(View):
             messages.error(request, "Selecciona al menos una tarea para eliminar.")
             return redirect("dashboard:campo_tasks")
         qs = DeliveryTask.objects.filter(pk__in=pks)
+        titles = list(qs.values_list("title", flat=True))
         count = qs.count()
         qs.delete()
+        _log_activity(
+            request, "bulk_delete_tasks",
+            f"Eliminó {count} tarea(s) en lote: {', '.join(titles[:20])}"
+            + (f" (+{count - 20} más)" if count > 20 else ""),
+        )
         messages.success(request, f"Se eliminaron {count} tarea(s).")
         return redirect("dashboard:campo_tasks")
 
@@ -5317,64 +5361,104 @@ class CampoRouteHistoryView(TemplateView):
 
 @da_decorator
 class CampoRouteExportView(View):
-    """Exporta en CSV el reporte diario de rutas: GPS + entregas de todos los mensajeros."""
+    """Exporta en CSV el reporte diario de rutas, organizado por mensajero/técnico.
+
+    Estructura: un resumen general del día arriba, y debajo un bloque por cada
+    persona (mini-resumen de su turno + sus puntos GPS + sus entregas/recolecciones),
+    en vez de dos listas globales de GPS y entregas mezcladas entre todo el equipo.
+    """
 
     def get(self, request):
         import csv
         from apps.dashboard.models import FieldLocationLog, DeliveryTask, FieldUser
 
         date_str = request.GET.get("date", timezone.localdate().isoformat())
+        user_pk  = request.GET.get("user", "").strip()
 
+        field_users = FieldUser.objects.select_related("user").order_by("user__first_name")
+        if user_pk:
+            field_users = field_users.filter(user__pk=user_pk)
+
+        logs_qs = FieldLocationLog.objects.filter(shift_date=date_str)
+        tasks_qs = DeliveryTask.objects.filter(status="done", completed_at__date=date_str)
+        if user_pk:
+            logs_qs = logs_qs.filter(user__pk=user_pk)
+            tasks_qs = tasks_qs.filter(field_user__user__pk=user_pk)
+
+        logs_by_user = {}
+        for log in logs_qs.order_by("recorded_at"):
+            logs_by_user.setdefault(log.user_id, []).append(log)
+
+        tasks_by_user = {}
+        for t in tasks_qs.select_related("field_user__user").order_by("completed_at"):
+            tasks_by_user.setdefault(t.field_user.user_id, []).append(t)
+
+        active_users = [
+            fu for fu in field_users
+            if logs_by_user.get(fu.user_id) or tasks_by_user.get(fu.user_id)
+        ]
+
+        filename = f"ruta_{date_str}" + (f"_{active_users[0].user.username}" if user_pk and active_users else "")
         response = HttpResponse(content_type="text/csv; charset=utf-8")
-        response["Content-Disposition"] = f'attachment; filename="ruta_{date_str}.csv"'
+        response["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
         response.write("﻿")  # BOM para Excel
-
         writer = csv.writer(response)
 
-        # ── Sección 1: Puntos GPS ──────────────────────────────────────────
-        writer.writerow(["PUNTOS GPS"])
-        writer.writerow(["Mensajero", "Rol", "Fecha", "Hora", "Latitud", "Longitud"])
+        total_points    = sum(len(v) for v in logs_by_user.values())
+        total_completed = sum(len(v) for v in tasks_by_user.values())
 
-        logs = (
-            FieldLocationLog.objects
-            .filter(shift_date=date_str)
-            .select_related("user__field_profile")
-            .order_by("user__first_name", "recorded_at")
-        )
-        for log in logs:
-            name = log.user.get_full_name() or log.user.username
-            try:
-                role = log.user.field_profile.get_role_display()
-            except Exception:
-                role = ""
+        # ── Resumen del día ──────────────────────────────────────────────
+        writer.writerow(["RESUMEN DEL DÍA"])
+        writer.writerow(["Fecha", "Personal con actividad", "Puntos GPS", "Entregas/recolecciones completadas"])
+        writer.writerow([date_str, len(active_users), total_points, total_completed])
+        writer.writerow([])
+
+        if not active_users:
+            writer.writerow(["Sin actividad registrada para este filtro."])
+            return response
+
+        # ── Un bloque por mensajero/técnico ────────────────────────────────
+        for fu in active_users:
+            name = fu.user.get_full_name() or fu.user.username
+            role = fu.get_role_display()
+            user_logs  = logs_by_user.get(fu.user_id, [])
+            user_tasks = tasks_by_user.get(fu.user_id, [])
+            deliveries = sum(1 for t in user_tasks if t.task_type == "entrega")
+            pickups    = sum(1 for t in user_tasks if t.task_type == "recoleccion")
+            turno_ini  = user_logs[0].recorded_at.strftime("%H:%M:%S") if user_logs else "—"
+            turno_fin  = user_logs[-1].recorded_at.strftime("%H:%M:%S") if user_logs else "—"
+
+            writer.writerow([f"{name.upper()} — {role}"])
             writer.writerow([
-                name, role, date_str,
-                log.recorded_at.strftime("%H:%M:%S"),
-                float(log.latitude), float(log.longitude),
+                "Turno (primer/último punto GPS)", f"{turno_ini} - {turno_fin}",
+                "Puntos GPS", len(user_logs),
+                "Entregas", deliveries,
+                "Recolecciones", pickups,
             ])
 
-        writer.writerow([])  # separador
+            if user_logs:
+                writer.writerow(["Puntos GPS"])
+                writer.writerow(["Hora", "Latitud", "Longitud"])
+                for log in user_logs:
+                    writer.writerow([
+                        log.recorded_at.strftime("%H:%M:%S"),
+                        float(log.latitude), float(log.longitude),
+                    ])
 
-        # ── Sección 2: Entregas completadas ───────────────────────────────
-        writer.writerow(["ENTREGAS COMPLETADAS"])
-        writer.writerow(["Mensajero", "Rol", "Tarea", "Cliente", "Dirección",
-                          "Factura / Remisión", "Método de pago", "Hora completada"])
+            if user_tasks:
+                writer.writerow(["Entregas y recolecciones completadas"])
+                writer.writerow(["Hora", "Tipo", "Prioridad", "Tarea", "Cliente", "Dirección",
+                                  "Factura / Remisión", "Método de pago"])
+                for t in user_tasks:
+                    writer.writerow([
+                        t.completed_at.strftime("%H:%M:%S") if t.completed_at else "",
+                        t.get_task_type_display(), t.get_priority_display(),
+                        t.title, t.client_name, t.address,
+                        t.completion_invoice,
+                        t.get_payment_method_display() if t.payment_method else "",
+                    ])
 
-        tasks = (
-            DeliveryTask.objects
-            .filter(status="done", completed_at__date=date_str)
-            .select_related("field_user__user")
-            .order_by("field_user__user__first_name", "completed_at")
-        )
-        for t in tasks:
-            name = t.field_user.user.get_full_name() or t.field_user.user.username
-            role = t.field_user.get_role_display()
-            writer.writerow([
-                name, role, t.title, t.client_name, t.address,
-                t.completion_invoice,
-                t.get_payment_method_display() if t.payment_method else "",
-                t.completed_at.strftime("%H:%M:%S") if t.completed_at else "",
-            ])
+            writer.writerow([])  # separador entre personas
 
         return response
 

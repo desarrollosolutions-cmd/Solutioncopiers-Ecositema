@@ -1,12 +1,15 @@
 """Vistas del módulo WhatsApp CRM."""
 from __future__ import annotations
 
-from django.contrib.auth.decorators import login_required
+from functools import wraps
+
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+
+from apps.dashboard.views import da_decorator
 
 from .models import ConversationLabel, WhatsAppConversation, WhatsAppMessage
 from .webhook import _upsert_inbound_message, send_whatsapp_message
@@ -28,11 +31,33 @@ def _da_ctx():
     return {}
 
 
+def _wa_asesora_required(view_func):
+    """
+    Acceso al inbox/simulador de WhatsApp: solo asesoras (usuarios autenticados,
+    sin permisos de staff, y sin perfil de campo). Un mensajero o técnico no
+    debe poder leer ni responder conversaciones de clientes por acá — ellos
+    tienen su propio portal en /campo/.
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/panel/acceso/?next={request.path}")
+        if request.user.is_staff:
+            return redirect("wa:dash_overview")
+        from apps.dashboard.models import FieldUser
+        try:
+            request.user.field_profile
+        except FieldUser.DoesNotExist:
+            return view_func(request, *args, **kwargs)
+        return redirect("/campo/")
+    return wrapper
+
+
 # ---------------------------------------------------------------------------
 # PANEL — Inbox
 # ---------------------------------------------------------------------------
 
-@method_decorator(login_required(login_url="/panel/acceso/"), name="dispatch")
+@method_decorator(_wa_asesora_required, name="dispatch")
 class PanelWAInboxView(View):
     template_name = "whatsapp/panel_inbox.html"
 
@@ -78,7 +103,7 @@ class PanelWAInboxView(View):
 # PANEL — Detalle de conversación
 # ---------------------------------------------------------------------------
 
-@method_decorator(login_required(login_url="/panel/acceso/"), name="dispatch")
+@method_decorator(_wa_asesora_required, name="dispatch")
 class PanelWAConversationView(View):
     template_name = "whatsapp/panel_conversation.html"
 
@@ -141,12 +166,25 @@ class PanelWAConversationView(View):
 # SIMULADOR — Inyectar mensaje entrante de prueba (solo en DEBUG o sin keys)
 # ---------------------------------------------------------------------------
 
-@method_decorator(login_required(login_url="/panel/acceso/"), name="dispatch")
+@method_decorator(_wa_asesora_required, name="dispatch")
 class WASimulatorView(View):
-    """Permite simular un mensaje entrante para probar el flujo sin API de Meta."""
+    """Permite simular un mensaje entrante para probar el flujo sin API de Meta.
+
+    Solo disponible mientras el módulo esté en modo prototipo (sin WHATSAPP_TOKEN
+    configurado) o con DEBUG activo — en producción con la API real conectada,
+    inyectar mensajes "de cliente" falsos podría contaminar el CRM.
+    """
+
     template_name = "whatsapp/simulator.html"
 
+    def _is_available(self):
+        from django.conf import settings
+        return settings.DEBUG or not getattr(settings, "WHATSAPP_TOKEN", "")
+
     def get(self, request):
+        from django.http import Http404
+        if not self._is_available():
+            raise Http404
         convs = WhatsAppConversation.objects.order_by("-last_message_at")[:20]
         return render(request, self.template_name, {
             "conversations": convs,
@@ -154,6 +192,9 @@ class WASimulatorView(View):
         })
 
     def post(self, request):
+        from django.http import Http404
+        if not self._is_available():
+            raise Http404
         phone        = request.POST.get("phone", "").strip()
         contact_name = request.POST.get("contact_name", "").strip()
         body         = request.POST.get("body", "").strip()
@@ -175,7 +216,7 @@ class WASimulatorView(View):
 # DASHADMIN — Vista global de conversaciones
 # ---------------------------------------------------------------------------
 
-@method_decorator(login_required(login_url="/dashadmin/acceso/"), name="dispatch")
+@da_decorator
 class DashWAOverviewView(View):
     template_name = "whatsapp/dash_overview.html"
 
@@ -229,7 +270,7 @@ class DashWAOverviewView(View):
 # DASHADMIN — Gestión de etiquetas
 # ---------------------------------------------------------------------------
 
-@method_decorator(login_required(login_url="/dashadmin/acceso/"), name="dispatch")
+@da_decorator
 class DashWALabelsView(View):
     template_name = "whatsapp/dash_labels.html"
 
@@ -262,7 +303,7 @@ class DashWALabelsView(View):
 # DASHADMIN — Asignar conversación a asesora (AJAX)
 # ---------------------------------------------------------------------------
 
-@method_decorator(login_required(login_url="/dashadmin/acceso/"), name="dispatch")
+@da_decorator
 class DashWAAssignView(View):
     def post(self, request, pk):
         from django.contrib.auth.models import User

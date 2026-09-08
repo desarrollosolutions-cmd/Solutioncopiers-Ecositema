@@ -639,6 +639,7 @@ class InvoiceStatusUpdateView(CRMLoginMixin, View):
 
     def post(self, request, pk: int):
         invoice    = get_object_or_404(Invoice, pk=pk)
+        old_status = invoice.status
         new_status = request.POST.get("status")
         if new_status in dict(Invoice.Status.choices):
             invoice.status = new_status
@@ -647,6 +648,13 @@ class InvoiceStatusUpdateView(CRMLoginMixin, View):
             invoice.save(update_fields=["status", "paid_date"])
             if new_status in (Invoice.Status.ISSUED, Invoice.Status.PAID):
                 _reduce_stock_for_invoice(invoice, user=request.user)
+            if new_status != old_status:
+                from apps.dashboard.views import _log_activity
+                _log_activity(
+                    request, "update_invoice",
+                    f"Cambió estado de factura {invoice.invoice_number} de {old_status} a {new_status}",
+                    related_pk=pk,
+                )
             messages.success(request, "Estado de factura actualizado.")
         return redirect("dashboard:invoice_detail", pk=pk)
 
