@@ -4978,6 +4978,7 @@ class CampoTurnoView(View):
             loc = None
 
         today = timezone.localdate()
+        lunch_seconds_used = loc.lunch_seconds_used if loc and loc.lunch_date == today else 0
         tasks = FollowUpTask.objects.filter(
             assigned_to=request.user, is_done=False, due_date=today
         ).select_related("lead").order_by("pk")[:20]
@@ -5010,6 +5011,7 @@ class CampoTurnoView(View):
             "delivery_tasks":  delivery_tasks,
             "today":           today,
             "lunch_duration_minutes": LUNCH_DURATION_MINUTES,
+            "lunch_seconds_used": lunch_seconds_used,
         })
 
 
@@ -5124,10 +5126,10 @@ class CampoShiftEndView(View):
         from apps.dashboard.models import FieldUserLocation
         try:
             loc = request.user.field_location
+            if loc.is_on_lunch:
+                loc.end_lunch()
             loc.is_on_shift = False
-            loc.is_on_lunch = False
-            loc.lunch_started_at = None
-            loc.save(update_fields=["is_on_shift", "is_on_lunch", "lunch_started_at"])
+            loc.save(update_fields=["is_on_shift"])
         except FieldUserLocation.DoesNotExist:
             pass
         return JsonResponse({"ok": True})
@@ -5143,9 +5145,7 @@ class CampoLunchStartView(View):
             loc = None
         if not loc or not loc.is_on_shift:
             return JsonResponse({"ok": False, "error": "Inicia turno primero"}, status=400)
-        loc.is_on_lunch = True
-        loc.lunch_started_at = timezone.now()
-        loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
+        loc.start_lunch()
         from apps.dashboard.models import Notification
         _notify_admins(
             type=Notification.Type.LUNCH_BREAK,
@@ -5153,7 +5153,7 @@ class CampoLunchStartView(View):
             message=f"Desde las {timezone.localtime(loc.lunch_started_at).strftime('%H:%M')}",
             link="/dashadmin/campo/",
         )
-        return JsonResponse({"ok": True})
+        return JsonResponse({"ok": True, "lunch_seconds_used": loc.lunch_seconds_used})
 
 
 @campo_decorator
@@ -5162,9 +5162,7 @@ class CampoLunchEndView(View):
         from apps.dashboard.models import FieldUserLocation
         try:
             loc = request.user.field_location
-            loc.is_on_lunch = False
-            loc.lunch_started_at = None
-            loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
+            loc.end_lunch()
             from apps.dashboard.models import Notification
             _notify_admins(
                 type=Notification.Type.LUNCH_BREAK,
@@ -5172,9 +5170,9 @@ class CampoLunchEndView(View):
                 message=f"Hora: {timezone.localtime(timezone.now()).strftime('%H:%M')}",
                 link="/dashadmin/campo/",
             )
+            return JsonResponse({"ok": True, "lunch_seconds_used": loc.lunch_seconds_used})
         except FieldUserLocation.DoesNotExist:
-            pass
-        return JsonResponse({"ok": True})
+            return JsonResponse({"ok": True, "lunch_seconds_used": 0})
 
 
 # ---------------------------------------------------------------------------
@@ -5819,6 +5817,7 @@ class PanelTurnoView(View):
             loc = None
 
         today = timezone.localdate()
+        lunch_seconds_used = loc.lunch_seconds_used if loc and loc.lunch_date == today else 0
         tasks = FollowUpTask.objects.filter(
             assigned_to=request.user, is_done=False, due_date=today
         ).select_related("lead").order_by("pk")[:20]
@@ -5852,6 +5851,7 @@ class PanelTurnoView(View):
             "delivery_tasks": delivery_tasks,
             "today":          today,
             "lunch_duration_minutes": LUNCH_DURATION_MINUTES,
+            "lunch_seconds_used": lunch_seconds_used,
         })
         return render(request, self.template_name, ctx)
 
@@ -5913,10 +5913,10 @@ class PanelShiftEndView(View):
         from apps.dashboard.models import FieldUserLocation
         try:
             loc = request.user.field_location
+            if loc.is_on_lunch:
+                loc.end_lunch()
             loc.is_on_shift = False
-            loc.is_on_lunch = False
-            loc.lunch_started_at = None
-            loc.save(update_fields=["is_on_shift", "is_on_lunch", "lunch_started_at"])
+            loc.save(update_fields=["is_on_shift"])
         except FieldUserLocation.DoesNotExist:
             pass
         return redirect("panel:turno")
@@ -5932,9 +5932,7 @@ class PanelLunchStartView(View):
         try:
             loc = request.user.field_location
             if loc.is_on_shift:
-                loc.is_on_lunch = True
-                loc.lunch_started_at = timezone.now()
-                loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
+                loc.start_lunch()
                 _notify_admins(
                     type=Notification.Type.LUNCH_BREAK,
                     title=f"Salió a almorzar: {request.user.get_full_name() or request.user.username}",
@@ -5955,9 +5953,7 @@ class PanelLunchEndView(View):
         from apps.dashboard.models import FieldUserLocation, Notification
         try:
             loc = request.user.field_location
-            loc.is_on_lunch = False
-            loc.lunch_started_at = None
-            loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
+            loc.end_lunch()
             _notify_admins(
                 type=Notification.Type.LUNCH_BREAK,
                 title=f"Volvió del almuerzo: {request.user.get_full_name() or request.user.username}",

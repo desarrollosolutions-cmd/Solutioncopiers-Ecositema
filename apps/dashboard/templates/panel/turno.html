@@ -682,6 +682,7 @@ setInterval(sendLocation, 15000);
 
 /* ── Alarma de fin de almuerzo ── */
 const LUNCH_MINUTES = {{ lunch_duration_minutes|default:60 }};
+const LUNCH_SECONDS_USED = {{ lunch_seconds_used|default:0 }};  // acumulado de hoy antes de este período
 let lunchTimer = null;
 let lunchAlarmFired = false;
 let _alarmCtx = null;
@@ -723,7 +724,7 @@ function updateLunchCountdown() {
   const banner = document.getElementById('pn-lunch-banner');
   const text   = document.getElementById('pn-lunch-banner-text');
   if (!banner || !text || !window._lunchStartedAt) return;
-  const remainingMs = LUNCH_MINUTES * 60000 - (Date.now() - window._lunchStartedAt.getTime());
+  const remainingMs = LUNCH_MINUTES * 60000 - LUNCH_SECONDS_USED * 1000 - (Date.now() - window._lunchStartedAt.getTime());
   if (remainingMs > 0) {
     const mins = Math.max(1, Math.ceil(remainingMs / 60000));
     text.textContent = `En almuerzo — te quedan ${mins} min`;

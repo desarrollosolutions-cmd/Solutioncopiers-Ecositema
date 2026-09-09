@@ -303,6 +303,7 @@ let batteryLevel = null;
 let currentTaskId = null;
 const LUNCH_MINUTES = {{ lunch_duration_minutes|default:60 }};
 {% if location and location.lunch_started_at %}let lunchStartedAt = new Date("{{ location.lunch_started_at|date:'c' }}");{% else %}let lunchStartedAt = null;{% endif %}
+let lunchSecondsUsed = {{ lunch_seconds_used|default:0 }};  // acumulado de hoy antes de este período (si está en almuerzo ahora)
 let lunchTimer = null;
 let lunchAlarmFired = false;
 
@@ -469,7 +470,7 @@ function playLunchAlarm() {
 
 function updateLunchCountdown() {
   if (!isOnLunch || !lunchStartedAt) return;
-  const remainingMs = LUNCH_MINUTES * 60000 - (Date.now() - lunchStartedAt.getTime());
+  const remainingMs = LUNCH_MINUTES * 60000 - lunchSecondsUsed * 1000 - (Date.now() - lunchStartedAt.getTime());
   const text   = document.getElementById('lunch-banner-text');
   const banner = document.getElementById('lunch-banner');
   if (remainingMs > 0) {
@@ -508,6 +509,7 @@ function toggleLunch() {
     .then(r => r.json())
     .then(data => {
       if (!data.ok) { showToast(data.error || 'No se pudo actualizar', false); return; }
+      if (typeof data.lunch_seconds_used === 'number') lunchSecondsUsed = data.lunch_seconds_used;
       isOnLunch = !isOnLunch;
       const btn = document.getElementById('btn-lunch');
       const banner = document.getElementById('lunch-banner');

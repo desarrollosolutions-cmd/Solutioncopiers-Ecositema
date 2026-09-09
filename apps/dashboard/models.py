@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class PanelPermissions(models.Model):
@@ -253,6 +254,8 @@ class FieldUserLocation(models.Model):
     is_on_shift = models.BooleanField(default=False, db_index=True)
     is_on_lunch = models.BooleanField("en almuerzo", default=False, db_index=True)
     lunch_started_at = models.DateTimeField("almuerzo iniciado", null=True, blank=True)
+    lunch_seconds_used = models.PositiveIntegerField("segundos de almuerzo usados hoy", default=0)
+    lunch_date = models.DateField("fecha del acumulado de almuerzo", null=True, blank=True)
     battery     = models.PositiveSmallIntegerField(null=True, blank=True)
     updated_at  = models.DateTimeField(auto_now=True)
 
@@ -262,6 +265,27 @@ class FieldUserLocation(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ({self.latitude}, {self.longitude})"
+
+    def start_lunch(self):
+        """Marca inicio de almuerzo. Si el acumulado es de un día anterior, lo reinicia
+        primero -- así varias salidas/vueltas el mismo día descuentan del mismo cupo
+        en vez de reiniciar el contador cada vez."""
+        today = timezone.localdate()
+        if self.lunch_date != today:
+            self.lunch_seconds_used = 0
+            self.lunch_date = today
+        self.is_on_lunch = True
+        self.lunch_started_at = timezone.now()
+        self.save(update_fields=["is_on_lunch", "lunch_started_at", "lunch_seconds_used", "lunch_date"])
+
+    def end_lunch(self):
+        """Marca fin de almuerzo, sumando el tiempo de este período al acumulado del día."""
+        if self.lunch_started_at:
+            elapsed = (timezone.now() - self.lunch_started_at).total_seconds()
+            self.lunch_seconds_used += max(0, int(elapsed))
+        self.is_on_lunch = False
+        self.lunch_started_at = None
+        self.save(update_fields=["is_on_lunch", "lunch_started_at", "lunch_seconds_used"])
 
 
 class DeliveryTask(models.Model):
