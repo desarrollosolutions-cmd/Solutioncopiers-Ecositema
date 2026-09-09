@@ -140,6 +140,12 @@
 </div>
 
 {# ── Filtros ── #}
+{% if not filter_user and not filter_status and not filter_date %}
+<div style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.625rem;display:flex;align-items:center;gap:.35rem;">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.8rem;height:.8rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  Mostrando tareas de hoy y las que siguen pendientes. Usa los filtros para ver otras fechas o el historial completo.
+</div>
+{% endif %}
 <form method="get" style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:flex-end;">
   <select name="user" class="da-input" style="width:200px;max-width:100%;">
     <option value="">Todos los mensajeros</option>

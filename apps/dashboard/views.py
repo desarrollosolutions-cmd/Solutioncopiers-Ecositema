@@ -5237,11 +5237,17 @@ class CampoTaskListView(View):
         qs = DeliveryTask.objects.select_related(
             "field_user__user", "created_by"
         ).order_by("-due_date", "field_user__user__first_name", "order")
-        qs = _filter_delivery_tasks_qs(request.GET, qs)
 
         fu_pk    = request.GET.get("user")
         status   = request.GET.get("status")
         date_str = request.GET.get("date")
+
+        if not (fu_pk or status or date_str):
+            # Vista por defecto: solo lo de hoy o lo que siga pendiente (de cualquier día).
+            # Para ver el historial completo, el admin puede filtrar por fecha/estado.
+            qs = qs.filter(Q(due_date=timezone.localdate()) | Q(status=DeliveryTask.Status.PENDING))
+        else:
+            qs = _filter_delivery_tasks_qs(request.GET, qs)
 
         from apps.leads.models import Lead
 
