@@ -517,7 +517,7 @@ function toggleLunch() {
         banner.classList.remove('over');
         banner.style.display = 'flex';
         startLunchTimer(new Date());
-        showToast('Buen provecho 🍽️ — alarma en ' + LUNCH_MINUTES + ' min');
+        showToast('Buen provecho 🍽️');
       } else {
         btn.className = 'btn btn-lunch';
         document.getElementById('btn-lunch-text').textContent = 'Salir a almuerzo';
