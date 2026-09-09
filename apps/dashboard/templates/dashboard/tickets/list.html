@@ -13,27 +13,30 @@
   .tkt-priority-medium  { background:color-mix(in srgb,#2563EB 10%,transparent); color:#2563EB; border:1px solid color-mix(in srgb,#2563EB 18%,transparent); }
   .tkt-priority-low     { background:color-mix(in srgb,var(--color-text-muted) 10%,transparent); color:var(--color-text-muted); border:1px solid color-mix(in srgb,var(--color-text-muted) 18%,transparent); }
 
-  /* ── Pipeline por urgencia (kanban) ── */
-  .pipeline-board { display:flex; gap:.875rem; overflow-x:auto; padding-bottom:1rem; align-items:flex-start; min-height:50vh; }
-  .kb-col { flex:0 0 270px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:.875rem; display:flex; flex-direction:column; min-height:160px; transition:box-shadow .2s; }
-  .kb-col.drag-over { border-color:var(--kb-col-color,var(--color-primary)); box-shadow:0 0 0 2px color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 20%,transparent); }
-  .kb-col-head { padding:.875rem 1rem .75rem; border-bottom:1px solid var(--color-border); display:flex; align-items:center; gap:.625rem; border-radius:.875rem .875rem 0 0; background:color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 5%,var(--color-surface)); }
-  .kb-col-title { font-size:.8125rem; font-weight:700; color:var(--color-text-primary); flex:1; }
-  .kb-col-count { font-size:.65rem; font-weight:700; padding:.15rem .5rem; border-radius:9999px; background:color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 14%,transparent); color:var(--kb-col-color,var(--color-primary)); min-width:1.5rem; text-align:center; }
-  .kb-col-body { padding:.625rem; flex:1; display:flex; flex-direction:column; gap:.5rem; min-height:80px; }
-  .kb-col-body.drag-active { background:color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 4%,transparent); border-radius:0 0 .875rem .875rem; }
-  .kb-card { background:var(--color-bg); border:1px solid var(--color-border); border-radius:.625rem; padding:.75rem; cursor:grab; transition:transform .18s,box-shadow .18s,border-color .18s,opacity .18s; position:relative; overflow:hidden; user-select:none; }
-  .kb-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--kb-col-color,var(--color-primary)); border-radius:3px 0 0 3px; }
-  .kb-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.12); }
-  .kb-card:active, .kb-card.dragging { opacity:.45; cursor:grabbing; transform:scale(.97); }
-  .kb-card-name { font-size:.8125rem; font-weight:700; color:var(--color-text-primary); margin-bottom:.125rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .kb-card-meta { font-size:.72rem; color:var(--color-text-muted); margin-bottom:.5rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .kb-card-footer { display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-top:.375rem; }
-  .kb-card-tag { font-size:.62rem; font-weight:600; padding:.125rem .4rem; border-radius:.25rem; background:color-mix(in srgb,var(--color-primary) 10%,transparent); color:var(--color-primary); }
-  .kb-card-date { font-size:.65rem; color:var(--color-text-muted); }
-  .kb-drop-ghost { height:3px; border-radius:2px; background:var(--kb-col-color,var(--color-primary)); opacity:.6; margin:0 .25rem; display:none; }
+  /* ── Pipeline de orden de ejecución (una columna grande por técnico) ── */
+  .pipeline-board { display:flex; gap:1.25rem; overflow-x:auto; padding:.25rem .25rem 1.5rem; align-items:flex-start; min-height:64vh; }
+  .kb-col { flex:0 0 380px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:1.25rem; display:flex; flex-direction:column; min-height:220px; box-shadow:0 1px 2px rgba(0,0,0,.03); transition:box-shadow .25s,border-color .25s,transform .25s; }
+  .kb-col.drag-over { border-color:var(--color-primary); box-shadow:0 10px 30px color-mix(in srgb,var(--color-primary) 15%,transparent); transform:translateY(-2px); }
+  .kb-col-head { padding:1.125rem 1.25rem 1rem; border-bottom:1px solid var(--color-border); display:flex; align-items:center; gap:.75rem; border-radius:1.25rem 1.25rem 0 0; background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary) 7%,var(--color-surface)),var(--color-surface)); }
+  .kb-col-avatar { width:2.375rem; height:2.375rem; border-radius:50%; background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:.85rem; font-weight:800; flex-shrink:0; box-shadow:0 3px 10px color-mix(in srgb,var(--color-primary) 40%,transparent); }
+  .kb-col-avatar.unassigned { background:linear-gradient(135deg,#94A3B8,#64748B); box-shadow:none; }
+  .kb-col-title { font-size:.9375rem; font-weight:800; color:var(--color-text-primary); flex:1; letter-spacing:-.01em; }
+  .kb-col-count { font-size:.7rem; font-weight:800; padding:.25rem .65rem; border-radius:9999px; background:color-mix(in srgb,var(--color-primary) 13%,transparent); color:var(--color-primary); min-width:1.75rem; text-align:center; }
+  .kb-col-body { padding:.9375rem; flex:1; display:flex; flex-direction:column; gap:.75rem; min-height:120px; }
+  .kb-col-body.drag-active { background:color-mix(in srgb,var(--color-primary) 4%,transparent); border-radius:0 0 1.25rem 1.25rem; }
+  .kb-card { background:var(--color-bg); border:1px solid var(--color-border); border-radius:1rem; padding:1rem 1.125rem; cursor:grab; transition:transform .18s,box-shadow .18s,border-color .18s,opacity .18s; position:relative; overflow:hidden; user-select:none; display:flex; gap:.875rem; align-items:flex-start; }
+  .kb-card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,.12); border-color:color-mix(in srgb,var(--color-primary) 30%,var(--color-border)); }
+  .kb-card:active, .kb-card.dragging { opacity:.4; cursor:grabbing; transform:scale(.96) rotate(-1deg); }
+  .kb-card-pos { width:2rem; height:2rem; border-radius:50%; background:var(--color-primary); color:#fff; font-size:.78rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px color-mix(in srgb,var(--color-primary) 45%,transparent); }
+  .kb-card-body { flex:1; min-width:0; }
+  .kb-card-name { font-size:.875rem; font-weight:700; color:var(--color-text-primary); margin-bottom:.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .kb-card-meta { font-size:.74rem; color:var(--color-text-muted); margin-bottom:.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .kb-card-addr { font-size:.7rem; color:var(--color-text-muted); margin-bottom:.5rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .kb-card-footer { display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-top:.5rem; flex-wrap:wrap; }
+  .kb-order-input { width:3.25rem; padding:.25rem .4rem; border:1px solid var(--color-border); border-radius:.4rem; background:var(--color-surface); color:var(--color-text-primary); font-size:.72rem; font-weight:600; }
+  .kb-drop-ghost { height:4px; border-radius:2px; background:var(--color-primary); opacity:.6; margin:0 .25rem; display:none; }
   .kb-col-body.drag-active .kb-drop-ghost { display:block; }
-  .kb-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem 1rem; color:var(--color-text-muted); font-size:.78rem; border:1.5px dashed var(--color-border); border-radius:.5rem; margin:.25rem; pointer-events:none; }
+  .kb-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2.5rem 1rem; color:var(--color-text-muted); font-size:.8rem; border:1.5px dashed var(--color-border); border-radius:.75rem; margin:.25rem; pointer-events:none; }
   #tkt-toast { position:fixed; bottom:1.5rem; right:1.5rem; padding:.75rem 1.125rem; border-radius:.625rem; font-size:.8125rem; font-weight:600; z-index:9999; transform:translateY(80px); opacity:0; transition:transform .3s,opacity .3s; pointer-events:none; }
   #tkt-toast.show { transform:translateY(0); opacity:1; }
   #tkt-toast.ok  { background:color-mix(in srgb,var(--color-success) 12%,var(--color-surface)); color:var(--color-success); border:1px solid color-mix(in srgb,var(--color-success) 25%,transparent); }
@@ -127,10 +130,17 @@
 </form>
 
 <div id="tkt-pipeline-view" style="display:none;">
+  <div style="font-size:.78rem;color:var(--color-text-muted);margin-bottom:1rem;display:flex;align-items:center;gap:.4rem;">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.9rem;height:.9rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8h16M4 16h16"/></svg>
+    Una columna por técnico — arrastra un ticket para reordenar su ruta, o escribe el número directamente. El #1 es el próximo que debe atender.
+  </div>
   <div class="pipeline-board" id="pipeline-board">
-    {% for stage in priority_stages %}
-    <div class="kb-col" data-stage="{{ stage.key }}" style="--kb-col-color:{{ stage.css_color }};">
+    {% for stage in tecnico_stages %}
+    <div class="kb-col" data-stage="{{ stage.key }}">
       <div class="kb-col-head">
+        <div class="kb-col-avatar{% if not stage.user %} unassigned{% endif %}">
+          {% if stage.user %}{{ stage.label|first|upper }}{% else %}?{% endif %}
+        </div>
         <span class="kb-col-title">{{ stage.label }}</span>
         <span class="kb-col-count" data-count="{{ stage.key }}">{{ stage.count }}</span>
       </div>
@@ -138,107 +148,34 @@
         <div class="kb-drop-ghost"></div>
         {% for t in stage.tickets %}
         <div class="kb-card" draggable="true" data-pk="{{ t.pk }}" data-stage="{{ stage.key }}"
-             data-move-url="{% url 'dashboard:ticket_priority_move' t.pk %}"
              onclick="if(!this.classList.contains('dragging')) window.location='{% url 'dashboard:ticket_detail' t.pk %}'">
-          <div class="kb-card-name">{{ t.ticket_number }} · {{ t.lead.full_name }}</div>
-          <div class="kb-card-meta">{{ t.get_issue_type_display }}{% if t.assigned_to %} · {{ t.assigned_to.get_full_name|default:t.assigned_to.username }}{% endif %}</div>
-          <div class="kb-card-footer">
-            <span class="kb-card-tag">{{ t.get_status_display }}</span>
-            <span class="kb-card-date">{{ t.created_at|date:"d/m/Y" }}</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:.375rem;margin-top:.5rem;" draggable="false" onclick="event.stopPropagation()">
-            <label style="font-size:.62rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.03em;">Orden</label>
-            <input type="number" min="0" class="kb-order-input" value="{{ t.order }}"
-              data-order-url="{% url 'dashboard:ticket_set_order' t.pk %}"
-              style="width:3.5rem;padding:.25rem .4rem;border:1px solid var(--color-border);border-radius:.35rem;background:var(--color-bg);color:var(--color-text-primary);font-size:.72rem;">
+          <span class="kb-card-pos">{{ forloop.counter }}</span>
+          <div class="kb-card-body">
+            <div class="kb-card-name">{{ t.ticket_number }} · {{ t.lead.full_name }}</div>
+            <div class="kb-card-meta">{{ t.get_issue_type_display }}</div>
+            {% if t.address %}<div class="kb-card-addr">📍 {{ t.address }}</div>{% endif %}
+            <div class="kb-card-footer">
+              <span class="da-badge tkt-priority-{{ t.priority }}">{{ t.get_priority_display }}</span>
+              <span class="kb-card-tag" style="font-size:.62rem;font-weight:600;padding:.125rem .4rem;border-radius:.25rem;background:color-mix(in srgb,var(--color-primary) 10%,transparent);color:var(--color-primary);">{{ t.get_status_display }}</span>
+              <span style="display:flex;align-items:center;gap:.3rem;margin-left:auto;" draggable="false" onclick="event.stopPropagation()">
+                <label style="font-size:.62rem;font-weight:600;color:var(--color-text-muted);">Orden</label>
+                <input type="number" min="0" class="kb-order-input" value="{{ t.order }}"
+                  data-order-url="{% url 'dashboard:ticket_set_order' t.pk %}">
+              </span>
+            </div>
           </div>
         </div>
         {% empty %}
-        <div class="kb-empty">Sin tickets</div>
+        <div class="kb-empty">Sin tickets activos</div>
         {% endfor %}
       </div>
     </div>
+    {% empty %}
+    <div class="kb-empty" style="flex:1;">No hay tickets activos asignados todavía.</div>
     {% endfor %}
   </div>
   <div id="tkt-toast"></div>
 </div>
-
-{% if current_tecnico and pending_queue %}
-{# ── Orden de ejecución (secuencia de visitas del técnico filtrado) ── #}
-<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.25rem;margin-bottom:1.5rem;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;">
-    <div>
-      <div style="font-size:.8125rem;font-weight:700;color:var(--color-text-primary);">Orden de ejecución</div>
-      <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.15rem;">Arrastra para priorizar — el primero es el próximo ticket que debe atender</div>
-    </div>
-  </div>
-  <div id="ticket-queue" style="display:flex;flex-direction:column;gap:.5rem;">
-    {% for t in pending_queue %}
-    <div class="ticket-queue-row" draggable="true" data-pk="{{ t.pk }}"
-      style="display:flex;align-items:center;gap:.75rem;padding:.7rem .875rem;border:1px solid var(--color-border);border-radius:.625rem;background:var(--color-bg);cursor:grab;user-select:none;transition:opacity .15s,box-shadow .15s;">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;color:var(--color-text-muted);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8h16M4 16h16"/></svg>
-      <span class="ticket-queue-pos" style="font-size:.7rem;font-weight:700;color:var(--color-primary);min-width:1.25rem;">#{{ forloop.counter }}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.ticket_number }} · {{ t.lead.full_name }}</div>
-        {% if t.address %}<div style="font-size:.68rem;color:var(--color-text-muted);">📍 {{ t.address }}</div>{% endif %}
-      </div>
-      <span class="da-badge tkt-priority-{{ t.priority }}" style="flex-shrink:0;">{{ t.get_priority_display }}</span>
-      <a href="{% url 'dashboard:ticket_detail' t.pk %}" style="font-size:.7rem;color:var(--color-primary);text-decoration:none;flex-shrink:0;" draggable="false">Ver</a>
-    </div>
-    {% endfor %}
-  </div>
-  <div id="ticket-queue-toast" style="font-size:.72rem;color:var(--color-text-muted);margin-top:.625rem;height:1rem;"></div>
-</div>
-<script>
-(function () {
-  const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
-  const queue = document.getElementById('ticket-queue');
-  const toast = document.getElementById('ticket-queue-toast');
-  let dragged = null;
-
-  function renumber() {
-    queue.querySelectorAll('.ticket-queue-row').forEach((row, i) => {
-      row.querySelector('.ticket-queue-pos').textContent = '#' + (i + 1);
-    });
-  }
-
-  function persistOrder() {
-    const order = Array.from(queue.querySelectorAll('.ticket-queue-row')).map(r => r.dataset.pk);
-    toast.textContent = 'Guardando orden…';
-    fetch('{% url "dashboard:ticket_reorder" %}', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ order }),
-    })
-    .then(r => r.json())
-    .then(data => { toast.textContent = data.ok ? 'Orden guardado ✓' : 'Error al guardar el orden'; setTimeout(() => toast.textContent = '', 2000); })
-    .catch(() => { toast.textContent = 'Error de red al guardar el orden'; });
-  }
-
-  queue.querySelectorAll('.ticket-queue-row').forEach(row => {
-    row.addEventListener('dragstart', e => {
-      dragged = row;
-      setTimeout(() => row.style.opacity = '.4', 0);
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', row.dataset.pk);
-    });
-    row.addEventListener('dragend', () => {
-      row.style.opacity = '1';
-      dragged = null;
-      renumber();
-      persistOrder();
-    });
-    row.addEventListener('dragover', e => {
-      e.preventDefault();
-      if (!dragged || dragged === row) return;
-      const rect = row.getBoundingClientRect();
-      const before = (e.clientY - rect.top) < rect.height / 2;
-      queue.insertBefore(dragged, before ? row : row.nextSibling);
-    });
-  });
-})();
-</script>
-{% endif %}
 
 <form id="tkt-bulk-form" method="post" action="{% url 'dashboard:tickets_bulk_delete' %}" onsubmit="return tktConfirmBulkDelete();">
 {% csrf_token %}
@@ -355,13 +292,7 @@ function tktToggleView() {
 
 (function () {
   const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
-  let dragged = null, fromCol = null;
-
-  function updateCount(stageKey, delta) {
-    const el = document.querySelector(`[data-count="${stageKey}"]`);
-    if (!el) return;
-    el.textContent = parseInt(el.textContent, 10) + delta;
-  }
+  let dragged = null, draggedBody = null;
 
   function showToast(msg, type) {
     const t = document.getElementById('tkt-toast');
@@ -372,72 +303,71 @@ function tktToggleView() {
     t._timer = setTimeout(() => { t.className = ''; }, 3000);
   }
 
-  function removeEmpty(body) { body.querySelectorAll('.kb-empty').forEach(e => e.remove()); }
+  function renumber(body) {
+    body.querySelectorAll('.kb-card').forEach((card, i) => {
+      const pos = card.querySelector('.kb-card-pos');
+      if (pos) pos.textContent = i + 1;
+      const orderInput = card.querySelector('.kb-order-input');
+      if (orderInput) orderInput.value = i;
+    });
+  }
 
-  function maybeAddEmpty(body) {
-    if (body.querySelectorAll('.kb-card').length === 0) {
-      const ghost = body.querySelector('.kb-drop-ghost');
-      const empty = document.createElement('div');
-      empty.className = 'kb-empty';
-      empty.textContent = 'Sin tickets';
-      body.insertBefore(empty, ghost ? ghost.nextSibling : null);
-    }
+  function persistOrder(body) {
+    const order = Array.from(body.querySelectorAll('.kb-card')).map(c => c.dataset.pk);
+    if (!order.length) return;
+    showToast('Guardando orden…', 'ok');
+    fetch('{% url "dashboard:ticket_reorder" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ order }),
+    })
+    .then(r => r.json())
+    .then(data => showToast(data.ok ? 'Orden guardado ✓' : 'Error al guardar el orden', data.ok ? 'ok' : 'err'))
+    .catch(() => showToast('Error de red', 'err'));
   }
 
   document.querySelectorAll('#pipeline-board .kb-card').forEach(card => {
     card.addEventListener('dragstart', e => {
       dragged = card;
-      fromCol = card.dataset.stage;
+      draggedBody = card.closest('.kb-col-body');
       card.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', card.dataset.pk);
     });
     card.addEventListener('dragend', () => {
-      setTimeout(() => card.classList.remove('dragging'), 0);
+      card.classList.remove('dragging');
       document.querySelectorAll('.kb-col-body').forEach(b => b.classList.remove('drag-active'));
       document.querySelectorAll('.kb-col').forEach(c => c.classList.remove('drag-over'));
+      if (draggedBody) { renumber(draggedBody); persistOrder(draggedBody); }
+      dragged = null; draggedBody = null;
     });
   });
 
+  // El orden solo se puede reordenar dentro de la misma columna (mismo técnico) —
+  // reasignar un ticket a otro técnico se hace desde el detalle del ticket.
   document.querySelectorAll('#pipeline-board .kb-col-body').forEach(body => {
     const col = body.closest('.kb-col');
-    const toStage = body.dataset.body;
 
     body.addEventListener('dragover', e => {
+      if (!dragged || draggedBody !== body) return;
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       body.classList.add('drag-active');
       col.classList.add('drag-over');
+      const afterCard = [...body.querySelectorAll('.kb-card:not(.dragging)')].find(card => {
+        const rect = card.getBoundingClientRect();
+        return e.clientY < rect.top + rect.height / 2;
+      });
+      body.insertBefore(dragged, afterCard || null);
     });
     body.addEventListener('dragleave', e => {
       if (!body.contains(e.relatedTarget)) { body.classList.remove('drag-active'); col.classList.remove('drag-over'); }
     });
     body.addEventListener('drop', e => {
+      if (draggedBody !== body) return;
       e.preventDefault();
       body.classList.remove('drag-active');
       col.classList.remove('drag-over');
-      if (!dragged || toStage === fromCol) return;
-
-      const moveUrl = dragged.dataset.moveUrl;
-      const ghost = body.querySelector('.kb-drop-ghost');
-      removeEmpty(body);
-      dragged.dataset.stage = toStage;
-      body.insertBefore(dragged, ghost ? ghost.nextSibling : body.firstChild);
-      dragged.style.setProperty('--kb-col-color', col.style.getPropertyValue('--kb-col-color'));
-      updateCount(fromCol, -1);
-      updateCount(toStage, +1);
-      maybeAddEmpty(document.querySelector(`[data-body="${fromCol}"]`));
-
-      fetch(moveUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-        body: JSON.stringify({ priority: toStage }),
-      })
-      .then(r => r.json())
-      .then(data => showToast(data.ok ? `Prioridad → ${data.label}` : 'Error al actualizar', data.ok ? 'ok' : 'err'))
-      .catch(() => showToast('Error de red', 'err'));
-
-      fromCol = toStage;
     });
   });
 

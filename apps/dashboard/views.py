@@ -784,32 +784,41 @@ class TicketListView(ListView):
         from django.contrib.auth.models import User
         ctx["technicians"] = User.objects.filter(field_profile__role="tecnico")
 
-        # ── Cola de orden de ejecución (solo tickets abiertos del técnico filtrado) ──
-        pending_queue = []
-        if ctx["current_tecnico"]:
-            pending_queue = list(
-                ServiceTicket.objects
-                .filter(assigned_to__pk=ctx["current_tecnico"], status__in=("open", "in_progress", "waiting_parts"))
-                .select_related("lead")
-                .order_by("order", "created_at")
-            )
-        ctx["pending_queue"] = pending_queue
+        # ── Pipeline de orden de ejecución (una columna por técnico, ordenable por drag & drop) ──
+        pipeline_qs = ServiceTicket.objects.select_related("lead", "assigned_to").order_by("order", "created_at")
+        pipeline_qs = _filter_tickets_qs(self.request, pipeline_qs)
+        if not ctx["current_status"]:
+            # Por defecto solo lo activo — resueltos/cerrados no necesitan orden de ruta
+            pipeline_qs = pipeline_qs.filter(status__in=("open", "in_progress", "waiting_parts"))
+        all_tickets = list(pipeline_qs[:500])
 
-        # ── Pipeline por urgencia (ignora el filtro de prioridad, respeta estado/fecha/búsqueda) ──
-        pipeline_qs = ServiceTicket.objects.select_related("lead", "assigned_to").order_by("-priority", "-created_at")
-        pipeline_qs = _filter_tickets_qs(self.request, pipeline_qs, include_priority=False)
-        all_tickets = list(pipeline_qs[:300])
-        PRIORITY_META = [
-            {"key": "urgent", "label": "Urgente", "css_color": "var(--color-danger)"},
-            {"key": "high",   "label": "Alta",    "css_color": "#D97706"},
-            {"key": "medium", "label": "Media",   "css_color": "#2563EB"},
-            {"key": "low",    "label": "Baja",    "css_color": "var(--color-text-muted)"},
+        tech_groups = {}
+        unassigned = []
+        for t in all_tickets:
+            if t.assigned_to_id:
+                tech_groups.setdefault(t.assigned_to_id, {"user": t.assigned_to, "tickets": []})["tickets"].append(t)
+            else:
+                unassigned.append(t)
+
+        tecnico_stages = [
+            {
+                "key":   f"tech-{uid}",
+                "label": data["user"].get_full_name() or data["user"].username,
+                "user":  data["user"],
+                "tickets": data["tickets"],
+                "count": len(data["tickets"]),
+            }
+            for uid, data in sorted(
+                tech_groups.items(),
+                key=lambda kv: (kv[1]["user"].get_full_name() or kv[1]["user"].username).lower(),
+            )
         ]
-        for stage in PRIORITY_META:
-            stage_tickets = [t for t in all_tickets if t.priority == stage["key"]]
-            stage["tickets"] = stage_tickets
-            stage["count"]   = len(stage_tickets)
-        ctx["priority_stages"] = PRIORITY_META
+        if unassigned:
+            tecnico_stages.append({
+                "key": "unassigned", "label": "Sin asignar", "user": None,
+                "tickets": unassigned, "count": len(unassigned),
+            })
+        ctx["tecnico_stages"] = tecnico_stages
         return ctx
 
 
