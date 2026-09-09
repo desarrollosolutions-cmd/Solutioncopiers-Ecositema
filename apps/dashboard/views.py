@@ -5582,14 +5582,14 @@ class CampoRouteJsonView(View):
         return JsonResponse({
             "points": [
                 {"lat": float(p["latitude"]), "lng": float(p["longitude"]),
-                 "t": p["recorded_at"].strftime("%H:%M")}
+                 "t": timezone.localtime(p["recorded_at"]).strftime("%H:%M")}
                 for p in points
             ],
             "tasks": [
                 {"pk": t["pk"], "title": t["title"], "client": t["client_name"],
                  "address": t["address"], "invoice": t["completion_invoice"],
                  "payment": t["payment_method"],
-                 "time": t["completed_at"].strftime("%H:%M") if t["completed_at"] else ""}
+                 "time": timezone.localtime(t["completed_at"]).strftime("%H:%M") if t["completed_at"] else ""}
                 for t in tasks
             ],
         })
