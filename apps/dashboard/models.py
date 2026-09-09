@@ -158,6 +158,7 @@ class Notification(models.Model):
         TASK_ASSIGNED      = "task_assigned",      "Nueva tarea asignada"
         DELIVERY_DONE      = "delivery_done",      "Entrega/recolección completada"
         TICKET_STATUS      = "ticket_status",      "Ticket actualizado por técnico"
+        TICKET_ARRIVAL     = "ticket_arrival",     "Llegada a sitio"
         LUNCH_BREAK        = "lunch_break",        "Almuerzo"
 
     user       = models.ForeignKey(

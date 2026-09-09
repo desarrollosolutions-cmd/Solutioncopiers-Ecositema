@@ -28,6 +28,7 @@ urlpatterns = [
     path("tickets/nuevo/",               views.PanelTicketCreateView.as_view(),       name="ticket_create"),
     path("tickets/<int:pk>/",            views.PanelTicketDetailView.as_view(),       name="ticket_detail"),
     path("tickets/<int:pk>/estado/",     views.PanelTicketStatusUpdateView.as_view(), name="ticket_status"),
+    path("tickets/<int:pk>/llegada/",    views.PanelTicketArrivalView.as_view(),      name="ticket_arrival"),
 
     # Contratos
     path("contratos/", views.PanelContractListView.as_view(), name="contracts"),

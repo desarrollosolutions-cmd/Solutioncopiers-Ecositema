@@ -2967,6 +2967,29 @@ class PanelTicketStatusUpdateView(View):
 
 
 @panel_decorator
+class PanelTicketArrivalView(View):
+    """POST /panel/tickets/<pk>/llegada/ — AJAX, el técnico marca su llegada al sitio."""
+
+    def post(self, request, pk):
+        from apps.leads.models import ServiceTicket
+        from django.http import JsonResponse
+        ticket = get_object_or_404(ServiceTicket, pk=pk, assigned_to=request.user)
+        if ticket.status == "closed":
+            return JsonResponse({"ok": False, "error": "El ticket ya está cerrado."}, status=400)
+        if not ticket.arrived_at:
+            ticket.arrived_at = timezone.now()
+            ticket.save(update_fields=["arrived_at"])
+            from apps.dashboard.models import Notification
+            _notify_admins(
+                type=Notification.Type.TICKET_ARRIVAL,
+                title=f"Técnico llegó al sitio — Ticket #{ticket.ticket_number}",
+                message=f"{request.user.get_full_name() or request.user.username} — {ticket.lead.full_name}",
+                link=f"/dashadmin/tickets/{ticket.pk}/",
+            )
+        return JsonResponse({"ok": True, "arrived_at": ticket.arrived_at.strftime("%d/%m %H:%M")})
+
+
+@panel_decorator
 class PanelTicketCreateView(View):
     template_name = "panel/ticket_create.html"
 
@@ -5854,6 +5877,26 @@ class CampoTicketDetailView(View):
                 type=Notification.Type.TICKET_STATUS,
                 title=f"Ticket #{ticket.ticket_number} → {ticket.get_status_display()}",
                 message=f"{request.user.get_full_name() or request.user.username} — {ticket.equipment_description or ''}".strip(" —"),
+                link=f"/dashadmin/tickets/{ticket.pk}/",
+            )
+        return redirect("campo:ticket_detail", pk=pk)
+
+
+@tecnico_campo_decorator
+class CampoTicketArrivalView(View):
+    """POST /campo/tickets/<pk>/llegada/ — el técnico marca su llegada al sitio del cliente."""
+
+    def post(self, request, pk):
+        from apps.leads.models import ServiceTicket
+        ticket = get_object_or_404(ServiceTicket, pk=pk, assigned_to=request.user)
+        if ticket.status != "closed" and not ticket.arrived_at:
+            ticket.arrived_at = timezone.now()
+            ticket.save(update_fields=["arrived_at"])
+            from apps.dashboard.models import Notification
+            _notify_admins(
+                type=Notification.Type.TICKET_ARRIVAL,
+                title=f"Técnico llegó al sitio — Ticket #{ticket.ticket_number}",
+                message=f"{request.user.get_full_name() or request.user.username} — {ticket.lead.full_name}",
                 link=f"/dashadmin/tickets/{ticket.pk}/",
             )
         return redirect("campo:ticket_detail", pk=pk)

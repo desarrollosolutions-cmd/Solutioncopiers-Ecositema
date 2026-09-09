@@ -112,6 +112,11 @@
               <label>Notas de resolución / trabajo realizado</label>
               <textarea name="resolution_notes" class="da-input" rows="5" placeholder="Describe qué se hizo, repuestos usados, estado final del equipo…" style="resize:vertical;">{% if is_edit %}{{ ticket.resolution_notes }}{% endif %}</textarea>
             </div>
+            {% if is_edit and ticket.arrived_at %}
+            <div style="font-size:.78rem;color:var(--color-text-muted);">
+              Llegada del técnico al sitio: <strong style="color:#0EA5E9;">{{ ticket.arrived_at|date:"d/m/Y H:i" }}</strong>
+            </div>
+            {% endif %}
             {% if is_edit and ticket.resolved_at %}
             <div style="font-size:.78rem;color:var(--color-text-muted);">
               Resuelto el: <strong style="color:var(--color-success);">{{ ticket.resolved_at|date:"d/m/Y H:i" }}</strong>

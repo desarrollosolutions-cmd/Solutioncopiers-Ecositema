@@ -132,6 +132,29 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
   <div class="text-block" style="border-color:rgba(16,185,129,.25);">{{ ticket.resolution_notes|linebreaksbr }}</div>
   {% endif %}
 
+  {# Llegada al sitio #}
+  {% if ticket.status != "closed" %}
+  <div class="action-card">
+    {% if ticket.arrived_at %}
+    <div style="display:flex;align-items:center;gap:.625rem;">
+      <svg fill="none" stroke="#0EA5E9" viewBox="0 0 24 24" stroke-width="2" style="width:1.5rem;height:1.5rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <div>
+        <div style="font-size:.8125rem;font-weight:700;color:#0EA5E9;">Llegada registrada</div>
+        <div style="font-size:.72rem;color:#C0A8A8;">{{ ticket.arrived_at|date:"d/m/Y H:i" }}</div>
+      </div>
+    </div>
+    {% else %}
+    <form method="post" action="{% url 'campo:ticket_arrival' ticket.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn" style="background:linear-gradient(135deg,#0EA5E9,#0284C7);color:#fff;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Marcar llegada al sitio
+      </button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
   {# Acciones (solo si no está cerrado) #}
   {% if ticket.status != "closed" %}
   <div class="section-title">Actualizar ticket</div>

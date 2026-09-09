@@ -180,7 +180,10 @@
         {% endif %}
         <div style="display:flex;align-items:center;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;">
           <span class="pn-badge pn-badge-{{ ticket.status }}" id="tbadge-{{ ticket.pk }}">{{ ticket.get_status_display }}</span>
-          <button onclick="openTicketModal({{ ticket.pk }}, '{{ ticket.ticket_number|escapejs }}', '{{ ticket.status }}')"
+          {% if ticket.arrived_at %}
+          <span id="tarrived-{{ ticket.pk }}" style="font-size:.68rem;font-weight:700;padding:.2rem .5rem;border-radius:9999px;background:rgba(14,165,233,.12);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);">📍 En sitio</span>
+          {% endif %}
+          <button onclick="openTicketModal({{ ticket.pk }}, '{{ ticket.ticket_number|escapejs }}', '{{ ticket.status }}', {% if ticket.arrived_at %}true{% else %}false{% endif %})"
             style="font-size:.7rem;font-weight:700;padding:.25rem .75rem;border-radius:.375rem;border:1.5px solid var(--color-primary);background:transparent;color:var(--color-primary);cursor:pointer;display:inline-flex;align-items:center;gap:.3rem;transition:background .15s;"
             onmouseover="this.style.background='color-mix(in srgb,var(--color-primary) 8%,transparent)'" onmouseout="this.style.background='transparent'">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.75rem;height:.75rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -296,6 +299,13 @@
     <div class="pndm-handle"></div>
     <div style="font-size:.9375rem;font-weight:700;color:var(--color-text-primary);margin-bottom:.25rem;" id="pn-tmodal-title">Gestionar ticket</div>
     <div style="font-size:.75rem;color:var(--color-text-muted);margin-bottom:1.25rem;" id="pn-tmodal-num"></div>
+
+    <div style="margin-bottom:1rem;">
+      <button type="button" id="pn-tbtn-arrival"
+        style="width:100%;padding:.75rem;border-radius:.625rem;border:1.5px solid rgba(14,165,233,.4);background:rgba(14,165,233,.08);color:#0EA5E9;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;"
+        onclick="markTicketArrival()">📍 Marcar llegada al sitio</button>
+      <div id="pn-tarrival-done" style="display:none;font-size:.78rem;color:#0EA5E9;font-weight:700;padding:.75rem;text-align:center;background:rgba(14,165,233,.08);border-radius:.625rem;">✓ Llegada registrada</div>
+    </div>
 
     <div style="margin-bottom:1rem;">
       <label class="pndm-label">Cambiar estado</label>
@@ -595,7 +605,7 @@ function _refreshStatusButtons(selected) {
   });
 }
 
-function openTicketModal(pk, num, status) {
+function openTicketModal(pk, num, status, arrived) {
   _currentTicketId = pk;
   _currentTicketStatus = status;
   _originalTicketStatus = status;
@@ -603,10 +613,46 @@ function openTicketModal(pk, num, status) {
   document.getElementById('pn-tmodal-num').textContent = num;
   document.getElementById('pn-tnotes').value = '';
   _refreshStatusButtons(status);
+  var arrivalBtn = document.getElementById('pn-tbtn-arrival');
+  var arrivalDone = document.getElementById('pn-tarrival-done');
+  var showArrival = status !== 'closed';
+  arrivalBtn.style.display = (showArrival && !arrived) ? 'flex' : 'none';
+  arrivalDone.style.display = (showArrival && arrived) ? 'block' : 'none';
   document.getElementById('pn-ticket-modal').classList.add('pndm-open');
   document.body.style.position = 'fixed';
   document.body.style.top = '-' + window.scrollY + 'px';
   document.body.style.width = '100%';
+}
+
+function markTicketArrival() {
+  if (!_currentTicketId) return;
+  var btn = document.getElementById('pn-tbtn-arrival');
+  btn.disabled = true;
+  var fd = new FormData();
+  fd.append('csrfmiddlewaretoken', CSRF_PN);
+  fetch('/panel/tickets/' + _currentTicketId + '/llegada/', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      btn.disabled = false;
+      if (data.ok) {
+        btn.style.display = 'none';
+        document.getElementById('pn-tarrival-done').style.display = 'block';
+        var pill = document.getElementById('tarrived-' + _currentTicketId);
+        if (!pill) {
+          var badge = document.getElementById('tbadge-' + _currentTicketId);
+          if (badge) {
+            pill = document.createElement('span');
+            pill.id = 'tarrived-' + _currentTicketId;
+            pill.style.cssText = "font-size:.68rem;font-weight:700;padding:.2rem .5rem;border-radius:9999px;background:rgba(14,165,233,.12);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);";
+            pill.textContent = '📍 En sitio';
+            badge.insertAdjacentElement('afterend', pill);
+          }
+        }
+      } else {
+        alert(data.error || 'Error al registrar la llegada');
+      }
+    })
+    .catch(function() { btn.disabled = false; alert('Error al registrar la llegada'); });
 }
 
 function closeTicketModal() {
