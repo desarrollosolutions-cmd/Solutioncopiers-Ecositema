@@ -5143,6 +5143,13 @@ class CampoLunchStartView(View):
         loc.is_on_lunch = True
         loc.lunch_started_at = timezone.now()
         loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
+        from apps.dashboard.models import Notification
+        _notify_admins(
+            type=Notification.Type.LUNCH_BREAK,
+            title=f"Salió a almorzar: {request.user.get_full_name() or request.user.username}",
+            message=f"Desde las {timezone.localtime(loc.lunch_started_at).strftime('%H:%M')}",
+            link="/dashadmin/campo/",
+        )
         return JsonResponse({"ok": True})
 
 
@@ -5155,6 +5162,13 @@ class CampoLunchEndView(View):
             loc.is_on_lunch = False
             loc.lunch_started_at = None
             loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
+            from apps.dashboard.models import Notification
+            _notify_admins(
+                type=Notification.Type.LUNCH_BREAK,
+                title=f"Volvió del almuerzo: {request.user.get_full_name() or request.user.username}",
+                message=f"Hora: {timezone.localtime(timezone.now()).strftime('%H:%M')}",
+                link="/dashadmin/campo/",
+            )
         except FieldUserLocation.DoesNotExist:
             pass
         return JsonResponse({"ok": True})
@@ -5910,13 +5924,19 @@ class PanelShiftEndView(View):
 @panel_decorator
 class PanelLunchStartView(View):
     def post(self, request):
-        from apps.dashboard.models import FieldUserLocation
+        from apps.dashboard.models import FieldUserLocation, Notification
         try:
             loc = request.user.field_location
             if loc.is_on_shift:
                 loc.is_on_lunch = True
                 loc.lunch_started_at = timezone.now()
                 loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
+                _notify_admins(
+                    type=Notification.Type.LUNCH_BREAK,
+                    title=f"Salió a almorzar: {request.user.get_full_name() or request.user.username}",
+                    message=f"Desde las {timezone.localtime(loc.lunch_started_at).strftime('%H:%M')}",
+                    link="/dashadmin/campo/",
+                )
         except FieldUserLocation.DoesNotExist:
             pass
         return redirect("panel:turno")
@@ -5928,12 +5948,18 @@ class PanelLunchStartView(View):
 @panel_decorator
 class PanelLunchEndView(View):
     def post(self, request):
-        from apps.dashboard.models import FieldUserLocation
+        from apps.dashboard.models import FieldUserLocation, Notification
         try:
             loc = request.user.field_location
             loc.is_on_lunch = False
             loc.lunch_started_at = None
             loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
+            _notify_admins(
+                type=Notification.Type.LUNCH_BREAK,
+                title=f"Volvió del almuerzo: {request.user.get_full_name() or request.user.username}",
+                message=f"Hora: {timezone.localtime(timezone.now()).strftime('%H:%M')}",
+                link="/dashadmin/campo/",
+            )
         except FieldUserLocation.DoesNotExist:
             pass
         return redirect("panel:turno")
