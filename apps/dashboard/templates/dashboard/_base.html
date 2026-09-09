@@ -18,35 +18,35 @@
   </script>
   <style>
     /* ═══════════════════════════════════════════════════════════════
-       ADMIN — PALETA EXCLUSIVA: AZUL PETRÓLEO
+       ADMIN — PALETA DE MARCA (rojo intenso / vinotinto, igual al logo)
        Sobreescribe los tokens de main.css solo para el dashboard.
     ═══════════════════════════════════════════════════════════════ */
 
-    /* ── MODO OSCURO (predeterminado) ── */
+    /* ── MODO OSCURO (predeterminado) — "Rojo oscuro premium" ── */
     :root,
     [data-theme="dark"],
     [data-theme="midnight"],
     [data-theme="forest"],
     [data-theme="amethyst"] {
-      /* Acento principal — Sky / Teal */
-      --color-primary:        #0EA5E9;
-      --color-primary-dark:   #0284C7;
-      --color-primary-light:  #38BDF8;
-      --color-accent:         #06B6D4;
-      --color-accent-dark:    #0891B2;
+      /* Acento principal — Rojo intenso / Vinotinto (marca) */
+      --color-primary:        #C4121A;
+      --color-primary-dark:   #5A0B0B;
+      --color-primary-light:  #D94048;
+      --color-accent:         #C47A0A;
+      --color-accent-dark:    #9A5E06;
 
-      /* Fondos — azul petróleo profundo */
-      --color-bg:             #070E18;
-      --color-bg-alt:         #0C1626;
-      --color-surface:        #101E30;
+      /* Fondos — negro con base roja */
+      --color-bg:             #100808;
+      --color-bg-alt:         #1A0E0E;
+      --color-surface:        #221414;
 
       /* Tipografía */
-      --color-text-primary:   #E4F1FA;
-      --color-text-secondary: #7AAEC8;
-      --color-text-muted:     #3E6E8A;
+      --color-text-primary:   #F5EDEB;
+      --color-text-secondary: #C0A8A8;
+      --color-text-muted:     #7A6060;
 
       /* Borde */
-      --color-border:         #192D42;
+      --color-border:         #3A2020;
 
       /* Semánticos — sin cambio */
       --color-success:        #10B981;
@@ -55,33 +55,33 @@
 
       /* Sombras */
       --shadow-card:          0 1px 3px rgba(0,0,0,.55), 0 4px 20px rgba(0,0,0,.40);
-      --shadow-card-hover:    0 4px 8px rgba(0,0,0,.6), 0 16px 40px rgba(14,165,233,.18);
+      --shadow-card-hover:    0 4px 8px rgba(0,0,0,.6), 0 16px 40px rgba(196,18,26,.25);
     }
 
     /* ── MODO CLARO ── */
     [data-theme="light"] {
-      --color-primary:        #0284C7;
-      --color-primary-dark:   #0369A1;
-      --color-primary-light:  #0EA5E9;
-      --color-accent:         #0891B2;
-      --color-accent-dark:    #0E7490;
+      --color-primary:        #C4121A;
+      --color-primary-dark:   #5A0B0B;
+      --color-primary-light:  #D94048;
+      --color-accent:         #C47A0A;
+      --color-accent-dark:    #9A5E06;
 
-      --color-bg:             #F0F7FD;
-      --color-bg-alt:         #E1EEF8;
+      --color-bg:             #FBF5F5;
+      --color-bg-alt:         #F5E5E5;
       --color-surface:        #FFFFFF;
 
-      --color-text-primary:   #0C1F2E;
-      --color-text-secondary: #2E5A7A;
-      --color-text-muted:     #5E8DAA;
+      --color-text-primary:   #1C0B0B;
+      --color-text-secondary: #6B5252;
+      --color-text-muted:     #9C8080;
 
-      --color-border:         #B8D8EF;
+      --color-border:         #EDD5D5;
 
       --color-success:        #059669;
       --color-warning:        #D97706;
       --color-danger:         #DC2626;
 
-      --shadow-card:          0 1px 3px rgba(14,165,233,.08), 0 4px 16px rgba(14,165,233,.06);
-      --shadow-card-hover:    0 4px 12px rgba(14,165,233,.14), 0 16px 40px rgba(14,165,233,.10);
+      --shadow-card:          0 1px 3px rgba(196,18,26,.08), 0 4px 16px rgba(196,18,26,.06);
+      --shadow-card-hover:    0 4px 12px rgba(196,18,26,.14), 0 16px 40px rgba(196,18,26,.10);
     }
 
     /* ═══════════════════════════════════════════════════════════════
@@ -126,7 +126,7 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 3px;
-      background: linear-gradient(90deg, var(--color-primary) 0%, #4F8EF7 50%, var(--color-primary-dark) 100%);
+      background: linear-gradient(90deg, var(--color-primary-light) 0%, var(--color-primary) 50%, var(--color-primary-dark) 100%);
       z-index: 1;
     }
 
@@ -173,22 +173,25 @@
       padding: 1.25rem 1.125rem 1.125rem;
       border-bottom: 1px solid var(--color-border);
       display: flex;
-      align-items: center;
-      gap: 0.75rem;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
       margin-top: 3px;
       position: relative;
     }
-    .da-brand-logo {
-      width: 2.375rem; height: 2.375rem;
-      border-radius: 0.75rem;
-      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-      display: flex; align-items: center; justify-content: center;
-      color: white;
-      flex-shrink: 0;
-      box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary) 45%, transparent),
-                  0 2px 4px rgba(0,0,0,.15);
+    .da-brand-imgwrap {
+      width: 100%;
+      max-width: 185px;
+      background: #fff;
+      border-radius: 0.625rem;
+      padding: 0.5rem 0.75rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
     }
-    .da-brand-logo svg { width: 1.125rem; height: 1.125rem; }
+    .da-brand-img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
     .da-brand-name {
       font-size: 0.9375rem;
       font-weight: 800;
@@ -871,15 +874,10 @@
 {# ── SIDEBAR ── #}
 <aside class="da-sidebar">
   <div class="da-brand">
-    <div class="da-brand-logo">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-      </svg>
+    <div class="da-brand-imgwrap">
+      <img class="da-brand-img" src="{% static 'images/logo.webp' %}" alt="Solution Copiers">
     </div>
-    <div>
-      <div class="da-brand-name">Solution Copiers</div>
-      <div class="da-brand-sub">Panel Admin</div>
-    </div>
+    <div class="da-brand-sub">Panel Admin</div>
   </div>
 
   <nav class="da-nav">
@@ -1254,7 +1252,7 @@
             </div>
             <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0;">
               <template x-if="r.score !== null">
-                <span :style="'font-size:.68rem;font-weight:700;padding:.1rem .4rem;border-radius:.375rem;background:'+(r.score>=70?'rgba(16,185,129,.12)':r.score>=40?'rgba(245,158,11,.12)':'rgba(14,165,233,.1)')+';color:'+(r.score>=70?'#10B981':r.score>=40?'#F59E0B':'var(--color-primary)')+''" x-text="r.score+'pts'"></span>
+                <span :style="'font-size:.68rem;font-weight:700;padding:.1rem .4rem;border-radius:.375rem;background:'+(r.score>=70?'rgba(16,185,129,.12)':r.score>=40?'rgba(245,158,11,.12)':'rgba(196,18,26,.1)')+';color:'+(r.score>=70?'#10B981':r.score>=40?'#F59E0B':'var(--color-primary)')+''" x-text="r.score+'pts'"></span>
               </template>
               <span :style="'font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:.15rem .45rem;border-radius:.375rem;background:'+typeColor(r.type)+'22;color:'+typeColor(r.type)" x-text="r.type"></span>
             </div>

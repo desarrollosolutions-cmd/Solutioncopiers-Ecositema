@@ -4,41 +4,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#070E18">
+<meta name="theme-color" content="#100808">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Ticket {{ ticket.ticket_number }}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-serif;color:#E4F1FA;-webkit-font-smoothing:antialiased;}
-.topbar{background:#101E30;border-bottom:1px solid #192D42;padding:.875rem 1.125rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:10;}
-.back-btn{background:none;border:none;color:#0EA5E9;cursor:pointer;padding:.25rem;display:flex;align-items:center;flex-shrink:0;}
+body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-serif;color:#F5EDEB;-webkit-font-smoothing:antialiased;}
+.topbar{background:#221414;border-bottom:1px solid #3A2020;padding:.875rem 1.125rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:10;}
+.back-btn{background:none;border:none;color:#C4121A;cursor:pointer;padding:.25rem;display:flex;align-items:center;flex-shrink:0;}
 .back-btn svg{width:1.25rem;height:1.25rem;}
 .topbar-info{flex:1;min-width:0;}
-.topbar-ticket{font-size:.875rem;font-weight:700;color:#E4F1FA;}
-.topbar-client{font-size:.7rem;color:#7AAEC8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-ticket{font-size:.875rem;font-weight:700;color:#F5EDEB;}
+.topbar-client{font-size:.7rem;color:#C0A8A8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .content{padding:1rem 1rem 5rem;}
-.info-card{background:#101E30;border:1px solid #192D42;border-radius:1rem;padding:1.125rem;margin-bottom:.875rem;}
+.info-card{background:#221414;border:1px solid #3A2020;border-radius:1rem;padding:1.125rem;margin-bottom:.875rem;}
 .info-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;}
 .info-row:last-child{margin-bottom:0;}
-.info-label{font-size:.68rem;font-weight:600;color:#3E6E8A;text-transform:uppercase;letter-spacing:.06em;}
-.info-value{font-size:.8125rem;font-weight:600;color:#E4F1FA;text-align:right;}
-.section-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#3E6E8A;margin:1.25rem 0 .625rem;}
-.text-block{background:#101E30;border:1px solid #192D42;border-radius:.875rem;padding:.875rem 1rem;font-size:.8rem;line-height:1.6;color:#C5DCF0;}
+.info-label{font-size:.68rem;font-weight:600;color:#7A6060;text-transform:uppercase;letter-spacing:.06em;}
+.info-value{font-size:.8125rem;font-weight:600;color:#F5EDEB;text-align:right;}
+.section-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7A6060;margin:1.25rem 0 .625rem;}
+.text-block{background:#221414;border:1px solid #3A2020;border-radius:.875rem;padding:.875rem 1rem;font-size:.8rem;line-height:1.6;color:#C0A8A8;}
 .badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;font-weight:700;padding:.25rem .625rem;border-radius:9999px;}
-.badge-open{background:rgba(14,165,233,.12);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);}
+.badge-open{background:rgba(196,18,26,.12);color:#C4121A;border:1px solid rgba(196,18,26,.2);}
 .badge-in_progress{background:rgba(139,92,246,.12);color:#7C3AED;border:1px solid rgba(139,92,246,.2);}
 .badge-waiting_parts{background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.2);}
 .badge-resolved{background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);}
 .badge-closed{background:rgba(100,116,139,.12);color:#64748B;border:1px solid rgba(100,116,139,.2);}
 .badge-high{background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.2);}
 .badge-urgent{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.2);}
-.badge-medium{background:rgba(14,165,233,.12);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);}
+.badge-medium{background:rgba(196,18,26,.12);color:#C4121A;border:1px solid rgba(196,18,26,.2);}
 .badge-low{background:rgba(100,116,139,.12);color:#94A3B8;border:1px solid rgba(100,116,139,.2);}
-.action-card{background:#101E30;border:1px solid #192D42;border-radius:1rem;padding:1.25rem;margin-bottom:.875rem;}
-.form-label{font-size:.7rem;font-weight:600;color:#7AAEC8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;display:block;}
-.form-textarea{width:100%;padding:.75rem .875rem;background:#070E18;border:1.5px solid #192D42;border-radius:.75rem;color:#E4F1FA;font-size:.875rem;font-family:inherit;outline:none;resize:vertical;min-height:80px;transition:border-color .18s;margin-bottom:1rem;}
-.form-textarea:focus{border-color:#0EA5E9;}
+.action-card{background:#221414;border:1px solid #3A2020;border-radius:1rem;padding:1.25rem;margin-bottom:.875rem;}
+.form-label{font-size:.7rem;font-weight:600;color:#C0A8A8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;display:block;}
+.form-textarea{width:100%;padding:.75rem .875rem;background:#100808;border:1.5px solid #3A2020;border-radius:.75rem;color:#F5EDEB;font-size:.875rem;font-family:inherit;outline:none;resize:vertical;min-height:80px;transition:border-color .18s;margin-bottom:1rem;}
+.form-textarea:focus{border-color:#C4121A;}
 .btn-grid{display:grid;gap:.5rem;margin-top:.25rem;}
 .btn{width:100%;padding:.8rem;border-radius:.75rem;border:none;font-size:.8125rem;font-weight:700;cursor:pointer;transition:transform .15s,opacity .18s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.4rem;}
 .btn:active{transform:scale(.97);}
@@ -51,11 +51,11 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
 .resolved-banner{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:.875rem;padding:1rem;display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem;}
 .resolved-banner svg{width:1.5rem;height:1.5rem;color:#10B981;flex-shrink:0;}
 .resolved-text{font-size:.8125rem;font-weight:600;color:#10B981;}
-.resolved-sub{font-size:.72rem;color:#7AAEC8;margin-top:.15rem;}
-.bottombar{position:fixed;bottom:0;left:0;right:0;background:#101E30;border-top:1px solid #192D42;padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
-.bottombar-tick{font-size:.72rem;color:#3E6E8A;}
-.logout-btn{background:none;border:none;color:#3E6E8A;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;padding:.375rem .625rem;border-radius:.375rem;}
-.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:#101E30;border:1px solid #0EA5E9;color:#E4F1FA;padding:.625rem 1.25rem;border-radius:.75rem;font-size:.78rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.resolved-sub{font-size:.72rem;color:#C0A8A8;margin-top:.15rem;}
+.bottombar{position:fixed;bottom:0;left:0;right:0;background:#221414;border-top:1px solid #3A2020;padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
+.bottombar-tick{font-size:.72rem;color:#7A6060;}
+.logout-btn{background:none;border:none;color:#7A6060;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;padding:.375rem .625rem;border-radius:.375rem;}
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:#221414;border:1px solid #C4121A;color:#F5EDEB;padding:.625rem 1.25rem;border-radius:.75rem;font-size:.78rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 </style>
 </head>
@@ -180,7 +180,7 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
         {% endif %}
 
         {# Guardar notas sin cambiar estado #}
-        <button type="button" class="btn" style="background:rgba(14,165,233,.1);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);" onclick="submitStatus('')">
+        <button type="button" class="btn" style="background:rgba(196,18,26,.1);color:#C4121A;border:1px solid rgba(196,18,26,.2);" onclick="submitStatus('')">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
           Guardar notas
         </button>

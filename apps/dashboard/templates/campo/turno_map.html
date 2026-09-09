@@ -4,36 +4,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#070E18">
+<meta name="theme-color" content="#100808">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Mapa de ruta — Campo</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-serif;color:#E4F1FA;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
-.topbar{background:#101E30;border-bottom:1px solid #192D42;padding:.875rem 1.125rem;display:flex;align-items:center;gap:.875rem;flex-shrink:0;}
-.back-btn{background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);color:#0EA5E9;border-radius:.625rem;padding:.5rem .875rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.375rem;text-decoration:none;white-space:nowrap;}
+body{height:100vh;background:#100808;font-family:'Inter',system-ui,sans-serif;color:#F5EDEB;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+.topbar{background:#221414;border-bottom:1px solid #3A2020;padding:.875rem 1.125rem;display:flex;align-items:center;gap:.875rem;flex-shrink:0;}
+.back-btn{background:rgba(196,18,26,.1);border:1px solid rgba(196,18,26,.2);color:#C4121A;border-radius:.625rem;padding:.5rem .875rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.375rem;text-decoration:none;white-space:nowrap;}
 .back-btn svg{width:.875rem;height:.875rem;}
 .topbar-title{font-size:.9rem;font-weight:700;}
-.topbar-sub{font-size:.65rem;color:#3E6E8A;margin-top:.1rem;}
+.topbar-sub{font-size:.65rem;color:#7A6060;margin-top:.1rem;}
 #map{flex:1;min-height:0;}
-.bottom-panel{background:#101E30;border-top:1px solid #192D42;max-height:42vh;overflow-y:auto;flex-shrink:0;}
-.panel-header{padding:.75rem 1.125rem;border-bottom:1px solid #192D42;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#101E30;z-index:1;}
-.panel-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#3E6E8A;}
-.status-chip{font-size:.65rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:rgba(14,165,233,.1);color:#0EA5E9;border:1px solid rgba(14,165,233,.2);}
-.task-row{padding:.75rem 1.125rem;border-bottom:1px solid #0D1A27;display:flex;gap:.75rem;align-items:flex-start;cursor:pointer;transition:background .15s;}
+.bottom-panel{background:#221414;border-top:1px solid #3A2020;max-height:42vh;overflow-y:auto;flex-shrink:0;}
+.panel-header{padding:.75rem 1.125rem;border-bottom:1px solid #3A2020;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#221414;z-index:1;}
+.panel-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7A6060;}
+.status-chip{font-size:.65rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:rgba(196,18,26,.1);color:#C4121A;border:1px solid rgba(196,18,26,.2);}
+.task-row{padding:.75rem 1.125rem;border-bottom:1px solid #3A2020;display:flex;gap:.75rem;align-items:flex-start;cursor:pointer;transition:background .15s;}
 .task-row:active{background:rgba(255,255,255,.03);}
 .task-row.done{opacity:.5;}
 .task-num{width:2rem;height:2rem;border-radius:.625rem;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .task-num.pending{background:rgba(245,158,11,.12);color:#F59E0B;}
 .task-num.done{background:rgba(16,185,129,.12);color:#10B981;}
 .task-info{flex:1;min-width:0;}
-.task-title{font-size:.8rem;font-weight:600;color:#E4F1FA;line-height:1.4;}
-.task-addr{font-size:.68rem;color:#7AAEC8;margin-top:.2rem;display:flex;align-items:center;gap:.25rem;}
+.task-title{font-size:.8rem;font-weight:600;color:#F5EDEB;line-height:1.4;}
+.task-addr{font-size:.68rem;color:#C0A8A8;margin-top:.2rem;display:flex;align-items:center;gap:.25rem;}
 .task-addr svg{width:.65rem;height:.65rem;flex-shrink:0;}
 .task-client{font-size:.68rem;color:#F59E0B;margin-top:.15rem;}
-.empty-state{padding:3rem 1.5rem;text-align:center;color:#3E6E8A;font-size:.85rem;}
+.empty-state{padding:3rem 1.5rem;text-align:center;color:#7A6060;font-size:.85rem;}
 </style>
 </head>
 <body>
@@ -71,11 +71,11 @@ body{height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-serif;co
         {{ dt.address }}
       </div>
       <a href="https://maps.google.com/?q={{ dt.address|urlencode }},+Colombia"
-         target="_blank" style="font-size:.65rem;color:#0EA5E9;text-decoration:none;margin-top:.2rem;display:inline-block;">
+         target="_blank" style="font-size:.65rem;color:#C4121A;text-decoration:none;margin-top:.2rem;display:inline-block;">
         Ver en Google Maps →
       </a>
       {% else %}
-      <div class="task-addr" style="color:#3E6E8A;">Sin dirección registrada</div>
+      <div class="task-addr" style="color:#7A6060;">Sin dirección registrada</div>
       {% endif %}
     </div>
   </div>
@@ -152,9 +152,9 @@ function extractStreet(addr) {
 
 if (DELIVERY_POINTS.length === 0) {
   statusEl.textContent = 'Sin direcciones';
-  statusEl.style.background = 'rgba(62,110,138,.15)';
-  statusEl.style.color = '#3E6E8A';
-  statusEl.style.borderColor = 'rgba(62,110,138,.2)';
+  statusEl.style.background = 'rgba(122,96,96,.15)';
+  statusEl.style.color = '#7A6060';
+  statusEl.style.borderColor = 'rgba(122,96,96,.2)';
 } else {
   // Coordenadas de los centros municipales como fallback
   const CITY_COORDS = {
@@ -183,7 +183,7 @@ if (DELIVERY_POINTS.length === 0) {
         <div style="font-size:.72rem;color:#555;">📍 ${pt.address}</div>
         ${approx ? `<div style="font-size:.65rem;color:#F59E0B;margin-top:.2rem;">⚠ Posición aproximada (centro municipal)</div>` : ''}
         <a href="https://maps.google.com/?q=${mapsQ}" target="_blank"
-           style="display:block;margin-top:.5rem;font-size:.72rem;color:#0EA5E9;font-weight:600;">
+           style="display:block;margin-top:.5rem;font-size:.72rem;color:#C4121A;font-weight:600;">
           Abrir en Google Maps →
         </a>
       </div>
