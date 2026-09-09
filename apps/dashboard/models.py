@@ -302,7 +302,8 @@ class DeliveryTask(models.Model):
     completion_notes     = models.TextField("notas de entrega", blank=True)
     completion_invoice   = models.CharField("# factura / remisión", max_length=100, blank=True)
     completion_photo     = models.ImageField(upload_to="delivery_proofs/%Y/%m/", null=True, blank=True)
-    completion_photo_b64 = models.TextField("foto de entrega (base64)", blank=True)
+    completion_photo_b64 = models.TextField("foto de entrega (base64, legado — usar completion_photos)", blank=True)
+    completion_photos    = models.JSONField("fotos de entrega (base64)", default=list, blank=True)
     completion_signature = models.TextField("firma del receptor", blank=True)
 
     class Meta:
@@ -312,6 +313,15 @@ class DeliveryTask(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.field_user.user.get_full_name() or self.field_user.user.username}"
+
+    @property
+    def all_completion_photos(self):
+        """Fotos de entrega/recogida, con compatibilidad hacia atrás con el campo legado de una sola foto."""
+        if self.completion_photos:
+            return self.completion_photos
+        if self.completion_photo_b64:
+            return [self.completion_photo_b64]
+        return []
 
 
 class FieldLocationLog(models.Model):

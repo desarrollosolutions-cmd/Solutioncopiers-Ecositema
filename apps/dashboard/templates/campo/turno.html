@@ -71,6 +71,10 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
 .photo-preview-box{margin-bottom:.875rem;position:relative;}
 .photo-preview-box img{width:100%;border-radius:.75rem;display:block;}
 .photo-clear-btn{position:absolute;top:.5rem;right:.5rem;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:9999px;width:1.75rem;height:1.75rem;cursor:pointer;font-size:.75rem;font-weight:700;line-height:1;}
+.photo-grid{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.875rem;}
+.photo-thumb{position:relative;width:4.5rem;height:4.5rem;border-radius:.625rem;overflow:hidden;flex-shrink:0;}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-thumb button{position:absolute;top:.15rem;right:.15rem;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:9999px;width:1.375rem;height:1.375rem;cursor:pointer;font-size:.65rem;font-weight:700;line-height:1;}
 .sig-wrap{background:#070E18;border:1.5px solid #192D42;border-radius:.75rem;overflow:hidden;margin-bottom:.875rem;position:relative;}
 .sig-canvas{width:100%;height:140px;touch-action:none;display:block;}
 .sig-clear{position:absolute;top:.4rem;right:.4rem;background:rgba(0,0,0,.5);border:none;color:#7AAEC8;font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:.375rem;cursor:pointer;}
@@ -252,17 +256,14 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
       <textarea name="notes" id="modal-notes" class="modal-input modal-textarea"
         placeholder="¿Qué se entregó? ¿Hay observaciones?"></textarea>
 
-      <label class="modal-label">Foto del comprobante</label>
+      <label class="modal-label">Fotos del comprobante <span style="font-weight:400;text-transform:none;">(hasta 6 — toca varias veces para agregar más)</span></label>
+      <div class="photo-grid" id="campo-photo-grid"></div>
       <label class="photo-label" id="campo-photo-label" onclick="document.getElementById('campo-photo-input').click()">
         <span>📷</span>
         <span id="campo-photo-txt">Toca para tomar o elegir foto</span>
       </label>
       <input type="file" id="campo-photo-input" accept="image/*" capture="environment"
         style="display:none;" onchange="onCampoPhoto(this)">
-      <div class="photo-preview-box" id="campo-photo-box" style="display:none;">
-        <img id="campo-photo-img" src="" alt="foto">
-        <button type="button" class="photo-clear-btn" onclick="clearCampoPhoto()">✕</button>
-      </div>
 
       <label class="modal-label">Firma del receptor</label>
       <div class="sig-wrap">
@@ -409,8 +410,26 @@ function endShift() {
 // Iniciar GPS si ya estaba en turno al cargar
 if (isOnShift) startGPS();
 
-// ── Foto base64 ──
-let _campoPhotoB64 = '';
+// ── Fotos base64 (varias) ──
+const CAMPO_MAX_PHOTOS = 6;
+let _campoPhotos = [];
+
+function renderCampoPhotos() {
+  const grid = document.getElementById('campo-photo-grid');
+  grid.innerHTML = _campoPhotos.map((p, i) =>
+    `<div class="photo-thumb"><img src="${p}" alt="foto ${i + 1}"><button type="button" onclick="removeCampoPhoto(${i})">✕</button></div>`
+  ).join('');
+  const label = document.getElementById('campo-photo-label');
+  const txt   = document.getElementById('campo-photo-txt');
+  if (_campoPhotos.length >= CAMPO_MAX_PHOTOS) {
+    label.style.display = 'none';
+  } else {
+    label.style.display = '';
+    txt.textContent = _campoPhotos.length
+      ? `Agregar otra foto (${_campoPhotos.length}/${CAMPO_MAX_PHOTOS})`
+      : 'Toca para tomar o elegir foto';
+  }
+}
 
 function onCampoPhoto(input) {
   if (!input.files || !input.files[0]) return;
@@ -428,21 +447,26 @@ function onCampoPhoto(input) {
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
       c.getContext('2d').drawImage(orig, 0, 0, w, h);
-      _campoPhotoB64 = c.toDataURL('image/jpeg', 0.75);
-      document.getElementById('campo-photo-img').src = _campoPhotoB64;
-      document.getElementById('campo-photo-box').style.display = 'block';
-      document.getElementById('campo-photo-label').style.display = 'none';
+      if (_campoPhotos.length < CAMPO_MAX_PHOTOS) {
+        _campoPhotos.push(c.toDataURL('image/jpeg', 0.75));
+        renderCampoPhotos();
+      }
     };
     orig.src = evt.target.result;
   };
   reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removeCampoPhoto(idx) {
+  _campoPhotos.splice(idx, 1);
+  renderCampoPhotos();
 }
 
 function clearCampoPhoto() {
-  _campoPhotoB64 = '';
+  _campoPhotos = [];
   document.getElementById('campo-photo-input').value = '';
-  document.getElementById('campo-photo-box').style.display = 'none';
-  document.getElementById('campo-photo-label').style.display = '';
+  renderCampoPhotos();
 }
 
 // ── Canvas firma ──
@@ -508,7 +532,7 @@ function submitComplete(e) {
   fd.append('csrfmiddlewaretoken', CSRF);
   fd.append('task_id',  taskId);
   fd.append('notes',    document.getElementById('modal-notes').value);
-  fd.append('photo_b64', _campoPhotoB64);
+  _campoPhotos.forEach(p => fd.append('photos_b64', p));
   if (_campoSigCanvas && !_campoSigEmpty) {
     fd.append('signature', _campoSigCanvas.toDataURL('image/png'));
   }

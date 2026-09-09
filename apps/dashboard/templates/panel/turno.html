@@ -312,16 +312,13 @@
         <input class="pndm-input" type="text" name="invoice" id="pn-dinvoice" placeholder="FAC-001, REM-2345" autocomplete="off">
       </div>
       <div style="margin-bottom:1rem;">
-        <label class="pndm-label">Foto de la entrega (opcional)</label>
+        <label class="pndm-label">Fotos de la entrega (opcional, hasta 6 — toca varias veces para agregar más)</label>
+        <div id="pn-photo-grid" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem;"></div>
         <label id="pn-photo-label" style="display:flex;align-items:center;gap:.625rem;padding:.625rem .875rem;border:1.5px dashed var(--color-border);border-radius:.625rem;cursor:pointer;background:var(--color-surface-alt,#f8f8f8);">
           <span style="font-size:1.25rem;">📷</span>
           <span id="pn-photo-label-txt" style="font-size:.8rem;color:var(--color-text-muted);">Toca para tomar o elegir foto</span>
           <input type="file" id="pn-photo-input" accept="image/*" capture="environment" style="display:none;" onchange="onPhotoSelected(this)">
         </label>
-        <div id="pn-photo-preview" style="display:none;margin-top:.5rem;position:relative;">
-          <img id="pn-photo-img" style="max-width:100%;max-height:200px;border-radius:.625rem;border:1px solid var(--color-border);object-fit:contain;display:block;">
-          <button type="button" onclick="clearPhoto()" style="position:absolute;top:.375rem;right:.375rem;background:rgba(0,0,0,.55);border:none;border-radius:.375rem;padding:.2rem .5rem;font-size:.72rem;color:#fff;cursor:pointer;">Quitar</button>
-        </div>
       </div>
       <div style="margin-bottom:1.125rem;">
         <label class="pndm-label">Firma del receptor</label>
@@ -343,8 +340,29 @@
 const CSRF_PN = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
 let _savedScrollY = 0;
 
-/* ── Foto de entrega ── */
-let _photoB64 = '';
+/* ── Fotos de entrega (varias) ── */
+const PN_MAX_PHOTOS = 6;
+let _photos = [];
+
+function renderPnPhotos() {
+  const grid = document.getElementById('pn-photo-grid');
+  grid.innerHTML = _photos.map((p, i) =>
+    `<div style="position:relative;width:4.5rem;height:4.5rem;border-radius:.625rem;overflow:hidden;flex-shrink:0;border:1px solid var(--color-border);">
+       <img src="${p}" alt="foto ${i + 1}" style="width:100%;height:100%;object-fit:cover;display:block;">
+       <button type="button" onclick="removePhoto(${i})" style="position:absolute;top:.15rem;right:.15rem;background:rgba(0,0,0,.6);border:none;border-radius:9999px;width:1.375rem;height:1.375rem;font-size:.65rem;font-weight:700;color:#fff;cursor:pointer;line-height:1;">✕</button>
+     </div>`
+  ).join('');
+  const labelTxt = document.getElementById('pn-photo-label-txt');
+  const label    = document.getElementById('pn-photo-label');
+  if (_photos.length >= PN_MAX_PHOTOS) {
+    label.style.display = 'none';
+  } else {
+    label.style.display = '';
+    labelTxt.textContent = _photos.length
+      ? `Agregar otra foto (${_photos.length}/${PN_MAX_PHOTOS})`
+      : 'Toca para tomar o elegir foto';
+  }
+}
 
 function onPhotoSelected(input) {
   const file = input.files[0];
@@ -363,21 +381,26 @@ function onPhotoSelected(input) {
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
       c.getContext('2d').drawImage(img, 0, 0, w, h);
-      _photoB64 = c.toDataURL('image/jpeg', 0.75);
-      document.getElementById('pn-photo-img').src = _photoB64;
-      document.getElementById('pn-photo-preview').style.display = 'block';
-      document.getElementById('pn-photo-label-txt').textContent = file.name;
+      if (_photos.length < PN_MAX_PHOTOS) {
+        _photos.push(c.toDataURL('image/jpeg', 0.75));
+        renderPnPhotos();
+      }
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removePhoto(idx) {
+  _photos.splice(idx, 1);
+  renderPnPhotos();
 }
 
 function clearPhoto() {
-  _photoB64 = '';
+  _photos = [];
   document.getElementById('pn-photo-input').value = '';
-  document.getElementById('pn-photo-preview').style.display = 'none';
-  document.getElementById('pn-photo-label-txt').textContent = 'Toca para tomar o elegir foto';
+  renderPnPhotos();
 }
 
 /* ── Firma canvas ── */
@@ -465,7 +488,7 @@ function submitDelivery() {
   fd.append('notes',     document.getElementById('pn-dnotes').value);
   fd.append('invoice',   document.getElementById('pn-dinvoice').value);
   fd.append('signature', isSigEmpty() ? '' : _sigCanvas.toDataURL('image/png'));
-  fd.append('photo_b64', _photoB64);
+  _photos.forEach(p => fd.append('photos_b64', p));
 
   fetch('/panel/entregas/' + taskId + '/completar/', { method: 'POST', body: fd })
     .then(function(r) {

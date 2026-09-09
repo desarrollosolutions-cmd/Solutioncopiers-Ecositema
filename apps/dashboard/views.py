@@ -5205,9 +5205,15 @@ class CampoTaskCompleteView(View):
             field_user__user=request.user,
             status=DeliveryTask.Status.PENDING,
         )
+        photos = [p.strip() for p in request.POST.getlist("photos_b64") if p.strip()]
+        if not photos:
+            legacy = request.POST.get("photo_b64", "").strip()
+            if legacy:
+                photos = [legacy]
         task.completion_notes     = request.POST.get("notes", "").strip()
         task.completion_signature = request.POST.get("signature", "").strip()
-        task.completion_photo_b64 = request.POST.get("photo_b64", "").strip()
+        task.completion_photos    = photos
+        task.completion_photo_b64 = photos[0] if photos else ""
         task.status               = DeliveryTask.Status.DONE
         task.completed_at         = timezone.now()
         task.save()
@@ -5723,9 +5729,15 @@ class PanelDeliveryCompleteView(View):
         except FieldUser.DoesNotExist:
             return JsonResponse({"ok": False, "error": "Sin perfil de campo"}, status=403)
         task = get_object_or_404(DeliveryTask, pk=pk, field_user=fu, status=DeliveryTask.Status.PENDING)
+        photos = [p.strip() for p in request.POST.getlist("photos_b64") if p.strip()]
+        if not photos:
+            legacy = request.POST.get("photo_b64", "").strip()
+            if legacy:
+                photos = [legacy]
         task.completion_notes     = request.POST.get("notes", "").strip()
         task.completion_signature = request.POST.get("signature", "").strip()
-        task.completion_photo_b64 = request.POST.get("photo_b64", "").strip()
+        task.completion_photos    = photos
+        task.completion_photo_b64 = photos[0] if photos else ""
         task.status               = DeliveryTask.Status.DONE
         task.completed_at         = timezone.now()
         task.save()
