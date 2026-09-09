@@ -3,6 +3,10 @@
 {% block nav_turno %}active{% endblock %}
 
 {% block content %}
+<style>
+  @keyframes pn-lunch-pulse { 0%,100%{opacity:1;} 50%{opacity:.55;} }
+  #pn-lunch-banner.over { color:#EF4444 !important; background:color-mix(in srgb,#EF4444 12%,transparent) !important; border-color:color-mix(in srgb,#EF4444 30%,transparent) !important; animation:pn-lunch-pulse 1s infinite; }
+</style>
 <div class="pn-page-header">
   <h1 class="pn-page-title">Mi Turno</h1>
   <span style="font-size:.78rem;color:var(--color-text-muted);">{% now "l j \d\e F, H:i" %}</span>
@@ -34,9 +38,9 @@
     </div>
     {% endif %}
     {% if location.is_on_lunch %}
-    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#D97706;font-weight:600;margin-bottom:.75rem;background:color-mix(in srgb,#D97706 8%,transparent);border:1px solid color-mix(in srgb,#D97706 20%,transparent);border-radius:.5rem;padding:.5rem .7rem;">
+    <div id="pn-lunch-banner" style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#D97706;font-weight:600;margin-bottom:.75rem;background:color-mix(in srgb,#D97706 8%,transparent);border:1px solid color-mix(in srgb,#D97706 20%,transparent);border-radius:.5rem;padding:.5rem .7rem;transition:color .2s,background .2s,border-color .2s;">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.9rem;height:.9rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      En almuerzo desde las {{ location.lunch_started_at|time:"H:i" }}
+      <span id="pn-lunch-banner-text">En almuerzo desde las {{ location.lunch_started_at|time:"H:i" }}</span>
     </div>
     <form method="post" action="{% url 'panel:lunch_end' %}" style="margin-bottom:.625rem;">
       {% csrf_token %}
@@ -674,6 +678,71 @@ function sendLocation() {
 }
 sendLocation();
 setInterval(sendLocation, 15000);
+{% endif %}
+
+/* ── Alarma de fin de almuerzo ── */
+const LUNCH_MINUTES = {{ lunch_duration_minutes|default:60 }};
+let lunchTimer = null;
+let lunchAlarmFired = false;
+let _alarmCtx = null;
+
+function _primeAlarmAudio() {
+  try {
+    if (!_alarmCtx) _alarmCtx = new (window.AudioContext || window.webkitAudioContext)();
+    else if (_alarmCtx.state === 'suspended') _alarmCtx.resume();
+  } catch (e) {}
+}
+['click', 'mousedown', 'keydown', 'touchstart', 'pointerdown'].forEach(function(evt) {
+  document.addEventListener(evt, _primeAlarmAudio, { passive: true });
+});
+
+function playLunchAlarm() {
+  try {
+    if (!_alarmCtx) _alarmCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_alarmCtx.state === 'suspended') _alarmCtx.resume();
+    const ctx = _alarmCtx;
+    const now = ctx.currentTime;
+    for (let i = 0; i < 5; i++) {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = i % 2 === 0 ? 1200 : 880;
+      const start = now + i * 0.24;
+      const dur = 0.2;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.85, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + dur + 0.02);
+    }
+  } catch (e) {}
+}
+
+function updateLunchCountdown() {
+  const banner = document.getElementById('pn-lunch-banner');
+  const text   = document.getElementById('pn-lunch-banner-text');
+  if (!banner || !text || !window._lunchStartedAt) return;
+  const remainingMs = LUNCH_MINUTES * 60000 - (Date.now() - window._lunchStartedAt.getTime());
+  if (remainingMs > 0) {
+    const mins = Math.max(1, Math.ceil(remainingMs / 60000));
+    text.textContent = `En almuerzo — te quedan ${mins} min`;
+    banner.classList.remove('over');
+  } else {
+    const overMin = Math.floor(-remainingMs / 60000);
+    text.textContent = `¡Se acabó tu hora de almuerzo! (+${overMin} min)`;
+    banner.classList.add('over');
+    if (!lunchAlarmFired) {
+      lunchAlarmFired = true;
+      playLunchAlarm();
+    }
+  }
+}
+
+{% if location and location.is_on_lunch and location.lunch_started_at %}
+window._lunchStartedAt = new Date("{{ location.lunch_started_at|date:'c' }}");
+updateLunchCountdown();
+lunchTimer = setInterval(updateLunchCountdown, 15000);
 {% endif %}
 </script>
 {% endblock %}

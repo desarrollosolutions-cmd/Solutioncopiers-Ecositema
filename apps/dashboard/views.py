@@ -29,6 +29,8 @@ _auth_logger = logging.getLogger("apps.auth")
 _MAX_LOGIN_ATTEMPTS = 5
 _LOCKOUT_SECONDS    = 900  # 15 minutos
 
+LUNCH_DURATION_MINUTES = 60  # tiempo de almuerzo permitido antes de que suene la alarma (técnicos y mensajeros)
+
 
 def _client_ip(request) -> str:
     xff = request.META.get("HTTP_X_FORWARDED_FOR", "")
@@ -5007,6 +5009,7 @@ class CampoTurnoView(View):
             "tickets":         tickets,
             "delivery_tasks":  delivery_tasks,
             "today":           today,
+            "lunch_duration_minutes": LUNCH_DURATION_MINUTES,
         })
 
 
@@ -5848,6 +5851,7 @@ class PanelTurnoView(View):
             "tickets":        tickets,
             "delivery_tasks": delivery_tasks,
             "today":          today,
+            "lunch_duration_minutes": LUNCH_DURATION_MINUTES,
         })
         return render(request, self.template_name, ctx)
 

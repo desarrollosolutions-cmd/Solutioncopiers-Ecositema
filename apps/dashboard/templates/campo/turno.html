@@ -29,6 +29,7 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
 .btn-lunch{background:rgba(217,119,6,.12);color:#D97706;border:1px solid rgba(217,119,6,.25);grid-column:1/-1;}
 .btn-lunch-active{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;grid-column:1/-1;}
 .lunch-banner{display:flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:600;color:#D97706;background:rgba(217,119,6,.1);border:1px solid rgba(217,119,6,.25);border-radius:.625rem;padding:.5rem .75rem;margin-bottom:.875rem;}
+.lunch-banner.over{color:#EF4444;background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);animation:pulse 1s infinite;}
 .section-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#3E6E8A;margin:1.25rem 0 .625rem;display:flex;align-items:center;justify-content:space-between;}
 /* Delivery task card */
 .dtask{background:#101E30;border:1px solid #192D42;border-radius:.875rem;padding:.875rem 1rem;margin-bottom:.5rem;display:flex;gap:.75rem;align-items:flex-start;transition:border-color .2s;}
@@ -300,6 +301,10 @@ let isOnShift = {{ location.is_on_shift|yesno:"true,false" }};
 let isOnLunch = {{ location.is_on_lunch|yesno:"true,false" }};
 let batteryLevel = null;
 let currentTaskId = null;
+const LUNCH_MINUTES = {{ lunch_duration_minutes|default:60 }};
+{% if location and location.lunch_started_at %}let lunchStartedAt = new Date("{{ location.lunch_started_at|date:'c' }}");{% else %}let lunchStartedAt = null;{% endif %}
+let lunchTimer = null;
+let lunchAlarmFired = false;
 
 // ── Toast ──
 function showToast(msg, ok=true) {
@@ -422,8 +427,78 @@ function endShift() {
       document.getElementById('gps-coords-row').style.display = 'none';
       updateGpsPill('searching');
       document.getElementById('gps-pill').innerHTML = 'GPS inactivo';
+      stopLunchTimer();
       showToast('Turno terminado');
     });
+}
+
+/* ── Alarma de fin de almuerzo ── */
+let _alarmCtx = null;
+function _primeAlarmAudio() {
+  try {
+    if (!_alarmCtx) _alarmCtx = new (window.AudioContext || window.webkitAudioContext)();
+    else if (_alarmCtx.state === 'suspended') _alarmCtx.resume();
+  } catch (e) {}
+}
+['click', 'mousedown', 'keydown', 'touchstart', 'pointerdown'].forEach(function(evt) {
+  document.addEventListener(evt, _primeAlarmAudio, { passive: true });
+});
+
+function playLunchAlarm() {
+  try {
+    if (!_alarmCtx) _alarmCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_alarmCtx.state === 'suspended') _alarmCtx.resume();
+    const ctx = _alarmCtx;
+    const now = ctx.currentTime;
+    for (let i = 0; i < 5; i++) {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = i % 2 === 0 ? 1200 : 880;
+      const start = now + i * 0.24;
+      const dur = 0.2;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.85, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + dur + 0.02);
+    }
+  } catch (e) {}
+}
+
+function updateLunchCountdown() {
+  if (!isOnLunch || !lunchStartedAt) return;
+  const remainingMs = LUNCH_MINUTES * 60000 - (Date.now() - lunchStartedAt.getTime());
+  const text   = document.getElementById('lunch-banner-text');
+  const banner = document.getElementById('lunch-banner');
+  if (remainingMs > 0) {
+    const mins = Math.max(1, Math.ceil(remainingMs / 60000));
+    if (text) text.textContent = `En almuerzo — te quedan ${mins} min`;
+    banner.classList.remove('over');
+  } else {
+    const overMin = Math.floor(-remainingMs / 60000);
+    if (text) text.textContent = `¡Se acabó tu hora de almuerzo! (+${overMin} min)`;
+    banner.classList.add('over');
+    if (!lunchAlarmFired) {
+      lunchAlarmFired = true;
+      playLunchAlarm();
+    }
+  }
+}
+
+function startLunchTimer(startedAt) {
+  lunchStartedAt = startedAt;
+  lunchAlarmFired = false;
+  if (lunchTimer) clearInterval(lunchTimer);
+  updateLunchCountdown();
+  lunchTimer = setInterval(updateLunchCountdown, 15000);
+}
+
+function stopLunchTimer() {
+  if (lunchTimer) { clearInterval(lunchTimer); lunchTimer = null; }
+  lunchStartedAt = null;
+  lunchAlarmFired = false;
 }
 
 function toggleLunch() {
@@ -439,16 +514,15 @@ function toggleLunch() {
       if (isOnLunch) {
         btn.className = 'btn btn-lunch-active';
         document.getElementById('btn-lunch-text').textContent = 'Volver de almuerzo';
-        const now = new Date();
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        document.getElementById('lunch-banner-text').textContent = `En almuerzo desde las ${hh}:${mm}`;
+        banner.classList.remove('over');
         banner.style.display = 'flex';
-        showToast('Buen provecho 🍽️');
+        startLunchTimer(new Date());
+        showToast('Buen provecho 🍽️ — alarma en ' + LUNCH_MINUTES + ' min');
       } else {
         btn.className = 'btn btn-lunch';
         document.getElementById('btn-lunch-text').textContent = 'Salir a almuerzo';
         banner.style.display = 'none';
+        stopLunchTimer();
         showToast('De vuelta del almuerzo ✓');
       }
     })
@@ -457,6 +531,8 @@ function toggleLunch() {
 
 // Iniciar GPS si ya estaba en turno al cargar
 if (isOnShift) startGPS();
+// Retomar el conteo de almuerzo si ya estaba en curso al cargar la página
+if (isOnLunch && lunchStartedAt) startLunchTimer(lunchStartedAt);
 
 // ── Fotos base64 (varias) ──
 const CAMPO_MAX_PHOTOS = 6;
