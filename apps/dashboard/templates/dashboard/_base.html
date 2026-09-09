@@ -1341,8 +1341,9 @@ function _primeNotificationAudio() {
     else if (_dingCtx.state === 'suspended') _dingCtx.resume();
   } catch (e) {}
 }
-document.addEventListener('click', _primeNotificationAudio, { once: true });
-document.addEventListener('keydown', _primeNotificationAudio, { once: true });
+['click', 'mousedown', 'keydown', 'touchstart', 'pointerdown'].forEach(function(evt) {
+  document.addEventListener(evt, _primeNotificationAudio, { once: true, passive: true });
+});
 
 function playNotificationSound() {
   try {
@@ -1364,6 +1365,30 @@ function playNotificationSound() {
     });
   } catch (e) {}
 }
+
+/* ── Aviso de respaldo: parpadeo del título de la pestaña ──
+   El sonido depende de que el navegador ya haya recibido algún clic/tecla
+   en la página (política de autoplay); esto funciona siempre, sin excepción. */
+let _titleFlashTimer = null;
+const _originalTitle = document.title;
+function startTitleFlash(msg) {
+  if (_titleFlashTimer) return;
+  let toggled = false;
+  _titleFlashTimer = setInterval(function() {
+    document.title = toggled ? _originalTitle : msg;
+    toggled = !toggled;
+  }, 1000);
+}
+function stopTitleFlash() {
+  if (_titleFlashTimer) {
+    clearInterval(_titleFlashTimer);
+    _titleFlashTimer = null;
+    document.title = _originalTitle;
+  }
+}
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) stopTitleFlash();
+});
 
 function crmBell() {
   return {
@@ -1389,6 +1414,7 @@ function crmBell() {
           const topId = d.notifications.length ? d.notifications[0].id : null;
           if (this._initialized && topId !== null && (this._lastSeenId === null || topId > this._lastSeenId)) {
             playNotificationSound();
+            startTitleFlash('🔔 (' + this.unread + ') Nueva notificación');
           }
           if (topId !== null) this._lastSeenId = Math.max(this._lastSeenId || 0, topId);
           this._initialized = true;
@@ -1398,7 +1424,7 @@ function crmBell() {
 
     toggle() {
       this.open = !this.open;
-      if (this.open) this.fetch();
+      if (this.open) { this.fetch(); stopTitleFlash(); }
     },
 
     markOne(id) {

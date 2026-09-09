@@ -5669,6 +5669,7 @@ class CampoTicketDetailView(View):
             "open":          ["in_progress", "waiting_parts"],
             "in_progress":   ["waiting_parts", "resolved"],
             "waiting_parts": ["in_progress", "resolved"],
+            "resolved":      ["closed"],
         }
         allowed = valid_transitions.get(ticket.status, [])
         status_changed = bool(new_status and new_status in allowed)
