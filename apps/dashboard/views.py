@@ -5122,7 +5122,39 @@ class CampoShiftEndView(View):
         try:
             loc = request.user.field_location
             loc.is_on_shift = False
-            loc.save(update_fields=["is_on_shift"])
+            loc.is_on_lunch = False
+            loc.lunch_started_at = None
+            loc.save(update_fields=["is_on_shift", "is_on_lunch", "lunch_started_at"])
+        except FieldUserLocation.DoesNotExist:
+            pass
+        return JsonResponse({"ok": True})
+
+
+@campo_decorator
+class CampoLunchStartView(View):
+    def post(self, request):
+        from apps.dashboard.models import FieldUserLocation
+        try:
+            loc = request.user.field_location
+        except FieldUserLocation.DoesNotExist:
+            loc = None
+        if not loc or not loc.is_on_shift:
+            return JsonResponse({"ok": False, "error": "Inicia turno primero"}, status=400)
+        loc.is_on_lunch = True
+        loc.lunch_started_at = timezone.now()
+        loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
+        return JsonResponse({"ok": True})
+
+
+@campo_decorator
+class CampoLunchEndView(View):
+    def post(self, request):
+        from apps.dashboard.models import FieldUserLocation
+        try:
+            loc = request.user.field_location
+            loc.is_on_lunch = False
+            loc.lunch_started_at = None
+            loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
         except FieldUserLocation.DoesNotExist:
             pass
         return JsonResponse({"ok": True})
@@ -5175,6 +5207,8 @@ class CampoLocationsJsonView(View):
                 "lng":        float(loc.longitude),
                 "accuracy":   loc.accuracy,
                 "battery":    loc.battery,
+                "is_on_lunch": loc.is_on_lunch,
+                "lunch_since": timezone.localtime(loc.lunch_started_at).strftime("%H:%M") if loc.lunch_started_at else None,
                 "updated_at": loc.updated_at.isoformat(),
                 "ago":        timesince(loc.updated_at),
             })
@@ -5862,7 +5896,44 @@ class PanelShiftEndView(View):
         try:
             loc = request.user.field_location
             loc.is_on_shift = False
-            loc.save(update_fields=["is_on_shift"])
+            loc.is_on_lunch = False
+            loc.lunch_started_at = None
+            loc.save(update_fields=["is_on_shift", "is_on_lunch", "lunch_started_at"])
+        except FieldUserLocation.DoesNotExist:
+            pass
+        return redirect("panel:turno")
+
+    def get(self, request):
+        return redirect("panel:turno")
+
+
+@panel_decorator
+class PanelLunchStartView(View):
+    def post(self, request):
+        from apps.dashboard.models import FieldUserLocation
+        try:
+            loc = request.user.field_location
+            if loc.is_on_shift:
+                loc.is_on_lunch = True
+                loc.lunch_started_at = timezone.now()
+                loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
+        except FieldUserLocation.DoesNotExist:
+            pass
+        return redirect("panel:turno")
+
+    def get(self, request):
+        return redirect("panel:turno")
+
+
+@panel_decorator
+class PanelLunchEndView(View):
+    def post(self, request):
+        from apps.dashboard.models import FieldUserLocation
+        try:
+            loc = request.user.field_location
+            loc.is_on_lunch = False
+            loc.lunch_started_at = None
+            loc.save(update_fields=["is_on_lunch", "lunch_started_at"])
         except FieldUserLocation.DoesNotExist:
             pass
         return redirect("panel:turno")

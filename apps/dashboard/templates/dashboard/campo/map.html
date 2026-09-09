@@ -136,6 +136,7 @@ function refreshMap() {
         const popup = `<div style="min-width:160px;font-family:Inter,sans-serif;">
           <div style="font-weight:700;font-size:.875rem;">${loc.name}</div>
           <div style="font-size:.72rem;color:#666;margin:.25rem 0;">${loc.role}</div>
+          ${loc.is_on_lunch ? `<div style="font-size:.68rem;font-weight:700;color:#D97706;">🍽️ En almuerzo${loc.lunch_since ? ' desde ' + loc.lunch_since : ''}</div>` : ''}
           ${loc.battery !== null ? `<div style="font-size:.68rem;">Batería: ${loc.battery}%</div>` : ''}
           <div style="font-size:.65rem;color:#999;margin-top:.25rem;">Hace ${loc.ago}</div>
         </div>`;
@@ -149,8 +150,13 @@ function refreshMap() {
         // Actualizar sidebar
         const st = document.getElementById('status-' + loc.id);
         if (st) {
-          st.textContent = 'En turno';
-          st.style.cssText = 'font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);';
+          if (loc.is_on_lunch) {
+            st.textContent = '🍽️ Almuerzo';
+            st.style.cssText = 'font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(217,119,6,.12);color:#D97706;border:1px solid rgba(217,119,6,.2);';
+          } else {
+            st.textContent = 'En turno';
+            st.style.cssText = 'font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);';
+          }
         }
         const ag = document.getElementById('ago-' + loc.id);
         if (ag) ag.textContent = 'Actualizado hace ' + loc.ago;

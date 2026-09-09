@@ -250,6 +250,8 @@ class FieldUserLocation(models.Model):
     longitude   = models.DecimalField(max_digits=10, decimal_places=7)
     accuracy    = models.FloatField(null=True, blank=True)
     is_on_shift = models.BooleanField(default=False, db_index=True)
+    is_on_lunch = models.BooleanField("en almuerzo", default=False, db_index=True)
+    lunch_started_at = models.DateTimeField("almuerzo iniciado", null=True, blank=True)
     battery     = models.PositiveSmallIntegerField(null=True, blank=True)
     updated_at  = models.DateTimeField(auto_now=True)
 

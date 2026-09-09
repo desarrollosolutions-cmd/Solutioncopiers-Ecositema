@@ -26,6 +26,9 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
 .btn svg{width:.9rem;height:.9rem;}
 .btn-start{background:linear-gradient(135deg,#10B981,#059669);color:#fff;}
 .btn-end{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.2);}
+.btn-lunch{background:rgba(217,119,6,.12);color:#D97706;border:1px solid rgba(217,119,6,.25);grid-column:1/-1;}
+.btn-lunch-active{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;grid-column:1/-1;}
+.lunch-banner{display:flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:600;color:#D97706;background:rgba(217,119,6,.1);border:1px solid rgba(217,119,6,.25);border-radius:.625rem;padding:.5rem .75rem;margin-bottom:.875rem;}
 .section-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#3E6E8A;margin:1.25rem 0 .625rem;display:flex;align-items:center;justify-content:space-between;}
 /* Delivery task card */
 .dtask{background:#101E30;border:1px solid #192D42;border-radius:.875rem;padding:.875rem 1rem;margin-bottom:.5rem;display:flex;gap:.75rem;align-items:flex-start;transition:border-color .2s;}
@@ -118,6 +121,10 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
       <span id="gps-coords">{% if location %}Lat {{ location.latitude }}, Lng {{ location.longitude }}{% endif %}</span>
       <span style="margin-left:.5rem;color:#3E6E8A;" id="gps-accuracy"></span>
     </div>
+    <div id="lunch-banner" class="lunch-banner" style="{% if not location or not location.is_on_lunch %}display:none;{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.9rem;height:.9rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <span id="lunch-banner-text">{% if location.lunch_started_at %}En almuerzo desde las {{ location.lunch_started_at|time:"H:i" }}{% endif %}</span>
+    </div>
     <div class="btn-grid">
       <button class="btn btn-start" onclick="startShift()" id="btn-start"
         {% if location and location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
@@ -128,6 +135,11 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
         {% if not location or not location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
         Terminar turno
+      </button>
+      <button class="btn {% if location.is_on_lunch %}btn-lunch-active{% else %}btn-lunch{% endif %}" onclick="toggleLunch()" id="btn-lunch"
+        {% if not location or not location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span id="btn-lunch-text">{% if location.is_on_lunch %}Volver de almuerzo{% else %}Salir a almuerzo{% endif %}</span>
       </button>
     </div>
   </div>
@@ -285,6 +297,7 @@ body{min-height:100vh;background:#070E18;font-family:'Inter',system-ui,sans-seri
 const CSRF = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
 let watchId = null;
 let isOnShift = {{ location.is_on_shift|yesno:"true,false" }};
+let isOnLunch = {{ location.is_on_lunch|yesno:"true,false" }};
 let batteryLevel = null;
 let currentTaskId = null;
 
@@ -384,6 +397,7 @@ function startShift() {
       document.getElementById('shift-sub').textContent = 'Ubicación enviando cada 30 seg';
       document.getElementById('btn-start').style.cssText = 'opacity:.4;pointer-events:none;';
       document.getElementById('btn-end').style.cssText = '';
+      document.getElementById('btn-lunch').style.cssText = '';
       startGPS();
       showToast('Turno iniciado ✓');
     });
@@ -394,17 +408,51 @@ function endShift() {
   fetch('{% url "campo:shift_end" %}', { method: 'POST', body: fd })
     .then(() => {
       isOnShift = false;
+      isOnLunch = false;
       if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
       document.getElementById('shift-dot').className = 'shift-dot off';
       document.getElementById('shift-label').textContent = 'Turno terminado';
       document.getElementById('shift-sub').textContent = 'GPS detenido';
       document.getElementById('btn-start').style.cssText = '';
       document.getElementById('btn-end').style.cssText = 'opacity:.4;pointer-events:none;';
+      document.getElementById('btn-lunch').style.cssText = 'opacity:.4;pointer-events:none;';
+      document.getElementById('btn-lunch').className = 'btn btn-lunch';
+      document.getElementById('btn-lunch-text').textContent = 'Salir a almuerzo';
+      document.getElementById('lunch-banner').style.display = 'none';
       document.getElementById('gps-coords-row').style.display = 'none';
       updateGpsPill('searching');
       document.getElementById('gps-pill').innerHTML = 'GPS inactivo';
       showToast('Turno terminado');
     });
+}
+
+function toggleLunch() {
+  const url = isOnLunch ? '{% url "campo:lunch_end" %}' : '{% url "campo:lunch_start" %}';
+  const fd = new FormData(); fd.append('csrfmiddlewaretoken', CSRF);
+  fetch(url, { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) { showToast(data.error || 'No se pudo actualizar', false); return; }
+      isOnLunch = !isOnLunch;
+      const btn = document.getElementById('btn-lunch');
+      const banner = document.getElementById('lunch-banner');
+      if (isOnLunch) {
+        btn.className = 'btn btn-lunch-active';
+        document.getElementById('btn-lunch-text').textContent = 'Volver de almuerzo';
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('lunch-banner-text').textContent = `En almuerzo desde las ${hh}:${mm}`;
+        banner.style.display = 'flex';
+        showToast('Buen provecho 🍽️');
+      } else {
+        btn.className = 'btn btn-lunch';
+        document.getElementById('btn-lunch-text').textContent = 'Salir a almuerzo';
+        banner.style.display = 'none';
+        showToast('De vuelta del almuerzo ✓');
+      }
+    })
+    .catch(() => showToast('Error de red', false));
 }
 
 // Iniciar GPS si ya estaba en turno al cargar
