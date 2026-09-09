@@ -5329,7 +5329,7 @@ class CampoUserCreateView(View):
                 role  = request.POST.get("role"),
                 phone = request.POST.get("phone", "").strip(),
             )
-            messages.success(request, f"{user.get_full_name() or user.username} agregado al equipo de campo.")
+            messages.success(request, f"{user.get_full_name() or user.username} agregado a Mensajería.")
             return redirect("dashboard:campo_users")
         except Exception as e:
             messages.error(request, f"Error: {e}")
@@ -5357,7 +5357,7 @@ class CampoUserDetailView(View):
         action = request.POST.get("action")
         if action == "delete":
             fu.delete()
-            messages.success(request, "Usuario eliminado del equipo de campo.")
+            messages.success(request, "Usuario eliminado de Mensajería.")
             return redirect("dashboard:campo_users")
         fu.role  = request.POST.get("role", fu.role)
         fu.phone = request.POST.get("phone", fu.phone).strip()

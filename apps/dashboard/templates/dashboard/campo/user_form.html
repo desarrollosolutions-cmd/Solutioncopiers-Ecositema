@@ -49,7 +49,7 @@
         <button type="submit" class="da-btn da-btn-primary" style="flex:1;">Guardar cambios</button>
         <button type="submit" name="action" value="delete" class="da-btn da-btn-secondary"
           style="color:#EF4444;border-color:rgba(239,68,68,.3);"
-          onclick="return confirm('¿Eliminar a {{ field_user.user.get_full_name|default:field_user.user.username }} del equipo de campo?')">
+          onclick="return confirm('¿Eliminar a {{ field_user.user.get_full_name|default:field_user.user.username }} de Mensajería?')">
           Eliminar
         </button>
       </div>
@@ -103,7 +103,7 @@
       </div>
 
       <button type="submit" class="da-btn da-btn-primary" style="width:100%;" {% if not available_users %}disabled{% endif %}>
-        Agregar al equipo de campo
+        Agregar a Mensajería
       </button>
     </form>
     {% endif %}
