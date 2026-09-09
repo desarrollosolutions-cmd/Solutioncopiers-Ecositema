@@ -118,6 +118,7 @@ class EmployeeActivity(models.Model):
         CREATE_TICKET    = "create_ticket",    "Crear ticket"
         UPDATE_TICKET    = "update_ticket",    "Actualizar ticket"
         VIEW_CLIENT      = "view_client",      "Ver cliente"
+        CREATE_CLIENT    = "create_client",    "Crear cliente"
         VIEW_CONTRACT    = "view_contract",    "Ver contrato"
         VIEW_CONSUMABLES = "view_consumables", "Ver insumos"
         SEARCH_CONSUMABLES = "search_consumables", "Buscar insumos"

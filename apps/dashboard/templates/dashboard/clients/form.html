@@ -1,0 +1,81 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Nuevo cliente{% endblock %}
+{% block nav_clients %}active{% endblock %}
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <a href="{% url 'dashboard:clients' %}">Clientes</a>
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">Nuevo cliente</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">Nuevo cliente</h1>
+  <a href="{% url 'dashboard:clients' %}" class="da-btn da-btn-secondary">← Volver</a>
+</div>
+
+<form method="post" style="max-width:760px;">
+  {% csrf_token %}
+  <div class="da-card">
+    <div class="da-card-header">Datos del cliente</div>
+    <div class="da-card-body">
+      <div class="da-form-grid">
+        <div class="da-field da-form-full">
+          <label>Nombre completo *</label>
+          <input type="text" name="full_name" class="da-input" value="{{ form_data.full_name|default:'' }}" placeholder="Ej: Juan Pérez" required autofocus>
+        </div>
+        <div class="da-field">
+          <label>Email</label>
+          <input type="email" name="email" class="da-input" value="{{ form_data.email|default:'' }}" placeholder="cliente@empresa.com">
+        </div>
+        <div class="da-field">
+          <label>Teléfono</label>
+          <input type="text" name="phone" class="da-input" value="{{ form_data.phone|default:'' }}" placeholder="300 000 0000">
+        </div>
+        <div class="da-field">
+          <label>NIT / Cédula</label>
+          <input type="text" name="nit" class="da-input" value="{{ form_data.nit|default:'' }}">
+        </div>
+        <div class="da-field">
+          <label>Ciudad</label>
+          <input type="text" name="city" class="da-input" value="{{ form_data.city|default:'Medellín' }}">
+        </div>
+        <div class="da-field">
+          <label>Empresa <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+          <input type="text" name="company_name" class="da-input" value="{{ form_data.company_name|default:'' }}">
+        </div>
+        <div class="da-field">
+          <label>Cargo <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+          <input type="text" name="job_title" class="da-input" value="{{ form_data.job_title|default:'' }}">
+        </div>
+        <div class="da-field">
+          <label>Tamaño de empresa <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+          <select name="company_size" class="da-input">
+            <option value="">— Sin especificar —</option>
+            {% for val, lbl in company_size_choices %}
+            <option value="{{ val }}" {% if form_data.company_size == val %}selected{% endif %}>{{ lbl }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="da-field">
+          <label>¿Cómo llegó este cliente?</label>
+          <select name="source" class="da-input">
+            {% for val, lbl in source_choices %}
+            <option value="{{ val }}" {% if form_data.source == val %}selected{% elif not form_data and val == "manual" %}selected{% endif %}>{{ lbl }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="da-field da-form-full">
+          <label>Notas internas <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+          <textarea name="notes_internal" class="da-input" rows="3" placeholder="Contexto de la llamada, referencia, etc.">{{ form_data.notes_internal|default:'' }}</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.75rem;margin-top:1.25rem;">
+    <button type="submit" class="da-btn da-btn-primary">Crear cliente</button>
+    <a href="{% url 'dashboard:clients' %}" class="da-btn da-btn-secondary">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

@@ -1073,6 +1073,47 @@ class ClientAutocompleteView(View):
 
 
 @da_decorator
+class ClientCreateView(View):
+    """El admin agrega un cliente/lead nuevo a mano (sin pasar por el cotizador público)."""
+    template_name = "dashboard/clients/form.html"
+
+    def _ctx(self, form_data=None):
+        from apps.leads.models import Lead
+        return {
+            "source_choices":       Lead.Source.choices,
+            "company_size_choices": Lead.CompanySize.choices,
+            "form_data":            form_data,
+        }
+
+    def get(self, request):
+        return render(request, self.template_name, self._ctx())
+
+    def post(self, request):
+        from apps.leads.models import Lead
+        from django.contrib import messages
+        full_name = request.POST.get("full_name", "").strip()
+        if not full_name:
+            messages.error(request, "El nombre del cliente es obligatorio.")
+            return render(request, self.template_name, self._ctx(form_data=request.POST))
+
+        lead = Lead.objects.create(
+            full_name=full_name,
+            email=request.POST.get("email", "").strip(),
+            phone=request.POST.get("phone", "").strip(),
+            nit=request.POST.get("nit", "").strip(),
+            company_name=request.POST.get("company_name", "").strip(),
+            company_size=request.POST.get("company_size", ""),
+            job_title=request.POST.get("job_title", "").strip(),
+            city=request.POST.get("city", "").strip() or "Medellín",
+            source=request.POST.get("source") or Lead.Source.MANUAL,
+            notes_internal=request.POST.get("notes_internal", "").strip(),
+        )
+        _log_activity(request, "create_client", f"Cliente creado manualmente: {lead.full_name}", related_pk=lead.pk)
+        messages.success(request, "Cliente creado correctamente.")
+        return redirect("dashboard:client_detail", pk=lead.pk)
+
+
+@da_decorator
 class ClientDetailView(View):
     template_name = "dashboard/clients/detail.html"
 

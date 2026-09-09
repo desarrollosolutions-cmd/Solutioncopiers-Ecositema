@@ -32,6 +32,7 @@ urlpatterns = [
     # Clientes
     path("clientes/autocomplete/",                  views.ClientAutocompleteView.as_view(), name="client_autocomplete"),
     path("clientes/",                               views.ClientListView.as_view(),    name="clients"),
+    path("clientes/nuevo/",                          views.ClientCreateView.as_view(),  name="client_create"),
     path("clientes/<int:pk>/",                      views.ClientDetailView.as_view(),  name="client_detail"),
     path("clientes/<int:pk>/rescore/",              views.ClientRescoreView.as_view(), name="client_rescore"),
     path("clientes/<int:pk>/actividad/",            views.ActivityCreateView.as_view(), name="client_activity_create"),

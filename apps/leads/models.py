@@ -24,6 +24,7 @@ class Lead(TimeStampedModel):
         PHONE = "phone", _("Llamada telefónica")
         REFERRAL = "referral", _("Referido")
         IMPORT = "import", _("Base de datos importada")
+        MANUAL = "manual", _("Agregado manualmente")
 
     full_name = models.CharField(_("nombre completo"), max_length=150)
     email = models.EmailField(_("email"), blank=True)
