@@ -29,6 +29,7 @@
       <h1 class="da-page-title" style="margin:0;">{{ lead.full_name }}</h1>
       <div style="font-size:.8125rem;color:var(--color-text-muted);margin-top:.125rem;">
         {{ lead.company_name|default:"Cliente particular" }}{% if lead.job_title %} · {{ lead.job_title }}{% endif %}
+        · Cliente desde {{ lead.created_at|date:"d/m/Y" }}
       </div>
     </div>
   </div>
@@ -81,24 +82,6 @@
   {# ── Columna izquierda: Datos + Notas ── #}
   <div style="display:flex;flex-direction:column;gap:1.25rem;">
 
-    {# Info del cliente #}
-    <div class="da-card">
-      <div class="da-card-header">Información del cliente</div>
-      <div class="da-card-body" style="padding:.875rem 1.125rem;">
-        <div class="info-row"><span class="info-label">Email</span><span class="info-val"><a href="mailto:{{ lead.email }}" style="color:var(--color-primary);">{{ lead.email }}</a></span></div>
-        <div class="info-row"><span class="info-label">Teléfono</span><span class="info-val">{{ lead.phone }}</span></div>
-        <div class="info-row"><span class="info-label">Empresa</span><span class="info-val">{{ lead.company_name|default:"—" }}</span></div>
-        <div class="info-row"><span class="info-label">Cargo</span><span class="info-val">{{ lead.job_title|default:"—" }}</span></div>
-        <div class="info-row"><span class="info-label">Ciudad</span><span class="info-val">{{ lead.city|default:"—" }}</span></div>
-        <div class="info-row"><span class="info-label">Tamaño emp.</span><span class="info-val">{{ lead.get_company_size_display|default:"—" }}</span></div>
-        <div class="info-row"><span class="info-label">Origen</span><span class="info-val">
-          <span class="da-badge da-badge-sent">{{ lead.get_source_display }}</span>
-        </span></div>
-        <div class="info-row"><span class="info-label">NIT / CC</span><span class="info-val" style="font-family:monospace;font-size:.8rem;">{{ lead.nit|default:"—" }}</span></div>
-        <div class="info-row"><span class="info-label">Registrado</span><span class="info-val">{{ lead.created_at|date:"d/m/Y H:i" }}</span></div>
-      </div>
-    </div>
-
     {# Lead Score #}
     <div class="da-card">
       <div class="da-card-header" style="display:flex;align-items:center;justify-content:space-between;">
@@ -142,11 +125,30 @@
           <input type="hidden" name="_section" value="info">
           <div style="display:flex;flex-direction:column;gap:.75rem;">
             <div class="da-field"><label>Nombre completo</label><input type="text" name="full_name" value="{{ lead.full_name }}" class="da-input"></div>
+            <div class="da-field"><label>Email</label><input type="email" name="email" value="{{ lead.email }}" class="da-input"></div>
             <div class="da-field"><label>Teléfono</label><input type="text" name="phone" value="{{ lead.phone }}" class="da-input"></div>
+            <div class="da-field"><label>NIT / Cédula</label><input type="text" name="nit" value="{{ lead.nit }}" class="da-input"></div>
             <div class="da-field"><label>Empresa</label><input type="text" name="company_name" value="{{ lead.company_name }}" class="da-input"></div>
             <div class="da-field"><label>Cargo</label><input type="text" name="job_title" value="{{ lead.job_title }}" class="da-input"></div>
+            <div class="da-field">
+              <label>Tamaño de empresa</label>
+              <select name="company_size" class="da-input">
+                <option value="">— Sin especificar —</option>
+                {% for val, lbl in company_size_choices %}
+                <option value="{{ val }}" {% if lead.company_size == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+            </div>
             <div class="da-field"><label>Dirección</label><input type="text" name="address" value="{{ lead.address }}" class="da-input" placeholder="Calle 10 #20-30, Barrio, Medellín"></div>
             <div class="da-field"><label>Ciudad</label><input type="text" name="city" value="{{ lead.city }}" class="da-input"></div>
+            <div class="da-field">
+              <label>Origen</label>
+              <select name="source" class="da-input">
+                {% for val, lbl in source_choices %}
+                <option value="{{ val }}" {% if lead.source == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+            </div>
             <div class="da-field"><label>Notas internas</label>
               <textarea name="notes_internal" class="da-input" rows="4" style="resize:vertical;">{{ lead.notes_internal }}</textarea>
             </div>

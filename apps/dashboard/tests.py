@@ -106,7 +106,7 @@ def make_ticket(lead, assigned_to=None, created_by=None, status="open"):
     return ServiceTicket.objects.create(
         ticket_number=f"TKT-TEST-{n:04d}",
         lead=lead,
-        issue_type="repair",
+        issue_type="correctivo",
         priority="medium",
         description="Test issue",
         status=status,

@@ -290,12 +290,16 @@ class RentalContract(TimeStampedModel):
 
 class ServiceTicket(TimeStampedModel):
     class IssueType(models.TextChoices):
-        MAINTENANCE  = "maintenance",  _("Mantenimiento preventivo")
-        REPAIR       = "repair",       _("Reparación / avería")
-        INSTALLATION = "installation", _("Instalación")
-        CALIBRATION  = "calibration",  _("Calibración")
-        SUPPLY       = "supply",       _("Suministro de insumos")
-        OTHER        = "other",        _("Otro")
+        MAINTENANCE  = "mantenimiento", _("Mantenimiento")
+        PREVENTIVE   = "preventivo",    _("Preventivo")
+        CORRECTIVE   = "correctivo",    _("Correctivo")
+        RENTAL       = "renta",         _("Renta")
+        REMOTE       = "remoto",        _("Remoto")
+        QUOTE        = "cotizacion",    _("Cotización")
+        INSTALLATION = "instalacion",   _("Instalación")
+        WARRANTY     = "garantia",      _("Garantía")
+        NETWORK      = "redes",         _("Redes")
+        SOFTWARE     = "software",      _("Software")
 
     class Priority(models.TextChoices):
         LOW    = "low",    _("Baja")
@@ -325,7 +329,7 @@ class ServiceTicket(TimeStampedModel):
     )
     issue_type = models.CharField(
         _("tipo de servicio"), max_length=20, choices=IssueType.choices,
-        default=IssueType.REPAIR,
+        default=IssueType.CORRECTIVE,
     )
     priority = models.CharField(
         _("prioridad"), max_length=10, choices=Priority.choices,

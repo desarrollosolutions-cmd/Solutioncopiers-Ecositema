@@ -883,7 +883,7 @@ class TicketCreateView(View):
                 lead                = lead,
                 contract            = contract,
                 equipment_description = request.POST.get("equipment_description", ""),
-                issue_type          = request.POST.get("issue_type", "repair"),
+                issue_type          = request.POST.get("issue_type", "correctivo"),
                 priority            = request.POST.get("priority", "medium"),
                 status              = request.POST.get("status", "open"),
                 description         = request.POST.get("description", ""),
@@ -1159,6 +1159,8 @@ class ClientDetailView(View):
             "contracts":     RentalContract.objects.filter(lead=lead).order_by("-created_at"),
             "tickets":       ServiceTicket.objects.filter(lead=lead).order_by("-created_at")[:10],
             "activity_types": LeadActivity.ActivityType.choices,
+            "source_choices":       Lead.Source.choices,
+            "company_size_choices": Lead.CompanySize.choices,
         })
 
     def post(self, request, pk):
@@ -1166,13 +1168,18 @@ class ClientDetailView(View):
         lead = get_object_or_404(Lead, pk=pk)
         lead.notes_internal = request.POST.get("notes_internal", "")
         lead.full_name    = request.POST.get("full_name", lead.full_name)
+        lead.email        = request.POST.get("email", lead.email)
         lead.phone        = request.POST.get("phone", lead.phone)
+        lead.nit          = request.POST.get("nit", lead.nit)
         lead.company_name = request.POST.get("company_name", lead.company_name)
+        lead.company_size = request.POST.get("company_size", lead.company_size)
         lead.job_title    = request.POST.get("job_title", lead.job_title)
         lead.address      = request.POST.get("address", lead.address)
         lead.city         = request.POST.get("city", lead.city)
+        lead.source       = request.POST.get("source", lead.source)
         lead.save(update_fields=[
-            "notes_internal", "full_name", "phone", "company_name", "job_title", "address", "city"
+            "notes_internal", "full_name", "email", "phone", "nit", "company_name",
+            "company_size", "job_title", "address", "city", "source",
         ])
         from django.contrib import messages
         messages.success(request, "Cliente actualizado correctamente.")
@@ -3026,7 +3033,7 @@ class PanelTicketCreateView(View):
             lead=lead,
             contract=contract,
             equipment_description=request.POST.get("equipment_description", ""),
-            issue_type=request.POST.get("issue_type", "repair"),
+            issue_type=request.POST.get("issue_type", "correctivo"),
             priority=request.POST.get("priority", "medium"),
             status="open",
             description=request.POST.get("description", ""),
