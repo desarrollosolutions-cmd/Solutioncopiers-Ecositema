@@ -5575,16 +5575,43 @@ class CampoTaskDetailView(View):
     template_name = "dashboard/campo/task_detail.html"
 
     def get(self, request, pk):
-        from apps.dashboard.models import DeliveryTask
+        from apps.dashboard.models import DeliveryTask, FieldUser
         task = get_object_or_404(DeliveryTask, pk=pk)
-        return render(request, self.template_name, {"task": task})
+        return render(request, self.template_name, {
+            "task": task,
+            "field_users":       FieldUser.objects.select_related("user").order_by("user__first_name"),
+            "task_type_choices": DeliveryTask.TaskType.choices,
+            "priority_choices":  DeliveryTask.Priority.choices,
+            "payment_choices":   DeliveryTask.PaymentMethod.choices,
+        })
 
     def post(self, request, pk):
-        from apps.dashboard.models import DeliveryTask
+        from apps.dashboard.models import DeliveryTask, FieldUser
+        from django.contrib import messages
         task = get_object_or_404(DeliveryTask, pk=pk)
-        if request.POST.get("action") == "cancel":
+        action = request.POST.get("action")
+        if action == "cancel":
             task.status = DeliveryTask.Status.CANCELLED
             task.save(update_fields=["status"])
+        elif action == "save":
+            if task.status != DeliveryTask.Status.PENDING:
+                messages.error(request, "Solo se pueden editar tareas pendientes.")
+                return redirect("dashboard:campo_task_detail", pk=pk)
+            try:
+                task.field_user = FieldUser.objects.get(pk=request.POST.get("field_user_id"))
+            except (FieldUser.DoesNotExist, ValueError, TypeError):
+                pass
+            task.title              = request.POST.get("title", "").strip() or task.title
+            task.task_type          = request.POST.get("task_type") or task.task_type
+            task.priority           = request.POST.get("priority") or task.priority
+            task.client_name        = request.POST.get("client_name", "").strip()
+            task.address             = request.POST.get("address", "").strip()
+            task.due_date            = request.POST.get("due_date") or task.due_date
+            task.completion_invoice = request.POST.get("invoice_ref", "").strip()
+            task.payment_method      = request.POST.get("payment_method", "").strip()
+            task.description        = request.POST.get("description", "").strip()
+            task.save()
+            messages.success(request, "Tarea actualizada correctamente.")
         return redirect("dashboard:campo_task_detail", pk=pk)
 
 

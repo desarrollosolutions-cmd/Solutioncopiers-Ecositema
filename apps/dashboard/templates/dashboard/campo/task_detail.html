@@ -23,6 +23,11 @@
   </div>
 </div>
 
+{% if task.status == 'pending' %}
+<form method="post" id="task-edit-form">
+{% csrf_token %}
+<input type="hidden" name="action" value="save">
+{% endif %}
 <div class="da-grid-sidebar">
 
   {# Columna principal #}
@@ -31,6 +36,38 @@
     {# Datos de la tarea #}
     <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.5rem;">
       <div style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);margin-bottom:1.25rem;">Información de la tarea</div>
+      {% if task.status == 'pending' %}
+      <div class="da-grid-2" style="gap:.875rem;">
+        <div class="da-field">
+          <label>Título</label>
+          <input type="text" name="title" value="{{ task.title }}" class="da-input">
+        </div>
+        <div class="da-field">
+          <label>Asignado a</label>
+          <select name="field_user_id" class="da-input">
+            {% for fu in field_users %}
+            <option value="{{ fu.pk }}" {% if task.field_user_id == fu.pk %}selected{% endif %}>{{ fu.user.get_full_name|default:fu.user.username }} ({{ fu.get_role_display }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="da-field">
+          <label>Fecha asignada</label>
+          <input type="date" name="due_date" value="{{ task.due_date|date:'Y-m-d' }}" class="da-input">
+        </div>
+        <div class="da-field">
+          <label>Cliente</label>
+          <input type="text" name="client_name" value="{{ task.client_name }}" class="da-input">
+        </div>
+        <div class="da-field da-form-full">
+          <label>Dirección</label>
+          <input type="text" name="address" value="{{ task.address }}" class="da-input">
+        </div>
+        <div class="da-field da-form-full">
+          <label>Descripción</label>
+          <textarea name="description" class="da-input" rows="3" style="resize:vertical;">{{ task.description }}</textarea>
+        </div>
+      </div>
+      {% else %}
       <div class="da-grid-2" style="gap:.875rem;">
         <div>
           <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Asignado a</div>
@@ -54,6 +91,7 @@
         </div>
         {% endif %}
       </div>
+      {% endif %}
     </div>
 
     {# Completación #}
@@ -127,6 +165,37 @@
       {% else %}
       <span style="font-size:.8rem;font-weight:700;padding:.35rem .875rem;border-radius:9999px;background:rgba(107,114,128,.1);color:#6B7280;border:1px solid rgba(107,114,128,.15);">Cancelada</span>
       {% endif %}
+      {% if task.status == 'pending' %}
+      <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.75rem;">
+        <div class="da-field">
+          <label>Tipo</label>
+          <select name="task_type" id="td-task-type" class="da-input">
+            {% for val, lbl in task_type_choices %}<option value="{{ val }}" {% if task.task_type == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="da-field">
+          <label>Prioridad</label>
+          <select name="priority" class="da-input">
+            {% for val, lbl in priority_choices %}<option value="{{ val }}" {% if task.priority == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="da-field">
+          <label># Factura / Remisión</label>
+          <input type="text" name="invoice_ref" value="{{ task.completion_invoice }}" class="da-input">
+        </div>
+        <div class="da-field">
+          <label>Método de pago</label>
+          <select name="payment_method" id="td-payment-method" class="da-input">
+            <option value="">— Sin especificar —</option>
+            {% for val, lbl in payment_choices %}<option value="{{ val }}" data-recoleccion="{% if val == 'efectivo' or val == 'cxp' %}1{% else %}0{% endif %}" {% if task.payment_method == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+          </select>
+        </div>
+        <div style="font-size:.72rem;color:var(--color-text-muted);padding-top:.5rem;border-top:1px solid var(--color-border);">
+          Creada {{ task.created_at|date:"d/m/Y H:i" }} por {{ task.created_by.get_full_name|default:task.created_by.username|default:"—" }} · Orden #{{ task.order }}
+        </div>
+        <button type="submit" class="da-btn da-btn-primary" style="width:100%;justify-content:center;">Guardar cambios</button>
+      </div>
+      {% else %}
       <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.5rem;font-size:.78rem;">
         <div style="display:flex;justify-content:space-between;">
           <span style="color:var(--color-text-muted);">Tipo</span>
@@ -167,8 +236,31 @@
           <span>#{{ task.order }}</span>
         </div>
       </div>
+      {% endif %}
     </div>
   </div>
 
 </div>
+{% if task.status == 'pending' %}
+</form>
+<script>
+(function () {
+  const taskType = document.getElementById('td-task-type');
+  const paySelect = document.getElementById('td-payment-method');
+  if (!taskType || !paySelect) return;
+  const OPTIONS = {
+    recoleccion: [['efectivo', 'Efectivo'], ['cxp', 'CXP']],
+    entrega:     [['efectivo', 'Efectivo'], ['banco', 'Banco'], ['cxc', 'CXC']],
+  };
+  function updatePaymentOptions() {
+    const opts = OPTIONS[taskType.value] || OPTIONS.entrega;
+    const current = paySelect.value;
+    paySelect.innerHTML = '<option value="">— Sin especificar —</option>' +
+      opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+    if (opts.some(([v]) => v === current)) paySelect.value = current;
+  }
+  taskType.addEventListener('change', updatePaymentOptions);
+})();
+</script>
+{% endif %}
 {% endblock %}
