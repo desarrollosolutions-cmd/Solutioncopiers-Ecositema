@@ -33,6 +33,7 @@ class Lead(TimeStampedModel):
     company_name = models.CharField(_("empresa"), max_length=200, blank=True)
     company_size = models.CharField(max_length=10, choices=CompanySize.choices, blank=True)
     job_title = models.CharField(_("cargo"), max_length=120, blank=True)
+    address = models.CharField(_("dirección"), max_length=255, blank=True)
     city = models.CharField(_("ciudad"), max_length=80, default="Medellín")
     source = models.CharField(max_length=20, choices=Source.choices, default=Source.QUOTE_WIZARD)
     notes_internal = models.TextField(_("notas internas"), blank=True)

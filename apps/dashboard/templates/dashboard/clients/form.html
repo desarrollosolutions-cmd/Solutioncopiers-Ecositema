@@ -40,6 +40,10 @@
           <label>Ciudad</label>
           <input type="text" name="city" class="da-input" value="{{ form_data.city|default:'Medellín' }}">
         </div>
+        <div class="da-field da-form-full">
+          <label>Dirección <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+          <input type="text" name="address" class="da-input" value="{{ form_data.address|default:'' }}" placeholder="Calle 10 #20-30, Barrio, Medellín">
+        </div>
         <div class="da-field">
           <label>Empresa <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
           <input type="text" name="company_name" class="da-input" value="{{ form_data.company_name|default:'' }}">

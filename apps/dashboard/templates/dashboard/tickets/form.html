@@ -92,7 +92,7 @@
             </div>
             <div class="da-field da-form-full">
               <label>Dirección de visita <span style="color:var(--color-text-muted);font-weight:400;">(dónde debe ir el técnico)</span></label>
-              <input type="text" name="address" value="{% if is_edit %}{{ ticket.address }}{% endif %}" class="da-input" placeholder="Ej: Calle 50 # 12-34, Medellín">
+              <input type="text" name="address" id="ticket-address-input" value="{% if is_edit %}{{ ticket.address }}{% endif %}" class="da-input" placeholder="Ej: Calle 50 # 12-34, Medellín">
             </div>
           </div>
         </div>
@@ -122,24 +122,61 @@
 
       <div class="da-card">
         <div class="da-card-header">Cliente</div>
-        <div class="da-card-body" style="display:flex;flex-direction:column;gap:.75rem;">
-          <div class="da-field">
-            <label>Seleccionar cliente</label>
-            <select name="lead" class="da-input" required>
-              <option value="">— Buscar cliente —</option>
-              {% for l in lead_list %}<option value="{{ l.pk }}" {% if is_edit and ticket.lead_id == l.pk %}selected{% endif %}>{{ l.full_name }}{% if l.company_name %} · {{ l.company_name }}{% endif %}</option>{% endfor %}
-            </select>
+        <div class="da-card-body" style="display:flex;flex-direction:column;gap:.75rem;"
+             x-data="ticketClientPicker(
+               {% if is_edit and ticket.lead_id %}{{ ticket.lead_id }}{% else %}null{% endif %},
+               '{% if is_edit %}{{ ticket.lead.full_name|escapejs }}{% if ticket.lead.company_name %} · {{ ticket.lead.company_name|escapejs }}{% endif %}{% endif %}',
+               '{% if is_edit %}{{ ticket.lead.email|escapejs }}{% endif %}',
+               '{% if is_edit %}{{ ticket.lead.phone|escapejs }}{% endif %}'
+             )">
+          <input type="hidden" name="lead" :value="selectedId">
+
+          <div class="da-field" x-show="!selectedId && !creatingNew" style="position:relative;">
+            <label>Buscar cliente</label>
+            <input type="text" x-model="query" @input.debounce.300ms="search()" @focus="query.length>=2 && search()" @click.outside="open=false"
+              placeholder="Nombre, empresa, NIT, teléfono…" class="da-input" autocomplete="off">
+            <div x-show="open" style="position:absolute;top:100%;left:0;right:0;margin-top:.25rem;background:var(--color-surface);border:1px solid var(--color-border);border-radius:.625rem;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:20;max-height:260px;overflow-y:auto;">
+              <div x-show="loading" style="padding:.625rem .875rem;font-size:.78rem;color:var(--color-text-muted);">Buscando…</div>
+              <template x-for="item in results" :key="item.id">
+                <div @click="select(item)" class="tkt-client-opt" style="padding:.625rem .875rem;cursor:pointer;border-bottom:1px solid color-mix(in srgb,var(--color-border) 50%,transparent);">
+                  <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);" x-text="item.full_name"></div>
+                  <div style="font-size:.72rem;color:var(--color-text-muted);" x-text="[item.company_name, item.phone].filter(Boolean).join(' · ')"></div>
+                </div>
+              </template>
+              <div x-show="!loading && query.length>=2 && results.length===0" style="padding:.75rem .875rem;font-size:.78rem;color:var(--color-text-muted);">
+                No se encontró "<span x-text="query"></span>".
+                <button type="button" @click="startNew()" style="display:block;margin-top:.375rem;color:var(--color-primary);font-weight:700;background:none;border:none;cursor:pointer;padding:0;font-size:.78rem;">+ Crear cliente nuevo</button>
+              </div>
+            </div>
           </div>
-          {% if is_edit %}
-          <div style="padding:.625rem .875rem;border-radius:.5rem;background:var(--color-bg-alt);border:1px solid var(--color-border);font-size:.78rem;">
-            <a href="mailto:{{ ticket.lead.email }}" style="color:var(--color-primary);">{{ ticket.lead.email }}</a>
-            <div style="margin-top:.375rem;color:var(--color-text-secondary);">{{ ticket.lead.phone }}</div>
+
+          <div x-show="selectedId && !creatingNew" style="padding:.625rem .875rem;border-radius:.5rem;background:var(--color-bg-alt);border:1px solid var(--color-border);font-size:.78rem;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;">
+              <strong x-text="selectedLabel" style="color:var(--color-text-primary);"></strong>
+              <button type="button" @click="clearSelection()" title="Cambiar cliente" style="background:none;border:none;color:var(--color-text-muted);cursor:pointer;font-size:.85rem;line-height:1;flex-shrink:0;">✕</button>
+            </div>
+            <a :href="'mailto:'+selectedEmail" x-show="selectedEmail" x-text="selectedEmail" style="color:var(--color-primary);display:block;margin-top:.25rem;"></a>
+            <div x-show="selectedPhone" x-text="selectedPhone" style="margin-top:.15rem;color:var(--color-text-secondary);"></div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.375rem;">
-            <a href="tel:{{ ticket.lead.phone }}" class="da-btn da-btn-secondary da-btn-sm" style="justify-content:center;">Llamar</a>
-            <a href="https://wa.me/{{ ticket.lead.phone|cut:' '|cut:'+'|cut:'-' }}" target="_blank" class="da-btn da-btn-secondary da-btn-sm" style="justify-content:center;">WhatsApp</a>
+
+          <div x-show="selectedId && selectedPhone && !creatingNew" style="display:grid;grid-template-columns:1fr 1fr;gap:.375rem;">
+            <a :href="'tel:'+selectedPhone" class="da-btn da-btn-secondary da-btn-sm" style="justify-content:center;">Llamar</a>
+            <a :href="'https://wa.me/'+selectedPhone.replace(/[^0-9]/g,'')" target="_blank" class="da-btn da-btn-secondary da-btn-sm" style="justify-content:center;">WhatsApp</a>
           </div>
-          {% endif %}
+
+          <button type="button" x-show="!creatingNew" @click="startNew()" style="font-size:.78rem;color:var(--color-primary);background:none;border:none;cursor:pointer;font-weight:600;text-align:left;padding:0;">+ Cliente nuevo</button>
+
+          <div x-show="creatingNew" style="display:flex;flex-direction:column;gap:.5rem;background:var(--color-bg-alt);border:1px dashed var(--color-border);border-radius:.625rem;padding:.75rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:.78rem;font-weight:700;color:var(--color-primary);">Cliente nuevo</span>
+              <button type="button" @click="cancelNew()" style="background:none;border:none;color:var(--color-text-muted);cursor:pointer;font-size:.75rem;">Cancelar</button>
+            </div>
+            <input type="text" name="new_lead_full_name" x-model="newLead.full_name" placeholder="Nombre completo *" class="da-input" style="font-size:.8125rem;">
+            <input type="text" name="new_lead_phone" x-model="newLead.phone" placeholder="Teléfono" class="da-input" style="font-size:.8125rem;">
+            <input type="email" name="new_lead_email" x-model="newLead.email" placeholder="Email" class="da-input" style="font-size:.8125rem;">
+            <input type="text" name="new_lead_address" x-model="newLead.address" placeholder="Dirección" class="da-input" style="font-size:.8125rem;">
+          </div>
+
           <div class="da-field">
             <label>Contrato relacionado <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
             <select name="contract" class="da-input">
@@ -267,4 +304,47 @@
     </div>
   </div>
 </form>
+
+<style>
+  .tkt-client-opt:hover { background: color-mix(in srgb, var(--color-primary) 6%, transparent); }
+</style>
+<script>
+function ticketClientPicker(initialId, initialLabel, initialEmail, initialPhone) {
+  return {
+    query: '', results: [], open: false, loading: false,
+    selectedId: initialId || null,
+    selectedLabel: initialLabel || '',
+    selectedEmail: initialEmail || '',
+    selectedPhone: initialPhone || '',
+    creatingNew: false,
+    newLead: { full_name: '', phone: '', email: '', address: '' },
+
+    search() {
+      if (this.query.length < 2) { this.results = []; this.open = false; return; }
+      this.loading = true; this.open = true;
+      fetch('{% url "dashboard:client_autocomplete" %}?q=' + encodeURIComponent(this.query), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(d => { this.results = d.results; this.loading = false; })
+        .catch(() => { this.loading = false; this.results = []; });
+    },
+    select(item) {
+      this.selectedId = item.id;
+      this.selectedLabel = [item.full_name, item.company_name].filter(Boolean).join(' · ');
+      this.selectedEmail = item.email || '';
+      this.selectedPhone = item.phone || '';
+      this.query = ''; this.open = false; this.results = [];
+      const addrInput = document.getElementById('ticket-address-input');
+      if (addrInput && !addrInput.value && item.address) addrInput.value = item.address;
+    },
+    clearSelection() {
+      this.selectedId = null; this.selectedLabel = ''; this.selectedEmail = ''; this.selectedPhone = '';
+    },
+    startNew() {
+      this.creatingNew = true; this.open = false;
+      this.selectedId = null; this.selectedLabel = ''; this.selectedEmail = ''; this.selectedPhone = '';
+    },
+    cancelNew() { this.creatingNew = false; },
+  };
+}
+</script>
 {% endblock %}

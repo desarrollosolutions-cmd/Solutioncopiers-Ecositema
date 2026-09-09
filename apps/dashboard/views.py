@@ -707,6 +707,28 @@ def _next_ticket_number():
     return f"{prefix}{seq:04d}"
 
 
+def _resolve_or_create_lead(request):
+    """Para el formulario de tickets: usa el cliente elegido en el buscador, o si
+    se usó "+ Cliente nuevo", lo crea primero. Lanza ValueError si no hay ninguno."""
+    from apps.leads.models import Lead
+    lead_pk = request.POST.get("lead", "").strip()
+    if lead_pk:
+        return Lead.objects.get(pk=lead_pk)
+
+    new_name = request.POST.get("new_lead_full_name", "").strip()
+    if not new_name:
+        raise ValueError("Selecciona un cliente existente o escribe el nombre del cliente nuevo.")
+    lead = Lead.objects.create(
+        full_name=new_name,
+        phone=request.POST.get("new_lead_phone", "").strip(),
+        email=request.POST.get("new_lead_email", "").strip(),
+        address=request.POST.get("new_lead_address", "").strip(),
+        source=Lead.Source.MANUAL,
+    )
+    _log_activity(request, "create_client", f"Cliente creado desde el formulario de ticket: {lead.full_name}", related_pk=lead.pk)
+    return lead
+
+
 def _create_delivery_task_for_ticket(ticket, created_by):
     """Genera un DeliveryTask en la ruta del técnico al asignarle un ticket."""
     from apps.dashboard.models import DeliveryTask
@@ -849,7 +871,7 @@ class TicketCreateView(View):
         from apps.leads.models import Lead, ServiceTicket, RentalContract
         from django.contrib.auth.models import User
         try:
-            lead     = Lead.objects.get(pk=request.POST["lead"])
+            lead     = _resolve_or_create_lead(request)
             contract = None
             if request.POST.get("contract"):
                 contract = RentalContract.objects.get(pk=request.POST["contract"])
@@ -915,7 +937,7 @@ class TicketDetailView(View):
         from django.utils import timezone as tz
         ticket = self._get_ticket(pk)
         try:
-            ticket.lead     = Lead.objects.get(pk=request.POST["lead"])
+            ticket.lead     = _resolve_or_create_lead(request)
             ticket.contract = None
             if request.POST.get("contract"):
                 ticket.contract = RentalContract.objects.get(pk=request.POST["contract"])
@@ -1066,6 +1088,7 @@ class ClientAutocompleteView(View):
                 "company_name": lead.company_name or "",
                 "email":        lead.email or "",
                 "phone":        lead.phone or "",
+                "address":      lead.address or "",
                 "initial":      lead.full_name[0].upper() if lead.full_name else "?",
                 "url":          f"/dashadmin/clientes/{lead.pk}/",
             }
@@ -1106,6 +1129,7 @@ class ClientCreateView(View):
             company_name=request.POST.get("company_name", "").strip(),
             company_size=request.POST.get("company_size", ""),
             job_title=request.POST.get("job_title", "").strip(),
+            address=request.POST.get("address", "").strip(),
             city=request.POST.get("city", "").strip() or "Medellín",
             source=request.POST.get("source") or Lead.Source.MANUAL,
             notes_internal=request.POST.get("notes_internal", "").strip(),
@@ -1145,9 +1169,10 @@ class ClientDetailView(View):
         lead.phone        = request.POST.get("phone", lead.phone)
         lead.company_name = request.POST.get("company_name", lead.company_name)
         lead.job_title    = request.POST.get("job_title", lead.job_title)
+        lead.address      = request.POST.get("address", lead.address)
         lead.city         = request.POST.get("city", lead.city)
         lead.save(update_fields=[
-            "notes_internal", "full_name", "phone", "company_name", "job_title", "city"
+            "notes_internal", "full_name", "phone", "company_name", "job_title", "address", "city"
         ])
         from django.contrib import messages
         messages.success(request, "Cliente actualizado correctamente.")
