@@ -85,7 +85,7 @@
       </div>
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Tipo de tarea *</label>
-        <select name="task_type" required class="da-input" style="width:100%;">
+        <select name="task_type" id="cq-task-type" required class="da-input" style="width:100%;">
           {% for val, label in task_type_choices %}
           <option value="{{ val }}">{{ label }}</option>
           {% endfor %}
@@ -112,9 +112,9 @@
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;"># Factura / Remisión</label>
         <input type="text" name="invoice_ref" class="da-input" style="width:100%;" placeholder="Ej: FAC-001">
       </div>
-      <div>
+      <div id="cq-payment-wrap">
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Método de pago</label>
-        <select name="payment_method" class="da-input" style="width:100%;">
+        <select name="payment_method" id="cq-payment-method" class="da-input" style="width:100%;">
           <option value="">— Seleccionar —</option>
           {% for val, label in payment_choices %}
           <option value="{{ val }}">{{ label }}</option>
@@ -138,6 +138,30 @@
     </div>
   </form>
 </div>
+
+<script>
+(function () {
+  const taskType = document.getElementById('cq-task-type');
+  const paySelect = document.getElementById('cq-payment-method');
+  if (!taskType || !paySelect) return;
+
+  const OPTIONS = {
+    recoleccion: [['efectivo', 'Efectivo'], ['cxp', 'CXP']],
+    entrega:     [['efectivo', 'Efectivo'], ['banco', 'Banco'], ['cxc', 'CXC']],
+  };
+
+  function updatePaymentOptions() {
+    const opts = OPTIONS[taskType.value] || OPTIONS.entrega;
+    const current = paySelect.value;
+    paySelect.innerHTML = '<option value="">— Seleccionar —</option>' +
+      opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+    if (opts.some(([v]) => v === current)) paySelect.value = current;
+  }
+
+  taskType.addEventListener('change', updatePaymentOptions);
+  updatePaymentOptions();
+})();
+</script>
 
 {# ── Filtros ── #}
 {% if not filter_user and not filter_status and not filter_date %}

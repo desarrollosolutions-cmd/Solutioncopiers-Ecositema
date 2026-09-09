@@ -308,6 +308,7 @@ class DeliveryTask(models.Model):
         CASH = "efectivo", "Efectivo"
         BANK = "banco",    "Banco"
         CXC  = "cxc",      "CXC"
+        CXP  = "cxp",      "CXP"
 
     field_user         = models.ForeignKey(
         FieldUser, on_delete=models.CASCADE, related_name="delivery_tasks"

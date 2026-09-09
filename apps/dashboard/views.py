@@ -860,6 +860,7 @@ class TicketCreateView(View):
             "issue_choices":    ServiceTicket.IssueType.choices,
             "priority_choices": ServiceTicket.Priority.choices,
             "status_choices":   ServiceTicket.Status.choices,
+            "payment_choices":  ServiceTicket.PaymentMethod.choices,
             "next_number":      _next_ticket_number(),
             "is_edit":          False,
         }
@@ -886,6 +887,7 @@ class TicketCreateView(View):
                 issue_type          = request.POST.get("issue_type", "correctivo"),
                 priority            = request.POST.get("priority", "medium"),
                 status              = request.POST.get("status", "open"),
+                payment_method      = request.POST.get("payment_method", "na"),
                 description         = request.POST.get("description", ""),
                 address             = request.POST.get("address", ""),
                 resolution_notes    = request.POST.get("resolution_notes", ""),
@@ -924,6 +926,7 @@ class TicketDetailView(View):
             "issue_choices":    ServiceTicket.IssueType.choices,
             "priority_choices": ServiceTicket.Priority.choices,
             "status_choices":   ServiceTicket.Status.choices,
+            "payment_choices":  ServiceTicket.PaymentMethod.choices,
             "is_edit":          True,
         }
 
@@ -956,6 +959,7 @@ class TicketDetailView(View):
             ticket.equipment_description = request.POST.get("equipment_description", "")
             ticket.issue_type         = request.POST.get("issue_type", ticket.issue_type)
             ticket.priority           = request.POST.get("priority", ticket.priority)
+            ticket.payment_method     = request.POST.get("payment_method", ticket.payment_method)
             ticket.status             = new_status
             ticket.description        = request.POST.get("description", "")
             ticket.address            = request.POST.get("address", ticket.address)
@@ -2988,6 +2992,7 @@ class PanelTicketCreateView(View):
             "contract_list":    RentalContract.objects.filter(status="active").select_related("lead"),
             "issue_choices":    ServiceTicket.IssueType.choices,
             "priority_choices": ServiceTicket.Priority.choices,
+            "payment_choices":  ServiceTicket.PaymentMethod.choices,
             "next_number":      _next_ticket_number(),
             "technician_list":  User.objects.filter(field_profile__role="tecnico"),
         }
@@ -3035,6 +3040,7 @@ class PanelTicketCreateView(View):
             equipment_description=request.POST.get("equipment_description", ""),
             issue_type=request.POST.get("issue_type", "correctivo"),
             priority=request.POST.get("priority", "medium"),
+            payment_method=request.POST.get("payment_method", "na"),
             status="open",
             description=request.POST.get("description", ""),
             address=request.POST.get("address", ""),

@@ -314,6 +314,11 @@ class ServiceTicket(TimeStampedModel):
         RESOLVED      = "resolved",      _("Resuelto")
         CLOSED        = "closed",        _("Cerrado")
 
+    class PaymentMethod(models.TextChoices):
+        CXC  = "cxc",      _("CXC")
+        CASH = "efectivo", _("Efectivo")
+        NA   = "na",       _("N/A")
+
     ticket_number = models.CharField(_("número de ticket"), max_length=30, unique=True)
     lead = models.ForeignKey(
         Lead, on_delete=models.PROTECT, related_name="tickets",
@@ -334,6 +339,10 @@ class ServiceTicket(TimeStampedModel):
     priority = models.CharField(
         _("prioridad"), max_length=10, choices=Priority.choices,
         default=Priority.MEDIUM, db_index=True,
+    )
+    payment_method = models.CharField(
+        _("método de pago"), max_length=10, choices=PaymentMethod.choices,
+        default=PaymentMethod.NA, blank=True,
     )
     status = models.CharField(
         _("estado"), max_length=20, choices=Status.choices,

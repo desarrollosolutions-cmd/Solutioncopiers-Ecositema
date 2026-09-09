@@ -66,6 +66,15 @@
             </select>
           </div>
 
+          <div class="pn-field">
+            <label class="pn-label">Método de pago</label>
+            <select name="payment_method" class="pn-input">
+              {% for val, lbl in payment_choices %}
+              <option value="{{ val }}" {% if val == 'na' %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
           <div class="pn-field" style="grid-column:1/-1;">
             <label class="pn-label">Descripción del equipo</label>
             <input type="text" name="equipment_description" class="pn-input" placeholder="Ej: Kyocera TASKalfa 2553ci — Serie A1234">

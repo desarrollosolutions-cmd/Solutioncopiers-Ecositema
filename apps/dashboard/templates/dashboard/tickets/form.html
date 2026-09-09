@@ -82,6 +82,12 @@
               <label>Fecha programada <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
               <input type="datetime-local" name="scheduled_for" value="{% if is_edit and ticket.scheduled_for %}{{ ticket.scheduled_for|date:'Y-m-d' }}T{{ ticket.scheduled_for|time:'H:i' }}{% endif %}" class="da-input">
             </div>
+            <div class="da-field">
+              <label>Método de pago</label>
+              <select name="payment_method" class="da-input">
+                {% for val, lbl in payment_choices %}<option value="{{ val }}" {% if is_edit and ticket.payment_method == val %}selected{% elif not is_edit and val == "na" %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+              </select>
+            </div>
             <div class="da-field da-form-full">
               <label>Equipo / Serial <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
               <input type="text" name="equipment_description" value="{% if is_edit %}{{ ticket.equipment_description }}{% endif %}" class="da-input" placeholder="Ej: Ricoh MP 2555SP — S/N: X12345">
