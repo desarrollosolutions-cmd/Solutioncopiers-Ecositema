@@ -154,6 +154,8 @@ class Notification(models.Model):
         QUOTE_STALE        = "quote_stale",        "Cotización sin atender"
         LEAD_COLD          = "lead_cold",          "Lead sin actividad"
         TASK_ASSIGNED      = "task_assigned",      "Nueva tarea asignada"
+        DELIVERY_DONE      = "delivery_done",      "Entrega/recolección completada"
+        TICKET_STATUS      = "ticket_status",      "Ticket actualizado por técnico"
 
     user       = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,

@@ -1333,23 +1333,66 @@ function globalSearch() {
 </script>
 
 <script>
+/* ── Sonido de notificación (tono generado, sin archivo de audio) ── */
+let _dingCtx = null;
+function _primeNotificationAudio() {
+  try {
+    if (!_dingCtx) _dingCtx = new (window.AudioContext || window.webkitAudioContext)();
+    else if (_dingCtx.state === 'suspended') _dingCtx.resume();
+  } catch (e) {}
+}
+document.addEventListener('click', _primeNotificationAudio, { once: true });
+document.addEventListener('keydown', _primeNotificationAudio, { once: true });
+
+function playNotificationSound() {
+  try {
+    if (!_dingCtx) _dingCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_dingCtx.state === 'suspended') _dingCtx.resume();
+    const now = _dingCtx.currentTime;
+    [880, 1174.66].forEach((freq, i) => {
+      const osc  = _dingCtx.createOscillator();
+      const gain = _dingCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const start = now + i * 0.12;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.18, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.28);
+      osc.connect(gain).connect(_dingCtx.destination);
+      osc.start(start);
+      osc.stop(start + 0.3);
+    });
+  } catch (e) {}
+}
+
 function crmBell() {
   return {
     open: false,
     unread: 0,
     notifications: [],
     _timer: null,
+    _lastSeenId: null,
+    _initialized: false,
 
     init() {
       this.fetch();
-      this._timer = setInterval(() => this.fetch(), 60000);
+      this._timer = setInterval(() => this.fetch(), 20000);
     },
     destroy() { clearInterval(this._timer); },
 
     fetch() {
       fetch('/dashadmin/crm/notificaciones/json/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(r => r.json())
-        .then(d => { this.unread = d.unread; this.notifications = d.notifications; })
+        .then(d => {
+          this.unread = d.unread;
+          this.notifications = d.notifications;
+          const topId = d.notifications.length ? d.notifications[0].id : null;
+          if (this._initialized && topId !== null && (this._lastSeenId === null || topId > this._lastSeenId)) {
+            playNotificationSound();
+          }
+          if (topId !== null) this._lastSeenId = Math.max(this._lastSeenId || 0, topId);
+          this._initialized = true;
+        })
         .catch(() => {});
     },
 

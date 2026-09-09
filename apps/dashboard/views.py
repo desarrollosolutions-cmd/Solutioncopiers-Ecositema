@@ -2291,6 +2291,15 @@ def _log_activity(request, action: str, description: str = "", related_pk=None):
         pass
 
 
+def _notify_admins(type, title, message="", link=""):
+    """Crea una notificación CRM para todos los administradores (staff activos)."""
+    from django.contrib.auth import get_user_model
+    from apps.dashboard.models import Notification
+    User = get_user_model()
+    for admin in User.objects.filter(is_staff=True, is_active=True):
+        Notification.push(user=admin, type=type, title=title, message=message, link=link)
+
+
 class PanelLoginView(View):
     """Redirige al home si ya está autenticado; si no, muestra formulario de login."""
     template_name = "panel/login.html"
@@ -2858,6 +2867,13 @@ class PanelTicketStatusUpdateView(View):
                 ticket.resolved_at = timezone.now()
             ticket.save()
             _log_activity(request, "update_ticket", f"Turno — ticket #{ticket.ticket_number} → {ticket.status}", related_pk=pk)
+            from apps.dashboard.models import Notification
+            _notify_admins(
+                type=Notification.Type.TICKET_STATUS,
+                title=f"Ticket #{ticket.ticket_number} → {ticket.get_status_display()}",
+                message=f"{request.user.get_full_name() or request.user.username} — {ticket.equipment_description or ''}".strip(" —"),
+                link=f"/dashadmin/tickets/{ticket.pk}/",
+            )
             return JsonResponse({"ok": True, "status": ticket.status})
         return JsonResponse({"ok": False, "error": "Estado inválido"}, status=400)
 
@@ -5217,6 +5233,14 @@ class CampoTaskCompleteView(View):
         task.status               = DeliveryTask.Status.DONE
         task.completed_at         = timezone.now()
         task.save()
+
+        from apps.dashboard.models import Notification
+        _notify_admins(
+            type=Notification.Type.DELIVERY_DONE,
+            title=f"{task.get_task_type_display()} completada: {task.title}",
+            message=f"{request.user.get_full_name() or request.user.username} — {task.client_name or ''}".strip(" —"),
+            link=f"/dashadmin/campo/tareas/{task.pk}/",
+        )
         return JsonResponse({"ok": True, "task_id": task.pk})
 
 
@@ -5647,8 +5671,9 @@ class CampoTicketDetailView(View):
             "waiting_parts": ["in_progress", "resolved"],
         }
         allowed = valid_transitions.get(ticket.status, [])
+        status_changed = bool(new_status and new_status in allowed)
 
-        if new_status and new_status in allowed:
+        if status_changed:
             ticket.status = new_status
             if new_status == "resolved":
                 ticket.resolved_at = timezone.now()
@@ -5657,6 +5682,15 @@ class CampoTicketDetailView(View):
             ticket.resolution_notes = notes
 
         ticket.save(update_fields=["status", "resolution_notes", "resolved_at"])
+
+        if status_changed:
+            from apps.dashboard.models import Notification
+            _notify_admins(
+                type=Notification.Type.TICKET_STATUS,
+                title=f"Ticket #{ticket.ticket_number} → {ticket.get_status_display()}",
+                message=f"{request.user.get_full_name() or request.user.username} — {ticket.equipment_description or ''}".strip(" —"),
+                link=f"/dashadmin/tickets/{ticket.pk}/",
+            )
         return redirect("campo:ticket_detail", pk=pk)
 
 
@@ -5741,6 +5775,14 @@ class PanelDeliveryCompleteView(View):
         task.status               = DeliveryTask.Status.DONE
         task.completed_at         = timezone.now()
         task.save()
+
+        from apps.dashboard.models import Notification
+        _notify_admins(
+            type=Notification.Type.DELIVERY_DONE,
+            title=f"{task.get_task_type_display()} completada: {task.title}",
+            message=f"{request.user.get_full_name() or request.user.username} — {task.client_name or ''}".strip(" —"),
+            link=f"/dashadmin/campo/tareas/{task.pk}/",
+        )
         return JsonResponse({"ok": True, "task_id": task.pk})
 
 
