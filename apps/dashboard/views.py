@@ -1246,6 +1246,31 @@ class TaskToggleView(View):
         return redirect("dashboard:client_detail", pk=task.lead_id)
 
 
+@da_decorator
+class TaskUpdateView(View):
+    """POST: edita por completo una tarea de seguimiento (descripción, fecha, asignado)."""
+    def post(self, request, pk):
+        from apps.leads.models import FollowUpTask
+        from django.contrib.auth.models import User
+        from django.contrib import messages
+        task = get_object_or_404(FollowUpTask, pk=pk)
+        description = request.POST.get("description", "").strip()
+        due_date    = request.POST.get("due_date", "")
+        if description and due_date:
+            task.description = description
+            task.due_date    = due_date
+            assigned_id = request.POST.get("assigned_to", "")
+            if assigned_id:
+                assigned = User.objects.filter(pk=assigned_id).first()
+                if assigned:
+                    task.assigned_to = assigned
+            task.save(update_fields=["description", "due_date", "assigned_to"])
+            messages.success(request, "Tarea actualizada correctamente.")
+        else:
+            messages.error(request, "Descripción y fecha son obligatorias.")
+        return redirect("dashboard:client_detail", pk=task.lead_id)
+
+
 # ---------------------------------------------------------------------------
 # EXPORT CSV
 # ---------------------------------------------------------------------------

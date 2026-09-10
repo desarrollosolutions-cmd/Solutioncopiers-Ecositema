@@ -38,6 +38,7 @@ urlpatterns = [
     path("clientes/<int:pk>/actividad/",            views.ActivityCreateView.as_view(), name="client_activity_create"),
     path("clientes/<int:pk>/tarea/",                views.TaskCreateView.as_view(),     name="client_task_create"),
     path("tareas/<int:pk>/toggle/",                 views.TaskToggleView.as_view(),     name="task_toggle"),
+    path("tareas/<int:pk>/editar/",                 views.TaskUpdateView.as_view(),     name="task_update"),
 
     # Exportar CSV
     path("exportar/leads/",      views.ExportLeadsCSVView.as_view(),     name="export_leads"),
