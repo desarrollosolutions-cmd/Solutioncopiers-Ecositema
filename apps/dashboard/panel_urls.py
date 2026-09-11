@@ -22,6 +22,7 @@ urlpatterns = [
     path("clientes/<int:pk>/actividad/",       views.PanelActivityCreateView.as_view(), name="client_activity_create"),
     path("clientes/<int:pk>/tarea/",           views.PanelTaskCreateView.as_view(),    name="client_task_create"),
     path("tareas/<int:pk>/toggle/",            views.PanelTaskToggleView.as_view(),    name="task_toggle"),
+    path("calendario/fechas-agendadas/",       views.PanelScheduledDatesJsonView.as_view(), name="scheduled_dates_json"),
 
     # Tickets
     path("tickets/",                     views.PanelTicketListView.as_view(),         name="tickets"),

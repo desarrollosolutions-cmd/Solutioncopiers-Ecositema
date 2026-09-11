@@ -168,7 +168,7 @@
           </div>
           <div class="pn-field">
             <label>Fecha límite</label>
-            <input type="date" name="due_date" class="pn-input" required>
+            <input type="date" name="due_date" class="pn-input dp-input" data-occupied-url="{% url 'panel:scheduled_dates_json' %}" required>
           </div>
           <button type="submit" class="pn-btn pn-btn-primary" style="width:100%;justify-content:center;">Crear tarea</button>
         </div>

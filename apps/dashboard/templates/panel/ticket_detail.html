@@ -115,7 +115,7 @@
 
           <div class="pn-field">
             <label class="pn-label">Programar visita</label>
-            <input type="datetime-local" name="scheduled_for" class="pn-input"
+            <input type="datetime-local" name="scheduled_for" class="pn-input dp-input" data-occupied-url="{% url 'panel:scheduled_dates_json' %}"
               value="{% if ticket.scheduled_for %}{{ ticket.scheduled_for|date:'Y-m-d\TH:i' }}{% endif %}">
           </div>
           {% endif %}

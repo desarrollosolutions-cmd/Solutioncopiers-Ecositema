@@ -123,7 +123,7 @@
       </div>
       <div>
         <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Fecha</label>
-        <input type="date" name="due_date" class="da-input" style="width:100%;" value="{{ today }}">
+        <input type="date" name="due_date" class="da-input dp-input" data-occupied-url="{% url 'dashboard:scheduled_dates_json' %}" style="width:100%;" value="{{ today }}">
       </div>
       <div class="cq-submit">
         <button type="submit" class="da-btn da-btn-primary" style="white-space:nowrap;width:100%;justify-content:center;">
@@ -185,7 +185,7 @@
     <option value="{{ val }}" {% if filter_status == val %}selected{% endif %}>{{ label }}</option>
     {% endfor %}
   </select>
-  <input type="date" name="date" class="da-input" style="width:160px;max-width:100%;" value="{{ filter_date }}">
+  <input type="date" name="date" class="da-input dp-input" style="width:160px;max-width:100%;" value="{{ filter_date }}">
   <button type="submit" class="da-btn da-btn-primary">Filtrar</button>
   {% if filter_user or filter_status or filter_date %}
   <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Limpiar</a>

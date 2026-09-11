@@ -73,6 +73,37 @@ def _safe_next(request, fallback: str) -> str:
         return fallback
     return next_url
 
+
+def _scheduled_dates_payload() -> dict:
+    """Cuenta, por fecha, cuantas tareas de entrega/seguimiento y tickets ya
+    estan agendados — usado por los calendarios de los formularios para
+    subrayar fechas que ya tienen algo montado."""
+    from datetime import timedelta
+    from collections import Counter
+    from apps.dashboard.models import DeliveryTask
+    from apps.leads.models import FollowUpTask, ServiceTicket
+
+    today = timezone.localdate()
+    start = today - timedelta(days=14)
+    end   = today + timedelta(days=180)
+
+    counts = Counter()
+    for d in DeliveryTask.objects.filter(
+        status=DeliveryTask.Status.PENDING, due_date__range=(start, end)
+    ).values_list("due_date", flat=True):
+        counts[d.isoformat()] += 1
+    for d in FollowUpTask.objects.filter(
+        is_done=False, due_date__range=(start, end)
+    ).values_list("due_date", flat=True):
+        counts[d.isoformat()] += 1
+    for dt in ServiceTicket.objects.filter(
+        status__in=("open", "in_progress", "waiting_parts"),
+        scheduled_for__date__range=(start, end),
+    ).values_list("scheduled_for", flat=True):
+        if dt:
+            counts[dt.date().isoformat()] += 1
+    return dict(counts)
+
 # ---------------------------------------------------------------------------
 # Decorador de acceso — solo staff
 # ---------------------------------------------------------------------------
@@ -1208,6 +1239,13 @@ class ActivityCreateView(View):
             from django.contrib import messages
             messages.success(request, "Actividad registrada.")
         return redirect("dashboard:client_detail", pk=pk)
+
+
+@da_decorator
+class ScheduledDatesJsonView(View):
+    """GET: fechas que ya tienen tareas/tickets agendados, para subrayarlas en los calendarios."""
+    def get(self, request):
+        return JsonResponse({"dates": _scheduled_dates_payload()})
 
 
 @da_decorator
@@ -2782,6 +2820,13 @@ class PanelActivityCreateView(View):
             )
             dj_messages.success(request, "Actividad registrada.")
         return redirect("panel:client_detail", pk=pk)
+
+
+@panel_decorator
+class PanelScheduledDatesJsonView(View):
+    """GET: fechas que ya tienen tareas/tickets agendados, para subrayarlas en los calendarios."""
+    def get(self, request):
+        return JsonResponse({"dates": _scheduled_dates_payload()})
 
 
 @panel_decorator

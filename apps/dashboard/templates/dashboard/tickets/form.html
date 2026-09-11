@@ -80,7 +80,7 @@
             </div>
             <div class="da-field">
               <label>Fecha programada <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
-              <input type="datetime-local" name="scheduled_for" value="{% if is_edit and ticket.scheduled_for %}{{ ticket.scheduled_for|date:'Y-m-d' }}T{{ ticket.scheduled_for|time:'H:i' }}{% endif %}" class="da-input">
+              <input type="datetime-local" name="scheduled_for" value="{% if is_edit and ticket.scheduled_for %}{{ ticket.scheduled_for|date:'Y-m-d' }}T{{ ticket.scheduled_for|time:'H:i' }}{% endif %}" class="da-input dp-input" data-occupied-url="{% url 'dashboard:scheduled_dates_json' %}">
             </div>
             <div class="da-field">
               <label>Método de pago</label>

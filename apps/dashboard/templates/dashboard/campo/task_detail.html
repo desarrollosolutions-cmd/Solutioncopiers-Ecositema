@@ -52,7 +52,7 @@
         </div>
         <div class="da-field">
           <label>Fecha asignada</label>
-          <input type="date" name="due_date" value="{{ task.due_date|date:'Y-m-d' }}" class="da-input">
+          <input type="date" name="due_date" value="{{ task.due_date|date:'Y-m-d' }}" class="da-input dp-input" data-occupied-url="{% url 'dashboard:scheduled_dates_json' %}">
         </div>
         <div class="da-field">
           <label>Cliente</label>

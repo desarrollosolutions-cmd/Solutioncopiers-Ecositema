@@ -287,7 +287,7 @@
           </div>
           <div class="da-field">
             <label>Fecha límite</label>
-            <input type="date" name="due_date" class="da-input" required>
+            <input type="date" name="due_date" class="da-input dp-input" data-occupied-url="{% url 'dashboard:scheduled_dates_json' %}" required>
           </div>
           <button type="submit" class="da-btn da-btn-primary" style="justify-content:center;">Crear tarea</button>
         </div>
@@ -321,7 +321,7 @@
                 </div>
                 <div class="da-field">
                   <label>Fecha límite</label>
-                  <input type="date" name="due_date" class="da-input" value="{{ task.due_date|date:'Y-m-d' }}" required>
+                  <input type="date" name="due_date" class="da-input dp-input" data-occupied-url="{% url 'dashboard:scheduled_dates_json' %}" value="{{ task.due_date|date:'Y-m-d' }}" required>
                 </div>
                 <button type="submit" class="da-btn da-btn-primary" style="justify-content:center;">Guardar cambios</button>
               </div>
