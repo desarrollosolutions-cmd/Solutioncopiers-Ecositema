@@ -185,7 +185,8 @@ class Notification(models.Model):
 
     @classmethod
     def push(cls, user, type, title, message="", link=""):
-        """Crea notificación solo si no existe ya una igual sin leer."""
+        """Crea notificación solo si no existe ya una igual sin leer, y de paso
+        manda un push al navegador/celular del usuario aunque no lo tenga abierto."""
         exists = cls.objects.filter(
             user=user, type=type, title=title, is_read=False
         ).exists()
@@ -193,6 +194,8 @@ class Notification(models.Model):
             cls.objects.create(
                 user=user, type=type, title=title, message=message, link=link
             )
+            from apps.dashboard.push import send_web_push
+            send_web_push(user, title, message, link)
 
 
 # ---------------------------------------------------------------------------
@@ -501,3 +504,23 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Perfil de {self.user.get_full_name() or self.user.username}"
+
+
+class PushSubscription(models.Model):
+    """Suscripción de un navegador/dispositivo a notificaciones push (Web Push).
+    Un mismo usuario puede tener varias (celular + PC, o varios navegadores)."""
+    user       = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_subscriptions"
+    )
+    endpoint   = models.TextField(unique=True)
+    p256dh     = models.CharField(max_length=255)
+    auth       = models.CharField(max_length=255)
+    user_agent = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = "Suscripción push"
+        verbose_name_plural = "Suscripciones push"
+
+    def __str__(self):
+        return f"Push de {self.user.username} ({self.user_agent[:40]})"

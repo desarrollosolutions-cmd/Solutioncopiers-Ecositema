@@ -6587,3 +6587,33 @@ class ProfileDetailView(View):
             "portal_home": _chat_portal_home(request.user),
         })
 
+
+# ---------------------------------------------------------------------------
+# WEB PUSH — suscripción del navegador/dispositivo a notificaciones
+# ---------------------------------------------------------------------------
+
+@chat_decorator
+class PushSubscribeView(View):
+    """POST: guarda (o actualiza) la suscripción push de este navegador/celular."""
+    def post(self, request):
+        import json
+        from apps.dashboard.models import PushSubscription
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            endpoint = data["endpoint"]
+            p256dh   = data["keys"]["p256dh"]
+            auth     = data["keys"]["auth"]
+        except (KeyError, ValueError, TypeError):
+            return JsonResponse({"ok": False, "error": "Suscripción inválida"}, status=400)
+
+        PushSubscription.objects.update_or_create(
+            endpoint=endpoint,
+            defaults={
+                "user": request.user,
+                "p256dh": p256dh,
+                "auth": auth,
+                "user_agent": request.META.get("HTTP_USER_AGENT", "")[:255],
+            },
+        )
+        return JsonResponse({"ok": True})
+

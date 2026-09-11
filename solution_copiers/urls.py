@@ -7,6 +7,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 from django.contrib.sitemaps.views import sitemap
+from django.views.static import serve as static_serve
 
 from apps.seo.sitemaps import sitemaps_dict
 from apps.seo.views import robots_txt
@@ -19,6 +20,10 @@ urlpatterns = [
     # --- Archivos técnicos SEO ---
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps_dict}, name="sitemap"),
     path("robots.txt", robots_txt, name="robots"),
+
+    # --- Service worker del chat/push, debe servirse en la raíz para que
+    #     su scope cubra todo el sitio (no solo /static/) ---
+    path("sw.js", static_serve, {"document_root": settings.BASE_DIR / "static" / "dashboard", "path": "sw.js"}, name="service_worker"),
 
     # --- Selector de idioma (POST set_language) ---
     path("i18n/", include("django.conf.urls.i18n")),

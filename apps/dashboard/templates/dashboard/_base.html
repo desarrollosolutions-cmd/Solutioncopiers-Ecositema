@@ -1503,5 +1503,14 @@ function crmBell() {
 
 <script src="{% static 'dist/js/main.js' %}" defer></script>
 <script src="{% static 'dashboard/datepicker.js' %}" defer></script>
+<script src="{% static 'dashboard/push.js' %}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  {% vapid_public_key as da_vapid_key %}
+  {% if da_vapid_key %}
+  if (window.SCPush) window.SCPush.init('{{ da_vapid_key }}');
+  {% endif %}
+});
+</script>
 </body>
 </html>

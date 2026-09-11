@@ -45,6 +45,17 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
 .ch-textarea:focus{border-color:var(--color-primary);}
 .ch-send-btn{background:linear-gradient(135deg,#C4121A,#5A0B0B);color:#fff;border:none;width:2.5rem;height:2.5rem;border-radius:9999px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .ch-send-btn:disabled{opacity:.4;cursor:default;}
+.ch-perm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:60;display:none;align-items:flex-end;justify-content:center;}
+.ch-perm-overlay.show{display:flex;}
+.ch-perm-sheet{background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem 1.25rem 0 0;padding:1.25rem;width:100%;max-width:420px;}
+@media(min-width:480px){.ch-perm-overlay{align-items:center;}.ch-perm-sheet{border-radius:1.25rem;}}
+.ch-perm-title{font-size:.9375rem;font-weight:800;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem;}
+.ch-perm-text{font-size:.8125rem;color:var(--color-text-secondary);line-height:1.6;margin-bottom:.5rem;}
+.ch-perm-steps{font-size:.78rem;color:var(--color-text-secondary);line-height:1.7;margin:0 0 1rem;padding-left:1.1rem;}
+.ch-perm-actions{display:flex;gap:.625rem;}
+.ch-perm-btn{flex:1;padding:.65rem;border-radius:.625rem;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;}
+.ch-perm-btn-primary{background:linear-gradient(135deg,#C4121A,#5A0B0B);color:#fff;}
+.ch-perm-btn-secondary{background:none;border:1.5px solid var(--color-border);color:var(--color-text-primary);}
 </style>
 </head>
 <body>
@@ -103,6 +114,22 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0l-6 6m6-6l6 6"/></svg>
     </button>
   </form>
+</div>
+
+{# ── Ayuda cuando el navegador bloquea el micrófono ── #}
+<div class="ch-perm-overlay" id="ch-perm-overlay" onclick="if(event.target===this)chClosePermHelp()">
+  <div class="ch-perm-sheet">
+    <div class="ch-perm-title">
+      <svg width="18" height="18" fill="none" stroke="#EF4444" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <span id="ch-perm-title-text">No se pudo acceder al micrófono</span>
+    </div>
+    <div class="ch-perm-text" id="ch-perm-text"></div>
+    <ol class="ch-perm-steps" id="ch-perm-steps"></ol>
+    <div class="ch-perm-actions">
+      <button type="button" class="ch-perm-btn ch-perm-btn-secondary" onclick="chClosePermHelp()">Cerrar</button>
+      <button type="button" class="ch-perm-btn ch-perm-btn-primary" onclick="chClosePermHelp();chToggleRecording();">Reintentar</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -248,9 +275,58 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
       recordTimeEl.textContent = '0:00';
       recordTimer = setInterval(function(){ recordTimeEl.textContent = fmtDuration(Date.now() - recordStart); }, 500);
       autoStopTimer = setTimeout(stopRecording, 120000); // tope de 2 min
-    }).catch(function(){
-      alert('No se pudo acceder al micrófono. Revisa los permisos del navegador.');
+    }).catch(function(err){
+      chShowPermHelp(err);
     });
+  };
+
+  function chIsAndroid(){ return /Android/i.test(navigator.userAgent); }
+  function chIsIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+
+  window.chShowPermHelp = function(err){
+    var titleEl = document.getElementById('ch-perm-title-text');
+    var textEl  = document.getElementById('ch-perm-text');
+    var stepsEl = document.getElementById('ch-perm-steps');
+    var name = err && err.name;
+    stepsEl.innerHTML = '';
+
+    if (!window.isSecureContext) {
+      titleEl.textContent = 'Este sitio no es seguro (https)';
+      textEl.textContent = 'Los navegadores solo permiten grabar audio en sitios con https. Entra usando el enlace https:// que te compartieron, no por http:// ni por IP.';
+    } else if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError') {
+      titleEl.textContent = 'El micrófono está bloqueado para este sitio';
+      textEl.textContent = 'Ya lo habías rechazado antes, así que el navegador no vuelve a preguntar solo. Actívalo manualmente:';
+      var steps = chIsAndroid()
+        ? ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
+           'Entra a "Permisos del sitio" (o "Información del sitio").',
+           'Busca "Micrófono" y cámbialo a "Permitir".',
+           'Si sigue sin funcionar, revisa en Ajustes del celular que Chrome (o tu navegador) tenga permiso de Micrófono.']
+        : chIsIOS()
+        ? ['Abre Ajustes del iPhone.',
+           'Busca tu navegador (Safari o Chrome) en la lista de apps.',
+           'Entra a "Micrófono" y actívalo.',
+           'Vuelve aquí y toca "Reintentar".']
+        : ['Toca el candado 🔒 junto a la dirección del sitio, arriba del navegador.',
+           'Busca "Micrófono" en los permisos.',
+           'Cámbialo a "Permitir".',
+           'Toca "Reintentar" abajo.'];
+      steps.forEach(function(s){ var li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
+    } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+      titleEl.textContent = 'No se encontró un micrófono';
+      textEl.textContent = 'Este dispositivo no tiene micrófono disponible, o está siendo usado por otra aplicación.';
+    } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+      titleEl.textContent = 'El micrófono está ocupado';
+      textEl.textContent = 'Otra aplicación o pestaña está usando el micrófono ahora mismo. Ciérrala e intenta de nuevo.';
+    } else {
+      titleEl.textContent = 'No se pudo acceder al micrófono';
+      textEl.textContent = 'Revisa los permisos del navegador para este sitio e intenta otra vez.';
+    }
+
+    document.getElementById('ch-perm-overlay').classList.add('show');
+  };
+
+  window.chClosePermHelp = function(){
+    document.getElementById('ch-perm-overlay').classList.remove('show');
   };
 
   function stopRecording(){

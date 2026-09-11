@@ -13,3 +13,10 @@ def user_avatar(user):
         return user.profile.avatar_b64
     except UserProfile.DoesNotExist:
         return ""
+
+
+@register.simple_tag
+def vapid_public_key():
+    """Llave pública VAPID para que el navegador pueda suscribirse a push."""
+    from django.conf import settings
+    return settings.VAPID_PUBLIC_KEY

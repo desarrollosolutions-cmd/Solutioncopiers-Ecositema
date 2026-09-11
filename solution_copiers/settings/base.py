@@ -234,6 +234,16 @@ CALLMEBOT_APIKEY = env("CALLMEBOT_APIKEY", default="")
 WHATSAPP_NOTIFY_PHONE = env("WHATSAPP_NOTIFY_PHONE", default="")
 
 # ---------------------------------------------------------------------------
+# WEB PUSH (VAPID) — notificaciones del navegador aunque no esté abierto
+# (chat interno y cualquier otra Notification). Generar par de llaves con
+# py_vapid (Vapid02().generate_keys()) y guardarlas en .env. Si quedan vacías,
+# el envío de push simplemente no hace nada (no rompe el resto del sitio).
+# ---------------------------------------------------------------------------
+VAPID_PUBLIC_KEY  = env("VAPID_PUBLIC_KEY",  default="")
+VAPID_PRIVATE_KEY = env("VAPID_PRIVATE_KEY", default="")
+VAPID_CLAIM_EMAIL = env("VAPID_CLAIM_EMAIL", default="mailto:soporte@solutioncopiers.com")
+
+# ---------------------------------------------------------------------------
 # WOMPI — Pasarela de pagos Colombia
 # Claves de prueba: https://docs.wompi.co/docs/colombia/
 # Reemplazar con claves reales antes de producción.
