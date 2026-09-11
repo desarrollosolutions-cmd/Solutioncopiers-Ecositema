@@ -1,4 +1,4 @@
-{% load static %}
+{% load static chat_extras %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -99,10 +99,16 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 </div>
 
 <div class="topbar">
-  <div style="flex:1;min-width:0;">
-    <div class="topbar-name">{{ request.user.get_full_name|default:request.user.username }}</div>
-    <div class="topbar-role">{{ field_user.get_role_display }}</div>
-  </div>
+  {% user_avatar request.user as my_avatar %}
+  <a href="{% url 'chat:profile_edit' %}" target="_blank" rel="noopener" style="flex:1;min-width:0;display:flex;align-items:center;gap:.625rem;text-decoration:none;color:inherit;">
+    {% if my_avatar %}
+    <div style="width:2rem;height:2rem;border-radius:9999px;background-image:url('{{ my_avatar }}');background-size:cover;background-position:center;flex-shrink:0;"></div>
+    {% endif %}
+    <div style="min-width:0;">
+      <div class="topbar-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+      <div class="topbar-role">{{ field_user.get_role_display }}</div>
+    </div>
+  </a>
   <div style="text-align:right;flex-shrink:0;">
     <div style="font-size:.7rem;color:#C0A8A8;" id="clock"></div>
     <div id="gps-pill" class="gps-pill"><span class="gps-spin"></span> Buscando GPS…</div>

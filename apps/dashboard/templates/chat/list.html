@@ -57,17 +57,25 @@ a{color:inherit;}
     </a>
     <h1>Chat interno</h1>
   </div>
+  <div style="display:flex;gap:.625rem;">
+  <a href="{% url 'chat:members' %}" class="ch-new-btn" style="background:none;border:1.5px solid var(--color-border);color:var(--color-text-primary);text-decoration:none;">
+    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 100-8 4 4 0 000 8zm6 0a4 4 0 10-4-4"/></svg>
+    Miembros
+  </a>
   <button class="ch-new-btn" onclick="chOpenModal()">
     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
     Nuevo mensaje
   </button>
+  </div>
 </div>
 
 <div class="ch-content">
   {% if threads %}
     {% for t in threads %}
     <a class="ch-thread" href="{% url 'chat:thread' t.pk %}">
-      <div class="ch-avatar">{{ t.other_name|slice:":1"|upper }}</div>
+      <div class="ch-avatar" style="{% if t.other_avatar %}background-image:url('{{ t.other_avatar }}');background-size:cover;background-position:center;{% endif %}">
+        {% if not t.other_avatar %}{{ t.other_name|slice:":1"|upper }}{% endif %}
+      </div>
       <div class="ch-thread-body">
         <div class="ch-thread-name">{{ t.other_name }} <span class="ch-thread-role">{{ t.other_role }}</span></div>
         <div class="ch-thread-preview">{% if t.last_mine %}Tú: {% endif %}{{ t.last_body|default:"Sin mensajes todavía" }}</div>
@@ -100,7 +108,7 @@ a{color:inherit;}
         {% csrf_token %}
         <input type="hidden" name="user_id" value="{{ d.pk }}">
         <button type="submit" class="ch-dir-item">
-          <div class="ch-avatar" style="width:2rem;height:2rem;font-size:.75rem;">{{ d.name|slice:":1"|upper }}</div>
+          <div class="ch-avatar" style="width:2rem;height:2rem;font-size:.75rem;{% if d.avatar %}background-image:url('{{ d.avatar }}');background-size:cover;background-position:center;{% endif %}">{% if not d.avatar %}{{ d.name|slice:":1"|upper }}{% endif %}</div>
           <div>
             <div class="ch-dir-name">{{ d.name }}</div>
             <div class="ch-dir-role">{{ d.role }}{% if d.has_thread %} · ya tienen chat{% endif %}</div>

@@ -1,4 +1,4 @@
-{% load static %}
+{% load static chat_extras %}
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
@@ -1016,13 +1016,16 @@
   </nav>
 
   <div class="da-sidebar-footer">
-    <div class="da-user-block">
-      <div class="da-user-avatar">{{ request.user.username|first|upper }}</div>
+    {% user_avatar request.user as da_my_avatar %}
+    <a href="{% url 'chat:profile_edit' %}" target="_blank" rel="noopener" class="da-user-block" style="text-decoration:none;">
+      <div class="da-user-avatar" style="{% if da_my_avatar %}background-image:url('{{ da_my_avatar }}');background-size:cover;background-position:center;{% endif %}">
+        {% if not da_my_avatar %}{{ request.user.username|first|upper }}{% endif %}
+      </div>
       <div>
         <div class="da-user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
         <div class="da-user-role">Administrador</div>
       </div>
-    </div>
+    </a>
     <form method="post" action="{% url 'dashboard:logout' %}">
       {% csrf_token %}
       <button type="submit" class="da-logout-btn">

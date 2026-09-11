@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Mi perfil — Solution Copiers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--color-primary:#C4121A;--color-primary-dark:#5A0B0B;--color-bg:#100808;--color-bg-alt:#1A0E0E;--color-surface:#221414;--color-text-primary:#F5EDEB;--color-text-secondary:#C0A8A8;--color-text-muted:#7A6060;--color-border:#3A2020;--color-success:#10B981;--color-danger:#EF4444;}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;min-height:100vh;background:var(--color-bg);font-family:'Inter',system-ui,sans-serif;color:var(--color-text-primary);-webkit-font-smoothing:antialiased;}
+a{color:inherit;}
+.ch-topbar{position:sticky;top:0;z-index:10;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:.875rem 1.125rem;display:flex;align-items:center;gap:.75rem;}
+.ch-back{color:var(--color-text-muted);text-decoration:none;display:flex;align-items:center;}
+.ch-back:hover{color:var(--color-primary);}
+.ch-topbar h1{font-size:1rem;font-weight:800;margin:0;}
+.ch-content{max-width:480px;margin:0 auto;padding:1.5rem 1.25rem 3rem;}
+.ch-avatar-wrap{display:flex;flex-direction:column;align-items:center;gap:.75rem;margin-bottom:2rem;}
+.ch-avatar-big{width:6.5rem;height:6.5rem;border-radius:9999px;background:linear-gradient(135deg,#C4121A,#5A0B0B);background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:2rem;color:#fff;position:relative;flex-shrink:0;}
+.ch-avatar-edit-btn{background:var(--color-surface);border:1.5px solid var(--color-border);color:var(--color-text-primary);font-size:.75rem;font-weight:700;padding:.4rem .9rem;border-radius:9999px;cursor:pointer;font-family:inherit;}
+.ch-avatar-remove{background:none;border:none;color:var(--color-danger);font-size:.7rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.ch-role-pill{font-size:.65rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;}
+.ch-field{margin-bottom:1rem;}
+.ch-field label{display:block;font-size:.72rem;font-weight:600;color:var(--color-text-secondary);margin-bottom:.375rem;}
+.ch-input,.ch-textarea{width:100%;padding:.625rem .875rem;border-radius:.625rem;border:1.5px solid var(--color-border);background:var(--color-surface);color:var(--color-text-primary);font-size:.875rem;font-family:inherit;outline:none;transition:border-color .15s;}
+.ch-input:focus,.ch-textarea:focus{border-color:var(--color-primary);}
+.ch-textarea{resize:vertical;min-height:80px;}
+.ch-row2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+.ch-save-btn{width:100%;padding:.75rem;background:linear-gradient(135deg,#C4121A,#5A0B0B);color:#fff;border:none;border-radius:.75rem;font-size:.875rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:.5rem;}
+.ch-msg{padding:.625rem .875rem;border-radius:.625rem;margin-bottom:1rem;font-size:.8rem;background:rgba(16,185,129,.1);color:var(--color-success);border:1px solid rgba(16,185,129,.25);}
+</style>
+</head>
+<body>
+
+<div class="ch-topbar">
+  <a href="{% url 'chat:list' %}" class="ch-back">
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+  </a>
+  <h1>Mi perfil</h1>
+</div>
+
+<div class="ch-content">
+  {% if messages %}
+    {% for msg in messages %}<div class="ch-msg">{{ msg }}</div>{% endfor %}
+  {% endif %}
+
+  <form method="post" id="ch-profile-form">
+    {% csrf_token %}
+    <input type="hidden" name="avatar_b64" id="ch-avatar-b64">
+    <input type="hidden" name="remove_avatar" id="ch-remove-avatar" value="0">
+
+    <div class="ch-avatar-wrap">
+      <div class="ch-avatar-big" id="ch-avatar-preview"
+        style="{% if profile.avatar_b64 %}background-image:url('{{ profile.avatar_b64 }}');{% endif %}">
+        {% if not profile.avatar_b64 %}{{ member_name|slice:":1"|upper }}{% endif %}
+      </div>
+      <div class="ch-role-pill">{{ member_role }}</div>
+      <div style="display:flex;gap:.75rem;align-items:center;">
+        <button type="button" class="ch-avatar-edit-btn" onclick="document.getElementById('ch-photo-input').click()">Cambiar foto</button>
+        {% if profile.avatar_b64 %}<button type="button" class="ch-avatar-remove" onclick="chRemoveAvatar()">Quitar</button>{% endif %}
+      </div>
+      <input type="file" id="ch-photo-input" accept="image/*" style="display:none;" onchange="chOnPhoto(this)">
+    </div>
+
+    <div class="ch-row2">
+      <div class="ch-field">
+        <label>Nombre</label>
+        <input type="text" class="ch-input" name="first_name" value="{{ profile.user.first_name }}" required>
+      </div>
+      <div class="ch-field">
+        <label>Apellido</label>
+        <input type="text" class="ch-input" name="last_name" value="{{ profile.user.last_name }}">
+      </div>
+    </div>
+    <div class="ch-field">
+      <label>Teléfono</label>
+      <input type="tel" class="ch-input" name="phone" value="{{ profile.phone }}" placeholder="Ej: 300 123 4567">
+    </div>
+    <div class="ch-field">
+      <label>Acerca de mí</label>
+      <textarea class="ch-textarea" name="bio" placeholder="Cuéntale al equipo a qué te dedicas…" maxlength="500">{{ profile.bio }}</textarea>
+    </div>
+
+    <button type="submit" class="ch-save-btn">Guardar cambios</button>
+  </form>
+</div>
+
+<script>
+function chRemoveAvatar(){
+  document.getElementById('ch-remove-avatar').value = '1';
+  document.getElementById('ch-avatar-b64').value = '';
+  var preview = document.getElementById('ch-avatar-preview');
+  preview.style.backgroundImage = 'none';
+  preview.textContent = "{{ member_name|slice:':1'|upper|escapejs }}";
+  document.getElementById('ch-profile-form').submit();
+}
+
+function chOnPhoto(input){
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  var reader = new FileReader();
+  reader.onload = function(evt){
+    var img = new Image();
+    img.onload = function(){
+      var MAX = 480;
+      var w = img.width, h = img.height;
+      if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+      else       { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+      var c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      var dataUrl = c.toDataURL('image/jpeg', 0.82);
+      document.getElementById('ch-avatar-b64').value = dataUrl;
+      document.getElementById('ch-remove-avatar').value = '0';
+      var preview = document.getElementById('ch-avatar-preview');
+      preview.style.backgroundImage = "url('" + dataUrl + "')";
+      preview.textContent = '';
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+</body>
+</html>

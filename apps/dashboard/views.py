@@ -6285,8 +6285,10 @@ class ChatListView(View):
 
     def get(self, request):
         from django.contrib.auth import get_user_model
-        from apps.dashboard.models import ChatThread
+        from apps.dashboard.models import ChatThread, UserProfile
         User = get_user_model()
+
+        avatars = dict(UserProfile.objects.exclude(avatar_b64="").values_list("user_id", "avatar_b64"))
 
         threads = (
             ChatThread.objects.filter(participants=request.user)
@@ -6304,6 +6306,7 @@ class ChatListView(View):
                 "pk": t.pk,
                 "other_name": name,
                 "other_role": role,
+                "other_avatar": avatars.get(other.pk, ""),
                 "last_body": last.body if last else "",
                 "last_ago": _time_ago(last.created_at) if last else "",
                 "last_mine": bool(last and last.sender_id == request.user.pk),
@@ -6321,7 +6324,7 @@ class ChatListView(View):
         )
         directory_rows = [
             {"pk": u.pk, "name": _chat_user_display(u)[0], "role": _chat_user_display(u)[1],
-             "has_thread": u.pk in existing_other_ids}
+             "avatar": avatars.get(u.pk, ""), "has_thread": u.pk in existing_other_ids}
             for u in directory
         ]
 
@@ -6359,10 +6362,16 @@ class ChatThreadView(View):
     template_name = "chat/thread.html"
 
     def get(self, request, pk):
-        from apps.dashboard.models import ChatThread, ChatRead
+        from apps.dashboard.models import ChatThread, ChatRead, UserProfile
         thread = get_object_or_404(ChatThread, pk=pk, participants=request.user)
         other = thread.other_participant(request.user)
         name, role = _chat_user_display(other) if other else ("—", "")
+        other_avatar = ""
+        if other:
+            try:
+                other_avatar = other.profile.avatar_b64
+            except UserProfile.DoesNotExist:
+                pass
 
         ChatRead.objects.update_or_create(
             thread=thread, user=request.user, defaults={"last_read_at": timezone.now()}
@@ -6373,6 +6382,8 @@ class ChatThreadView(View):
             "thread": thread,
             "other_name": name,
             "other_role": role,
+            "other_avatar": other_avatar,
+            "other_pk": other.pk if other else None,
             "chat_messages": [
                 {
                     "id": m.pk,
@@ -6463,4 +6474,104 @@ class ChatUnreadCountJsonView(View):
             for t in ChatThread.objects.filter(participants=request.user)
         )
         return JsonResponse({"unread": total})
+
+
+# ---------------------------------------------------------------------------
+# PERFILES DE MIEMBROS — foto y datos de cada persona del sitio
+# (misma zona /chat/ y mismo chat_decorator: cualquier usuario activo)
+# ---------------------------------------------------------------------------
+
+@chat_decorator
+class MemberDirectoryView(View):
+    """Directorio de todos los miembros activos, con su foto y rol."""
+    template_name = "chat/members.html"
+
+    def get(self, request):
+        from django.contrib.auth import get_user_model
+        from apps.dashboard.models import UserProfile
+        User = get_user_model()
+        users = User.objects.filter(is_active=True).order_by("first_name", "username")
+        profiles = {p.user_id: p for p in UserProfile.objects.filter(user__in=users)}
+
+        rows = []
+        for u in users:
+            name, role = _chat_user_display(u)
+            p = profiles.get(u.pk)
+            rows.append({
+                "pk":     u.pk,
+                "name":   name,
+                "role":   role,
+                "avatar": p.avatar_b64 if p else "",
+                "bio":    p.bio if p else "",
+                "is_me":  u.pk == request.user.pk,
+            })
+        return render(request, self.template_name, {
+            "members": rows,
+            "portal_home": _chat_portal_home(request.user),
+        })
+
+
+@chat_decorator
+class ProfileEditView(View):
+    """Ver/editar mi propio perfil (nombre, teléfono, bio y foto)."""
+    template_name = "chat/profile_edit.html"
+
+    def get(self, request):
+        from apps.dashboard.models import UserProfile
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        name, role = _chat_user_display(request.user)
+        return render(request, self.template_name, {
+            "profile": profile,
+            "member_name": name,
+            "member_role": role,
+            "portal_home": _chat_portal_home(request.user),
+        })
+
+    def post(self, request):
+        from apps.dashboard.models import UserProfile
+        from django.contrib import messages
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+        first_name = request.POST.get("first_name", "").strip()
+        if first_name:
+            request.user.first_name = first_name[:150]
+            request.user.last_name  = request.POST.get("last_name", "").strip()[:150]
+            request.user.save(update_fields=["first_name", "last_name"])
+
+        profile.bio   = request.POST.get("bio", "").strip()[:500]
+        profile.phone = request.POST.get("phone", "").strip()[:20]
+        avatar = request.POST.get("avatar_b64", "").strip()
+        if request.POST.get("remove_avatar") == "1":
+            profile.avatar_b64 = ""
+        elif avatar:
+            profile.avatar_b64 = avatar
+        profile.save()
+
+        messages.success(request, "Perfil actualizado.")
+        return redirect("chat:profile_edit")
+
+
+@chat_decorator
+class ProfileDetailView(View):
+    """Ver el perfil (solo lectura) de otro miembro del equipo."""
+    template_name = "chat/profile_detail.html"
+
+    def get(self, request, pk):
+        from django.contrib.auth import get_user_model
+        from apps.dashboard.models import UserProfile
+        User = get_user_model()
+        member = get_object_or_404(User, pk=pk, is_active=True)
+        try:
+            profile = member.profile
+        except UserProfile.DoesNotExist:
+            profile = None
+        name, role = _chat_user_display(member)
+        return render(request, self.template_name, {
+            "member": member,
+            "member_name": name,
+            "member_role": role,
+            "profile": profile,
+            "is_me": member.pk == request.user.pk,
+            "portal_home": _chat_portal_home(request.user),
+        })
 

@@ -463,3 +463,27 @@ class ChatRead(models.Model):
         unique_together     = ("thread", "user")
         verbose_name        = "Lectura de chat"
         verbose_name_plural = "Lecturas de chat"
+
+
+class UserProfile(models.Model):
+    """Perfil de cualquier miembro del sitio (admin, asesora o técnico/mensajero).
+
+    La foto se guarda como data URI base64 en texto (igual que las fotos de
+    entrega en DeliveryTask) en vez de ImageField: en este despliegue los
+    archivos subidos en tiempo de ejecución no persisten de forma confiable
+    salvo que R2 esté configurado, así que este patrón ya probado es el que
+    funciona siempre sin depender de esa configuración."""
+    user       = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
+    )
+    avatar_b64 = models.TextField("foto de perfil", blank=True)
+    bio        = models.TextField("acerca de mí", blank=True)
+    phone      = models.CharField("teléfono", max_length=20, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name        = "Perfil"
+        verbose_name_plural = "Perfiles"
+
+    def __str__(self):
+        return f"Perfil de {self.user.get_full_name() or self.user.username}"

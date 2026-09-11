@@ -1,4 +1,4 @@
-{% load static %}
+{% load static chat_extras %}
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
@@ -343,8 +343,11 @@
     <div class="pn-brand-sub">Portal Operativo</div>
   </div>
 
-  <div class="pn-user">
-    <div class="pn-user-avatar">{{ request.user.get_full_name|first|upper|default:request.user.username|first|upper }}</div>
+  {% user_avatar request.user as pn_my_avatar %}
+  <a href="{% url 'chat:profile_edit' %}" target="_blank" rel="noopener" class="pn-user" style="text-decoration:none;">
+    <div class="pn-user-avatar" style="{% if pn_my_avatar %}background-image:url('{{ pn_my_avatar }}');background-size:cover;background-position:center;{% endif %}">
+      {% if not pn_my_avatar %}{{ request.user.get_full_name|first|upper|default:request.user.username|first|upper }}{% endif %}
+    </div>
     <div>
       <div class="pn-user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
       <div class="pn-user-role">
@@ -353,7 +356,7 @@
         {% else %}Asesor{% endif %}
       </div>
     </div>
-  </div>
+  </a>
 
   <nav class="pn-nav">
     <div class="pn-nav-section">Principal</div>

@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>{{ member_name }} — Perfil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--color-primary:#C4121A;--color-primary-dark:#5A0B0B;--color-bg:#100808;--color-bg-alt:#1A0E0E;--color-surface:#221414;--color-text-primary:#F5EDEB;--color-text-secondary:#C0A8A8;--color-text-muted:#7A6060;--color-border:#3A2020;}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;min-height:100vh;background:var(--color-bg);font-family:'Inter',system-ui,sans-serif;color:var(--color-text-primary);-webkit-font-smoothing:antialiased;}
+a{color:inherit;}
+.ch-topbar{position:sticky;top:0;z-index:10;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:.875rem 1.125rem;display:flex;align-items:center;gap:.75rem;}
+.ch-back{color:var(--color-text-muted);text-decoration:none;display:flex;align-items:center;}
+.ch-back:hover{color:var(--color-primary);}
+.ch-topbar h1{font-size:1rem;font-weight:800;margin:0;}
+.ch-content{max-width:480px;margin:0 auto;padding:1.5rem 1.25rem 3rem;text-align:center;}
+.ch-avatar-big{width:6.5rem;height:6.5rem;border-radius:9999px;background:linear-gradient(135deg,#C4121A,#5A0B0B);background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:2rem;color:#fff;margin:0 auto .875rem;}
+.ch-name{font-size:1.125rem;font-weight:800;}
+.ch-role{font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem;}
+.ch-bio{margin-top:1.25rem;font-size:.85rem;color:var(--color-text-secondary);line-height:1.6;text-align:left;background:var(--color-surface);border:1px solid var(--color-border);border-radius:.875rem;padding:1rem;}
+.ch-info-row{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--color-text-secondary);margin-top:.75rem;justify-content:center;}
+.ch-actions{margin-top:1.5rem;display:flex;flex-direction:column;gap:.625rem;}
+.ch-btn{padding:.75rem;border-radius:.75rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;text-decoration:none;display:block;}
+.ch-btn-primary{background:linear-gradient(135deg,#C4121A,#5A0B0B);color:#fff;}
+.ch-btn-secondary{background:none;border:1.5px solid var(--color-border);color:var(--color-text-primary);}
+</style>
+</head>
+<body>
+
+<div class="ch-topbar">
+  <a href="{% url 'chat:members' %}" class="ch-back">
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+  </a>
+  <h1>Perfil</h1>
+</div>
+
+<div class="ch-content">
+  <div class="ch-avatar-big" style="{% if profile.avatar_b64 %}background-image:url('{{ profile.avatar_b64 }}');{% endif %}">
+    {% if not profile.avatar_b64 %}{{ member_name|slice:":1"|upper }}{% endif %}
+  </div>
+  <div class="ch-name">{{ member_name }}</div>
+  <div class="ch-role">{{ member_role }}</div>
+
+  {% if profile.phone %}
+  <div class="ch-info-row">
+    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+    {{ profile.phone }}
+  </div>
+  {% endif %}
+
+  {% if profile.bio %}
+  <div class="ch-bio">{{ profile.bio|linebreaksbr }}</div>
+  {% endif %}
+
+  <div class="ch-actions">
+    {% if is_me %}
+    <a href="{% url 'chat:profile_edit' %}" class="ch-btn ch-btn-secondary">Editar mi perfil</a>
+    {% else %}
+    <form method="post" action="{% url 'chat:start' %}">
+      {% csrf_token %}
+      <input type="hidden" name="user_id" value="{{ member.pk }}">
+      <button type="submit" class="ch-btn ch-btn-primary" style="width:100%;">Escribir mensaje</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+</body>
+</html>

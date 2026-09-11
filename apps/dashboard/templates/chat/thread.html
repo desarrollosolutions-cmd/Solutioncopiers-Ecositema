@@ -41,11 +41,15 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
   <a href="{% url 'chat:list' %}" class="ch-back">
     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
   </a>
-  <div class="ch-avatar">{{ other_name|slice:":1"|upper }}</div>
-  <div>
-    <div class="ch-header-name">{{ other_name }}</div>
-    <div class="ch-header-role">{{ other_role }}</div>
-  </div>
+  <a href="{% if other_pk %}{% url 'chat:profile_detail' other_pk %}{% else %}#{% endif %}" style="display:flex;align-items:center;gap:.75rem;text-decoration:none;color:inherit;">
+    <div class="ch-avatar" style="{% if other_avatar %}background-image:url('{{ other_avatar }}');background-size:cover;background-position:center;{% endif %}">
+      {% if not other_avatar %}{{ other_name|slice:":1"|upper }}{% endif %}
+    </div>
+    <div>
+      <div class="ch-header-name">{{ other_name }}</div>
+      <div class="ch-header-role">{{ other_role }}</div>
+    </div>
+  </a>
 </div>
 
 <div class="ch-messages" id="ch-messages">

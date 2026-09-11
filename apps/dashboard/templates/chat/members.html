@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Miembros — Solution Copiers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--color-primary:#C4121A;--color-primary-dark:#5A0B0B;--color-bg:#100808;--color-bg-alt:#1A0E0E;--color-surface:#221414;--color-text-primary:#F5EDEB;--color-text-secondary:#C0A8A8;--color-text-muted:#7A6060;--color-border:#3A2020;}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;min-height:100vh;background:var(--color-bg);font-family:'Inter',system-ui,sans-serif;color:var(--color-text-primary);-webkit-font-smoothing:antialiased;}
+a{color:inherit;}
+.ch-topbar{position:sticky;top:0;z-index:10;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:.875rem 1.125rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;}
+.ch-topbar-title{display:flex;align-items:center;gap:.625rem;}
+.ch-topbar h1{font-size:1rem;font-weight:800;margin:0;}
+.ch-back{color:var(--color-text-muted);text-decoration:none;display:flex;align-items:center;}
+.ch-back:hover{color:var(--color-primary);}
+.ch-my-profile-btn{font-size:.78rem;font-weight:700;color:var(--color-primary);text-decoration:none;padding:.4rem .8rem;border:1px solid var(--color-primary);border-radius:.625rem;}
+.ch-content{max-width:720px;margin:0 auto;padding:1.25rem 1rem 3rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.875rem;}
+.ch-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;padding:1.125rem .875rem;text-align:center;text-decoration:none;color:inherit;transition:border-color .15s;}
+.ch-card:hover{border-color:var(--color-primary);}
+.ch-card-avatar{width:3.5rem;height:3.5rem;border-radius:9999px;background:linear-gradient(135deg,#C4121A,#5A0B0B);background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.25rem;color:#fff;margin:0 auto .625rem;}
+.ch-card-name{font-size:.8125rem;font-weight:700;line-height:1.3;}
+.ch-card-role{font-size:.65rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-top:.2rem;}
+.ch-card-me{font-size:.6rem;color:var(--color-primary);font-weight:700;margin-top:.3rem;}
+</style>
+</head>
+<body>
+
+<div class="ch-topbar">
+  <div class="ch-topbar-title">
+    <a href="{% url 'chat:list' %}" class="ch-back">
+      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <h1>Miembros del equipo</h1>
+  </div>
+  <a href="{% url 'chat:profile_edit' %}" class="ch-my-profile-btn">Mi perfil</a>
+</div>
+
+<div class="ch-content">
+  {% for m in members %}
+  <a class="ch-card" href="{% url 'chat:profile_detail' m.pk %}">
+    <div class="ch-card-avatar" style="{% if m.avatar %}background-image:url('{{ m.avatar }}');{% endif %}">
+      {% if not m.avatar %}{{ m.name|slice:":1"|upper }}{% endif %}
+    </div>
+    <div class="ch-card-name">{{ m.name }}</div>
+    <div class="ch-card-role">{{ m.role }}</div>
+    {% if m.is_me %}<div class="ch-card-me">Tú</div>{% endif %}
+  </a>
+  {% endfor %}
+</div>
+</body>
+</html>
