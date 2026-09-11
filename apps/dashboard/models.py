@@ -244,6 +244,31 @@ class FieldUser(models.Model):
         return f"{self.get_role_display()} — {self.user.get_full_name() or self.user.username}"
 
 
+class MessengerCashBase(models.Model):
+    """Base de caja del día entregada a un mensajero/técnico. La registra el administrador
+    y siempre arranca en cero — cada fecha es un registro independiente."""
+    field_user = models.ForeignKey(
+        FieldUser, on_delete=models.CASCADE, related_name="cash_bases"
+    )
+    date       = models.DateField("fecha", db_index=True)
+    given      = models.BooleanField("se le dio base", default=False)
+    amount     = models.DecimalField("valor de la base", max_digits=10, decimal_places=2, default=0)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="+"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together    = ("field_user", "date")
+        ordering            = ["-date"]
+        verbose_name        = "Base de mensajero"
+        verbose_name_plural = "Bases de mensajeros"
+
+    def __str__(self):
+        return f"{self.field_user} — {self.date} — ${self.amount}"
+
+
 class FieldUserLocation(models.Model):
     user        = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,

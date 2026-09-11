@@ -144,6 +144,7 @@ urlpatterns = [
     path("campo/usuarios/",                  views.CampoUserListView.as_view(),         name="campo_users"),
     path("campo/usuarios/nuevo/",            views.CampoUserCreateView.as_view(),       name="campo_user_create"),
     path("campo/usuarios/<int:pk>/",         views.CampoUserDetailView.as_view(),       name="campo_user_detail"),
+    path("campo/usuarios/<int:pk>/base/",    views.CampoCashBaseUpdateView.as_view(),   name="campo_cash_base_update"),
     path("campo/tareas/",                    views.CampoTaskListView.as_view(),         name="campo_tasks"),
     path("campo/tareas/reordenar/",          views.CampoTaskReorderView.as_view(),      name="campo_task_reorder"),
     path("campo/tareas/<int:pk>/",           views.CampoTaskDetailView.as_view(),       name="campo_task_detail"),

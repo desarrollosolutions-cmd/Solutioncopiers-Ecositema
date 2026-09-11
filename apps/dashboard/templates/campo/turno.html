@@ -151,6 +151,23 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
     </div>
   </div>
 
+  {# ── Base de caja del día ── #}
+  <div class="shift-card" style="padding:1rem 1.25rem;">
+    <div style="display:flex;align-items:center;gap:.625rem;">
+      <div style="width:2rem;height:2rem;border-radius:.625rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+        background:{% if cash_base.given %}rgba(16,185,129,.12){% else %}rgba(122,96,96,.15){% endif %};
+        color:{% if cash_base.given %}#10B981{% else %}#7A6060{% endif %};">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:1rem;height:1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m9-8a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <div style="font-size:.8125rem;font-weight:700;">
+          {% if cash_base.given %}Base de hoy: ${{ cash_base.amount|floatformat:0 }}{% else %}Sin base asignada hoy{% endif %}
+        </div>
+        <div style="font-size:.68rem;color:#7A6060;margin-top:.1rem;">La asigna el administrador</div>
+      </div>
+    </div>
+  </div>
+
   {# ── Tareas de entrega ── #}
   {% if delivery_tasks %}
   <div class="section-title">

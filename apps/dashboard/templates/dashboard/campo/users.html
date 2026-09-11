@@ -40,6 +40,7 @@
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Teléfono</th>
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Estado</th>
         <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Última ubicación</th>
+        <th style="padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;">Base de hoy</th>
         <th style="padding:.75rem 1.25rem;"></th>
       </tr>
     </thead>
@@ -91,6 +92,19 @@
           {% endif %}
         </td>
         <td style="padding:.875rem 1.25rem;">
+          <form method="post" action="{% url 'dashboard:campo_cash_base_update' fu.pk %}" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+            {% csrf_token %}
+            <label style="display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:var(--color-text-secondary);cursor:pointer;">
+              <input type="checkbox" name="given" value="1" {% if fu.today_cash_base.given %}checked{% endif %}>
+              Se le dio
+            </label>
+            <input type="number" name="amount" step="0.01" min="0" placeholder="$0"
+              value="{% if fu.today_cash_base %}{{ fu.today_cash_base.amount|stringformat:'.2f' }}{% endif %}"
+              class="da-input" style="width:6.5rem;padding:.3rem .5rem;font-size:.75rem;">
+            <button type="submit" class="da-btn da-btn-secondary" style="padding:.3rem .6rem;font-size:.68rem;">Guardar</button>
+          </form>
+        </td>
+        <td style="padding:.875rem 1.25rem;">
           <a href="{% url 'dashboard:campo_user_detail' fu.pk %}"
             style="font-size:.72rem;font-weight:600;color:var(--color-primary);text-decoration:none;padding:.3rem .7rem;border:1px solid var(--color-primary);border-radius:.4rem;transition:all .15s;"
             onmouseover="this.style.background='var(--color-primary)';this.style.color='#fff'"
@@ -101,7 +115,7 @@
       </tr>
       {% empty %}
       <tr>
-        <td colspan="6" style="padding:3rem;text-align:center;color:var(--color-text-muted);font-size:.875rem;">
+        <td colspan="7" style="padding:3rem;text-align:center;color:var(--color-text-muted);font-size:.875rem;">
           No hay personal de campo registrado.
           <br><br>
           <a href="{% url 'dashboard:campo_user_create' %}" class="da-btn da-btn-primary">Agregar la primera persona</a>

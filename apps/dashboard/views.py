@@ -5089,6 +5089,9 @@ class CampoTurnoView(View):
             .order_by("_ord", "order", "created_at")[:30]
         )
 
+        from apps.dashboard.models import MessengerCashBase
+        cash_base = MessengerCashBase.objects.filter(field_user=field_user, date=today).first()
+
         return render(request, self.template_name, {
             "field_user":      field_user,
             "location":        loc,
@@ -5098,6 +5101,7 @@ class CampoTurnoView(View):
             "today":           today,
             "lunch_duration_minutes": LUNCH_DURATION_MINUTES,
             "lunch_seconds_used": lunch_seconds_used,
+            "cash_base":       cash_base,
         })
 
 
@@ -5321,10 +5325,46 @@ class CampoUserListView(TemplateView):
     template_name = "dashboard/campo/users.html"
 
     def get_context_data(self, **kwargs):
-        from apps.dashboard.models import FieldUser
+        from apps.dashboard.models import FieldUser, MessengerCashBase
         ctx = super().get_context_data(**kwargs)
-        ctx["field_users"] = FieldUser.objects.select_related("user", "user__field_location").order_by("role", "user__first_name")
+        field_users = list(
+            FieldUser.objects.select_related("user", "user__field_location").order_by("role", "user__first_name")
+        )
+        today = timezone.localdate()
+        bases = {
+            b.field_user_id: b
+            for b in MessengerCashBase.objects.filter(field_user__in=field_users, date=today)
+        }
+        for fu in field_users:
+            fu.today_cash_base = bases.get(fu.pk)
+        ctx["field_users"] = field_users
         return ctx
+
+
+@da_decorator
+class CampoCashBaseUpdateView(View):
+    """POST: el administrador registra/edita la base de caja del día para un mensajero/técnico.
+    Siempre aplica sobre la fecha de hoy y no toca los registros de días anteriores."""
+    def post(self, request, pk):
+        from decimal import Decimal, InvalidOperation
+        from apps.dashboard.models import FieldUser, MessengerCashBase
+        from django.contrib import messages
+        field_user = get_object_or_404(FieldUser, pk=pk)
+        given = request.POST.get("given") == "1"
+        try:
+            amount = Decimal(request.POST.get("amount") or "0")
+        except InvalidOperation:
+            amount = Decimal("0")
+        if amount < 0:
+            amount = Decimal("0")
+        if not given:
+            amount = Decimal("0")
+        MessengerCashBase.objects.update_or_create(
+            field_user=field_user, date=timezone.localdate(),
+            defaults={"given": given, "amount": amount, "updated_by": request.user},
+        )
+        messages.success(request, f"Base actualizada para {field_user.user.get_full_name() or field_user.user.username}.")
+        return redirect("dashboard:campo_users")
 
 
 @da_decorator
