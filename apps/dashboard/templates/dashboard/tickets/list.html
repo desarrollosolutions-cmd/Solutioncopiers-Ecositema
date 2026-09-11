@@ -114,7 +114,7 @@
     <option value="">Todos los técnicos</option>
     {% for tech in technicians %}<option value="{{ tech.pk }}" {% if current_tecnico == tech.pk|stringformat:"s" %}selected{% endif %}>{{ tech.get_full_name|default:tech.username }}</option>{% endfor %}
   </select>
-  <input type="date" name="date" class="da-input dp-input" style="width:auto;padding:.5rem .875rem;" value="{{ current_date }}" title="Fecha programada (visita)">
+  <input type="date" name="date" class="da-input dp-input" data-occupied-url="{% url 'dashboard:scheduled_dates_json' %}" style="width:auto;padding:.5rem .875rem;" value="{{ current_date }}" title="Fecha programada (visita)">
   <button type="submit" class="da-btn da-btn-secondary">Filtrar</button>
   {% if current_q or current_status or current_priority or current_date or current_tecnico %}
   <a href="{% url 'dashboard:tickets' %}" class="da-btn da-btn-secondary">Limpiar</a>

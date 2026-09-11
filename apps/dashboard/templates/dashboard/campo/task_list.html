@@ -185,7 +185,7 @@
     <option value="{{ val }}" {% if filter_status == val %}selected{% endif %}>{{ label }}</option>
     {% endfor %}
   </select>
-  <input type="date" name="date" class="da-input dp-input" style="width:160px;max-width:100%;" value="{{ filter_date }}">
+  <input type="date" name="date" class="da-input dp-input" data-occupied-url="{% url 'dashboard:scheduled_dates_json' %}" style="width:160px;max-width:100%;" value="{{ filter_date }}">
   <button type="submit" class="da-btn da-btn-primary">Filtrar</button>
   {% if filter_user or filter_status or filter_date %}
   <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Limpiar</a>
