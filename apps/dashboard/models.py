@@ -439,7 +439,9 @@ class ChatMessage(models.Model):
     sender     = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_chat_messages"
     )
-    body       = models.TextField("mensaje")
+    body       = models.TextField("mensaje", blank=True)
+    photo_b64  = models.TextField("foto adjunta", blank=True)
+    audio_b64  = models.TextField("nota de voz", blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
@@ -448,7 +450,19 @@ class ChatMessage(models.Model):
         verbose_name_plural = "Mensajes de chat"
 
     def __str__(self):
-        return f"{self.sender.username}: {self.body[:40]}"
+        preview = self.body[:40] if self.body else ("📷 foto" if self.photo_b64 else "🎤 audio" if self.audio_b64 else "")
+        return f"{self.sender.username}: {preview}"
+
+    @property
+    def preview_text(self):
+        """Texto corto para vistas previas (lista de chats, notificación)."""
+        if self.body:
+            return self.body
+        if self.photo_b64:
+            return "📷 Foto"
+        if self.audio_b64:
+            return "🎤 Nota de voz"
+        return ""
 
 
 class ChatRead(models.Model):

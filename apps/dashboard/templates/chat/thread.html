@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--color-primary:#C4121A;--color-primary-dark:#5A0B0B;--color-bg:#100808;--color-bg-alt:#1A0E0E;--color-surface:#221414;--color-text-primary:#F5EDEB;--color-text-secondary:#C0A8A8;--color-text-muted:#7A6060;--color-border:#3A2020;}
+:root{--color-primary:#C4121A;--color-primary-dark:#5A0B0B;--color-bg:#100808;--color-bg-alt:#1A0E0E;--color-surface:#221414;--color-text-primary:#F5EDEB;--color-text-secondary:#C0A8A8;--color-text-muted:#7A6060;--color-border:#3A2020;--color-danger:#EF4444;}
 *,*::before,*::after{box-sizing:border-box;}
 html,body{height:100%;}
 body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-serif;color:var(--color-text-primary);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;}
 .ch-topbar{position:sticky;top:0;z-index:10;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;flex-shrink:0;}
 .ch-back{color:var(--color-text-muted);text-decoration:none;display:flex;align-items:center;flex-shrink:0;}
 .ch-back:hover{color:var(--color-primary);}
-.ch-avatar{width:2.25rem;height:2.25rem;border-radius:9999px;background:linear-gradient(135deg,#C4121A,#5A0B0B);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0;}
+.ch-avatar{width:2.25rem;height:2.25rem;border-radius:9999px;background:linear-gradient(135deg,#C4121A,#5A0B0B);background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0;}
 .ch-header-name{font-size:.875rem;font-weight:700;line-height:1.2;}
 .ch-header-role{font-size:.65rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;}
 .ch-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.5rem;max-width:720px;width:100%;margin:0 auto;}
@@ -25,10 +25,22 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
 .ch-bubble{max-width:75%;padding:.55rem .75rem;border-radius:1rem;font-size:.85rem;line-height:1.45;white-space:pre-wrap;word-break:break-word;}
 .ch-bubble-row:not(.mine) .ch-bubble{background:var(--color-surface);border:1px solid var(--color-border);border-bottom-left-radius:.25rem;}
 .ch-bubble-row.mine .ch-bubble{background:linear-gradient(135deg,#C4121A,#5A0B0B);color:#fff;border-bottom-right-radius:.25rem;}
+.ch-bubble-photo{display:block;max-width:100%;border-radius:.75rem;margin-bottom:.3rem;cursor:pointer;}
+.ch-bubble audio{max-width:230px;height:2.25rem;}
 .ch-bubble-time{font-size:.6rem;color:var(--color-text-muted);margin-top:.2rem;padding:0 .3rem;}
 .ch-bubble-row.mine .ch-bubble-time{text-align:right;}
 .ch-empty{text-align:center;padding:3rem 1rem;color:var(--color-text-muted);font-size:.85rem;margin:auto;}
-.ch-composer{flex-shrink:0;border-top:1px solid var(--color-border);background:var(--color-surface);padding:.75rem;display:flex;gap:.5rem;align-items:flex-end;max-width:720px;width:100%;margin:0 auto;box-sizing:border-box;}
+.ch-composer-wrap{flex-shrink:0;border-top:1px solid var(--color-border);background:var(--color-surface);}
+.ch-attach-preview{max-width:720px;width:100%;margin:0 auto;padding:.625rem .75rem 0;display:none;align-items:center;gap:.625rem;}
+.ch-attach-preview.show{display:flex;}
+.ch-attach-thumb{width:3rem;height:3rem;border-radius:.625rem;object-fit:cover;border:1px solid var(--color-border);}
+.ch-attach-remove{background:rgba(239,68,68,.12);color:var(--color-danger);border:none;width:1.5rem;height:1.5rem;border-radius:9999px;cursor:pointer;font-size:.75rem;flex-shrink:0;}
+.ch-composer{padding:.75rem;display:flex;gap:.4rem;align-items:flex-end;max-width:720px;width:100%;margin:0 auto;box-sizing:border-box;}
+.ch-icon-btn{background:none;border:none;color:var(--color-text-muted);width:2.25rem;height:2.25rem;border-radius:9999px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,color .15s;}
+.ch-icon-btn:hover{background:var(--color-bg-alt);color:var(--color-text-primary);}
+.ch-icon-btn.recording{background:var(--color-danger);color:#fff;animation:ch-pulse 1.2s infinite;}
+@keyframes ch-pulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+.ch-record-time{font-size:.72rem;color:var(--color-danger);font-weight:700;flex-shrink:0;align-self:center;min-width:2.5rem;}
 .ch-textarea{flex:1;resize:none;max-height:7rem;min-height:2.5rem;padding:.6rem .875rem;border-radius:.875rem;border:1.5px solid var(--color-border);background:var(--color-bg);color:var(--color-text-primary);font-size:.85rem;font-family:inherit;outline:none;}
 .ch-textarea:focus{border-color:var(--color-primary);}
 .ch-send-btn{background:linear-gradient(135deg,#C4121A,#5A0B0B);color:#fff;border:none;width:2.5rem;height:2.5rem;border-radius:9999px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -42,7 +54,7 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
   </a>
   <a href="{% if other_pk %}{% url 'chat:profile_detail' other_pk %}{% else %}#{% endif %}" style="display:flex;align-items:center;gap:.75rem;text-decoration:none;color:inherit;">
-    <div class="ch-avatar" style="{% if other_avatar %}background-image:url('{{ other_avatar }}');background-size:cover;background-position:center;{% endif %}">
+    <div class="ch-avatar" style="{% if other_avatar %}background-image:url('{{ other_avatar }}');{% endif %}">
       {% if not other_avatar %}{{ other_name|slice:":1"|upper }}{% endif %}
     </div>
     <div>
@@ -56,22 +68,42 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
   {% for m in chat_messages %}
   <div class="ch-bubble-row {% if m.mine %}mine{% endif %}" data-id="{{ m.id }}">
     <div>
-      <div class="ch-bubble">{{ m.body }}</div>
+      <div class="ch-bubble">
+        {% if m.photo %}<img class="ch-bubble-photo" src="{{ m.photo }}" alt="Foto" onclick="window.open(this.src)">{% endif %}
+        {% if m.audio %}<audio controls src="{{ m.audio }}"></audio>{% endif %}
+        {% if m.body %}<div{% if m.photo or m.audio %} style="margin-top:.35rem;"{% endif %}>{{ m.body }}</div>{% endif %}
+      </div>
       <div class="ch-bubble-time">{{ m.ago }}</div>
     </div>
   </div>
   {% empty %}
-  <div class="ch-empty">Todavía no hay mensajes.<br>Escribe el primero abajo.</div>
+  <div class="ch-empty">Todavía no hay mensajes.<br>Escribe, manda una foto o graba una nota de voz.</div>
   {% endfor %}
 </div>
 
-<form class="ch-composer" id="ch-form">
-  {% csrf_token %}
-  <textarea class="ch-textarea" id="ch-input" name="body" placeholder="Escribe un mensaje…" rows="1" required></textarea>
-  <button type="submit" class="ch-send-btn" id="ch-send" aria-label="Enviar">
-    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0l-6 6m6-6l6 6"/></svg>
-  </button>
-</form>
+<div class="ch-composer-wrap">
+  <div class="ch-attach-preview" id="ch-attach-preview">
+    <img id="ch-attach-img" class="ch-attach-thumb" style="display:none;">
+    <audio id="ch-attach-audio" controls style="display:none;height:2.25rem;max-width:220px;"></audio>
+    <button type="button" class="ch-attach-remove" onclick="chClearAttachment()">✕</button>
+  </div>
+
+  <form class="ch-composer" id="ch-form">
+    {% csrf_token %}
+    <input type="file" id="ch-photo-input" accept="image/*" style="display:none;" onchange="chOnPhoto(this)">
+    <button type="button" class="ch-icon-btn" id="ch-photo-btn" title="Adjuntar foto" onclick="document.getElementById('ch-photo-input').click()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    </button>
+    <button type="button" class="ch-icon-btn" id="ch-mic-btn" title="Grabar nota de voz" onclick="chToggleRecording()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"/></svg>
+    </button>
+    <span class="ch-record-time" id="ch-record-time" style="display:none;">0:00</span>
+    <textarea class="ch-textarea" id="ch-input" name="body" placeholder="Escribe un mensaje…" rows="1"></textarea>
+    <button type="submit" class="ch-send-btn" id="ch-send" aria-label="Enviar">
+      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0l-6 6m6-6l6 6"/></svg>
+    </button>
+  </form>
+</div>
 
 <script>
 (function(){
@@ -82,11 +114,19 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
   var form  = document.getElementById('ch-form');
   var input = document.getElementById('ch-input');
   var sendBtn = document.getElementById('ch-send');
+  var micBtn = document.getElementById('ch-mic-btn');
+  var recordTimeEl = document.getElementById('ch-record-time');
+  var attachPreview = document.getElementById('ch-attach-preview');
+  var attachImg = document.getElementById('ch-attach-img');
+  var attachAudio = document.getElementById('ch-attach-audio');
   var lastId = 0;
   document.querySelectorAll('.ch-bubble-row[data-id]').forEach(function(el){
     var id = parseInt(el.dataset.id, 10);
     if (id > lastId) lastId = id;
   });
+
+  var pendingPhoto = null;
+  var pendingAudio = null;
 
   function scrollToBottom(){ messagesEl.scrollTop = messagesEl.scrollHeight; }
   scrollToBottom();
@@ -103,8 +143,11 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
     var row = document.createElement('div');
     row.className = 'ch-bubble-row' + (m.mine ? ' mine' : '');
     row.dataset.id = m.id;
-    row.innerHTML = '<div><div class="ch-bubble">' + escapeHtml(m.body).replace(/\n/g,'<br>') +
-      '</div><div class="ch-bubble-time">' + m.ago + '</div></div>';
+    var inner = '';
+    if (m.photo) inner += '<img class="ch-bubble-photo" src="' + m.photo + '" alt="Foto" onclick="window.open(this.src)">';
+    if (m.audio) inner += '<audio controls src="' + m.audio + '"></audio>';
+    if (m.body) inner += '<div' + ((m.photo || m.audio) ? ' style="margin-top:.35rem;"' : '') + '>' + escapeHtml(m.body).replace(/\n/g,'<br>') + '</div>';
+    row.innerHTML = '<div><div class="ch-bubble">' + inner + '</div><div class="ch-bubble-time">' + m.ago + '</div></div>';
     messagesEl.appendChild(row);
     if (m.id > lastId) lastId = m.id;
   }
@@ -118,14 +161,119 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
   });
 
+  // ── Adjuntar foto ──
+  function chOnPhoto(fileInput){
+    if (!fileInput.files || !fileInput.files[0]) return;
+    var file = fileInput.files[0];
+    var reader = new FileReader();
+    reader.onload = function(evt){
+      var img = new Image();
+      img.onload = function(){
+        var MAX = 1024;
+        var w = img.width, h = img.height;
+        if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+        else       { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        pendingPhoto = c.toDataURL('image/jpeg', 0.78);
+        pendingAudio = null;
+        attachImg.src = pendingPhoto;
+        attachImg.style.display = '';
+        attachAudio.style.display = 'none';
+        attachPreview.classList.add('show');
+      };
+      img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+    fileInput.value = '';
+  }
+  window.chOnPhoto = chOnPhoto;
+
+  window.chClearAttachment = function(){
+    pendingPhoto = null; pendingAudio = null;
+    attachImg.style.display = 'none'; attachImg.src = '';
+    attachAudio.style.display = 'none'; attachAudio.src = '';
+    attachPreview.classList.remove('show');
+  };
+
+  // ── Grabar nota de voz ──
+  var mediaRecorder = null, audioChunks = [], recording = false, recordStart = null, recordTimer = null, autoStopTimer = null;
+  var canRecord = !!(navigator.mediaDevices && window.MediaRecorder);
+  if (!canRecord) micBtn.style.display = 'none';
+
+  function fmtDuration(ms){
+    var s = Math.floor(ms / 1000);
+    return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+  }
+
+  function updateRecordUI(on){
+    micBtn.classList.toggle('recording', on);
+    recordTimeEl.style.display = on ? '' : 'none';
+    input.style.display = on ? 'none' : '';
+  }
+
+  window.chToggleRecording = function(){
+    if (!canRecord) return;
+    if (recording) { stopRecording(); return; }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream){
+      var mimeType = '';
+      ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].some(function(t){
+        if (window.MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) { mimeType = t; return true; }
+        return false;
+      });
+      var recOpts = mimeType ? { mimeType: mimeType, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 };
+      try { mediaRecorder = new MediaRecorder(stream, recOpts); }
+      catch (e) { try { mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType }); } catch (e2) { mediaRecorder = new MediaRecorder(stream); } }
+      audioChunks = [];
+      mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = function(){
+        stream.getTracks().forEach(function(t){ t.stop(); });
+        var blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+        var reader = new FileReader();
+        reader.onload = function(){
+          pendingAudio = reader.result;
+          pendingPhoto = null;
+          attachAudio.src = pendingAudio;
+          attachAudio.style.display = '';
+          attachImg.style.display = 'none';
+          attachPreview.classList.add('show');
+        };
+        reader.readAsDataURL(blob);
+      };
+      mediaRecorder.start();
+      recording = true;
+      recordStart = Date.now();
+      updateRecordUI(true);
+      recordTimeEl.textContent = '0:00';
+      recordTimer = setInterval(function(){ recordTimeEl.textContent = fmtDuration(Date.now() - recordStart); }, 500);
+      autoStopTimer = setTimeout(stopRecording, 120000); // tope de 2 min
+    }).catch(function(){
+      alert('No se pudo acceder al micrófono. Revisa los permisos del navegador.');
+    });
+  };
+
+  function stopRecording(){
+    if (!recording || !mediaRecorder) return;
+    recording = false;
+    clearInterval(recordTimer);
+    clearTimeout(autoStopTimer);
+    updateRecordUI(false);
+    mediaRecorder.stop();
+  }
+
+  // ── Enviar ──
   form.addEventListener('submit', function(e){
     e.preventDefault();
+    if (recording) stopRecording();
     var body = input.value.trim();
-    if (!body) return;
+    if (!body && !pendingPhoto && !pendingAudio) return;
     sendBtn.disabled = true;
     var fd = new FormData();
     fd.append('csrfmiddlewaretoken', CSRF);
     fd.append('body', body);
+    if (pendingPhoto) fd.append('photo_b64', pendingPhoto);
+    if (pendingAudio) fd.append('audio_b64', pendingAudio);
     fetch(THREAD_URL, { method: 'POST', body: fd })
       .then(function(r){ return r.json(); })
       .then(function(data){
@@ -135,6 +283,9 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
           scrollToBottom();
           input.value = '';
           autoGrow();
+          chClearAttachment();
+        } else {
+          alert(data.error || 'No se pudo enviar el mensaje');
         }
       })
       .catch(function(){ sendBtn.disabled = false; });

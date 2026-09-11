@@ -6307,7 +6307,7 @@ class ChatListView(View):
                 "other_name": name,
                 "other_role": role,
                 "other_avatar": avatars.get(other.pk, ""),
-                "last_body": last.body if last else "",
+                "last_body": last.preview_text if last else "",
                 "last_ago": _time_ago(last.created_at) if last else "",
                 "last_mine": bool(last and last.sender_id == request.user.pk),
                 "unread": _chat_thread_unread(t, request.user),
@@ -6388,6 +6388,8 @@ class ChatThreadView(View):
                 {
                     "id": m.pk,
                     "body": m.body,
+                    "photo": m.photo_b64,
+                    "audio": m.audio_b64,
                     "mine": m.sender_id == request.user.pk,
                     "ago": _time_ago(m.created_at),
                     "created_at": m.created_at.isoformat(),
@@ -6400,13 +6402,19 @@ class ChatThreadView(View):
     def post(self, request, pk):
         from apps.dashboard.models import ChatThread, ChatMessage, Notification
         thread = get_object_or_404(ChatThread, pk=pk, participants=request.user)
-        body = request.POST.get("body", "").strip()
-        if not body:
+        body   = request.POST.get("body", "").strip()[:4000]
+        photo  = request.POST.get("photo_b64", "").strip()
+        audio  = request.POST.get("audio_b64", "").strip()
+        if not body and not photo and not audio:
             return JsonResponse({"ok": False, "error": "Mensaje vacío"}, status=400)
-        if len(body) > 4000:
-            body = body[:4000]
+        # Límite defensivo de tamaño por adjunto (~6MB en base64 ya es una nota de voz larga o una foto grande)
+        MAX_ATTACHMENT = 8_000_000
+        if len(photo) > MAX_ATTACHMENT or len(audio) > MAX_ATTACHMENT:
+            return JsonResponse({"ok": False, "error": "El archivo es muy pesado"}, status=400)
 
-        msg = ChatMessage.objects.create(thread=thread, sender=request.user, body=body)
+        msg = ChatMessage.objects.create(
+            thread=thread, sender=request.user, body=body, photo_b64=photo, audio_b64=audio
+        )
         thread.updated_at = timezone.now()
         thread.save(update_fields=["updated_at"])
 
@@ -6416,7 +6424,7 @@ class ChatThreadView(View):
                 user=recipient,
                 type=Notification.Type.CHAT_MESSAGE,
                 title=f"Mensaje de {sender_name}",
-                message=body[:140],
+                message=msg.preview_text[:140],
                 link=f"/chat/{thread.pk}/",
             )
 
@@ -6425,6 +6433,8 @@ class ChatThreadView(View):
             "message": {
                 "id": msg.pk,
                 "body": msg.body,
+                "photo": msg.photo_b64,
+                "audio": msg.audio_b64,
                 "mine": True,
                 "ago": "ahora",
                 "created_at": msg.created_at.isoformat(),
@@ -6455,6 +6465,8 @@ class ChatPollView(View):
                 {
                     "id": m.pk,
                     "body": m.body,
+                    "photo": m.photo_b64,
+                    "audio": m.audio_b64,
                     "mine": m.sender_id == request.user.pk,
                     "ago": _time_ago(m.created_at),
                     "created_at": m.created_at.isoformat(),

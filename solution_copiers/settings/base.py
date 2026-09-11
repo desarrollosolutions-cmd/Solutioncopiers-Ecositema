@@ -189,6 +189,12 @@ STORAGES = {
     },
 }
 
+# Adjuntos del chat interno (fotos/notas de voz) viajan como texto base64 en
+# el POST normal, no como FileField, así que lo que los limita es esto y no
+# FILE_UPLOAD_MAX_MEMORY_SIZE. El front ya comprime fotos y acota la
+# duración del audio para no acercarse a este techo.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 8 * 1024 * 1024  # 8 MB
+
 # ---------------------------------------------------------------------------
 # DEFAULTS
 # ---------------------------------------------------------------------------
