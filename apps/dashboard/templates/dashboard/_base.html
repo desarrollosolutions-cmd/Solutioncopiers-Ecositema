@@ -1056,6 +1056,14 @@
         <kbd style="font-size:.65rem;background:var(--color-bg);border:1px solid var(--color-border);border-radius:.25rem;padding:.1rem .35rem;line-height:1;">Ctrl+K</kbd>
       </button>
       <span class="da-topbar-time" id="da-live-clock">{% now "d M · H:i" %}</span>
+      {# ── Chat interno ── #}
+      <div x-data="chatBadge()">
+        <a href="{% url 'chat:list' %}" target="_blank" rel="noopener" class="da-topbar-btn" title="Chat interno" style="position:relative;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          <span x-show="unread > 0" x-text="unread > 9 ? '9+' : unread"
+            style="position:absolute;top:0;right:0;min-width:1.1rem;height:1.1rem;background:#EF4444;color:#fff;font-size:.55rem;font-weight:800;border-radius:9999px;display:flex;align-items:center;justify-content:center;padding:0 .2rem;line-height:1;pointer-events:none;"></span>
+        </a>
+      </div>
       {# ── Campana de notificaciones CRM ── #}
       <div x-data="crmBell()" @click.outside="open=false" style="position:relative;">
         <button @click="toggle()" class="da-topbar-btn" title="Notificaciones" style="position:relative;">
@@ -1392,6 +1400,24 @@ document.addEventListener('visibilitychange', function() {
   if (!document.hidden) stopTitleFlash();
 });
 
+function chatBadge() {
+  return {
+    unread: 0,
+    _timer: null,
+    init() {
+      this.fetch();
+      this._timer = setInterval(() => this.fetch(), 25000);
+    },
+    destroy() { clearInterval(this._timer); },
+    fetch() {
+      fetch('/chat/no-leidos/json/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(d => { this.unread = d.unread || 0; })
+        .catch(() => {});
+    },
+  };
+}
+
 function crmBell() {
   return {
     open: false,
@@ -1455,6 +1481,7 @@ function crmBell() {
         task_overdue: '#EF4444', contract_expiring: '#F59E0B',
         contract_renewal: '#F59E0B', new_quote: '#3B82F6',
         quote_stale: '#F97316', lead_cold: '#8B5CF6', task_assigned: '#10B981',
+        chat_message: '#0EA5E9',
       };
       return colors[type] || 'var(--color-primary)';
     },

@@ -32,6 +32,9 @@ urlpatterns = [
     # --- Portal de campo (mensajeros / técnicos) ---
     path("campo/", include(("apps.dashboard.campo_urls", "campo"), namespace="campo")),
 
+    # --- Chat interno (admins, asesoras y técnicos/mensajeros) ---
+    path("chat/", include(("apps.dashboard.chat_urls", "chat"), namespace="chat")),
+
     # --- Módulo WhatsApp CRM ---
     path("whatsapp/", include(("apps.whatsapp.urls", "wa"), namespace="wa")),
 

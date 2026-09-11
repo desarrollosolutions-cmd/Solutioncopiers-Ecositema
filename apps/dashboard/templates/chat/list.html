@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Chat interno — Solution Copiers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--color-primary:#C4121A;--color-primary-dark:#5A0B0B;--color-bg:#100808;--color-bg-alt:#1A0E0E;--color-surface:#221414;--color-text-primary:#F5EDEB;--color-text-secondary:#C0A8A8;--color-text-muted:#7A6060;--color-border:#3A2020;--color-success:#10B981;}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;min-height:100vh;background:var(--color-bg);font-family:'Inter',system-ui,sans-serif;color:var(--color-text-primary);-webkit-font-smoothing:antialiased;}
+a{color:inherit;}
+.ch-topbar{position:sticky;top:0;z-index:10;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:.875rem 1.125rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;}
+.ch-topbar-title{display:flex;align-items:center;gap:.625rem;}
+.ch-topbar-title h1{font-size:1rem;font-weight:800;margin:0;}
+.ch-back{font-size:.78rem;color:var(--color-text-muted);text-decoration:none;display:flex;align-items:center;gap:.3rem;}
+.ch-back:hover{color:var(--color-primary);}
+.ch-new-btn{background:linear-gradient(135deg,#C4121A,#5A0B0B);color:#fff;border:none;padding:.55rem 1rem;border-radius:.625rem;font-size:.8125rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.4rem;}
+.ch-content{max-width:640px;margin:0 auto;padding:1rem 1rem 3rem;}
+.ch-thread{display:flex;align-items:center;gap:.75rem;padding:.875rem;border-radius:.875rem;text-decoration:none;color:inherit;margin-bottom:.5rem;background:var(--color-surface);border:1px solid var(--color-border);transition:border-color .15s;}
+.ch-thread:hover{border-color:var(--color-primary);}
+.ch-avatar{width:2.5rem;height:2.5rem;border-radius:9999px;background:linear-gradient(135deg,#C4121A,#5A0B0B);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.ch-thread-body{flex:1;min-width:0;}
+.ch-thread-name{font-size:.875rem;font-weight:700;display:flex;align-items:center;gap:.4rem;}
+.ch-thread-role{font-size:.65rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;}
+.ch-thread-preview{font-size:.78rem;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.15rem;}
+.ch-thread-meta{display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;flex-shrink:0;}
+.ch-thread-ago{font-size:.65rem;color:var(--color-text-muted);}
+.ch-unread{background:var(--color-primary);color:#fff;font-size:.65rem;font-weight:800;border-radius:9999px;min-width:1.15rem;height:1.15rem;display:flex;align-items:center;justify-content:center;padding:0 .3rem;}
+.ch-empty{text-align:center;padding:3rem 1rem;color:var(--color-text-muted);font-size:.85rem;}
+.ch-section-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin:1.25rem 0 .625rem;}
+/* Modal */
+.ch-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:50;display:none;align-items:flex-end;justify-content:center;}
+.ch-modal-overlay.show{display:flex;}
+.ch-modal-sheet{background:var(--color-surface);border:1px solid var(--color-border);border-radius:1.25rem 1.25rem 0 0;padding:1.25rem;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;}
+@media(min-width:560px){.ch-modal-overlay{align-items:center;} .ch-modal-sheet{border-radius:1.25rem;}}
+.ch-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.ch-modal-head h2{font-size:.9375rem;margin:0;}
+.ch-modal-close{background:none;border:none;color:var(--color-text-muted);font-size:1.1rem;cursor:pointer;}
+.ch-search{width:100%;padding:.625rem .875rem;border-radius:.625rem;border:1.5px solid var(--color-border);background:var(--color-bg);color:var(--color-text-primary);font-size:.85rem;font-family:inherit;outline:none;margin-bottom:.875rem;}
+.ch-search:focus{border-color:var(--color-primary);}
+.ch-dir-item{display:flex;align-items:center;gap:.625rem;padding:.625rem .5rem;border-radius:.625rem;cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:inherit;color:inherit;}
+.ch-dir-item:hover{background:var(--color-bg-alt);}
+.ch-dir-name{font-size:.8125rem;font-weight:600;}
+.ch-dir-role{font-size:.68rem;color:var(--color-text-muted);}
+</style>
+</head>
+<body>
+
+<div class="ch-topbar">
+  <div class="ch-topbar-title">
+    <a href="{{ portal_home }}" class="ch-back" title="Volver">
+      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <h1>Chat interno</h1>
+  </div>
+  <button class="ch-new-btn" onclick="chOpenModal()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+    Nuevo mensaje
+  </button>
+</div>
+
+<div class="ch-content">
+  {% if threads %}
+    {% for t in threads %}
+    <a class="ch-thread" href="{% url 'chat:thread' t.pk %}">
+      <div class="ch-avatar">{{ t.other_name|slice:":1"|upper }}</div>
+      <div class="ch-thread-body">
+        <div class="ch-thread-name">{{ t.other_name }} <span class="ch-thread-role">{{ t.other_role }}</span></div>
+        <div class="ch-thread-preview">{% if t.last_mine %}Tú: {% endif %}{{ t.last_body|default:"Sin mensajes todavía" }}</div>
+      </div>
+      <div class="ch-thread-meta">
+        <span class="ch-thread-ago">{{ t.last_ago }}</span>
+        {% if t.unread %}<span class="ch-unread">{{ t.unread }}</span>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  {% else %}
+    <div class="ch-empty">
+      Todavía no tienes conversaciones.<br>
+      Toca <strong>Nuevo mensaje</strong> para escribirle a alguien de tu equipo.
+    </div>
+  {% endif %}
+</div>
+
+{# ── Modal: nuevo mensaje ── #}
+<div class="ch-modal-overlay" id="ch-modal" onclick="if(event.target===this)chCloseModal()">
+  <div class="ch-modal-sheet">
+    <div class="ch-modal-head">
+      <h2>Escribir a…</h2>
+      <button class="ch-modal-close" onclick="chCloseModal()">✕</button>
+    </div>
+    <input type="text" class="ch-search" id="ch-search" placeholder="Buscar por nombre…" oninput="chFilterDirectory()">
+    <div id="ch-directory">
+      {% for d in directory %}
+      <form method="post" action="{% url 'chat:start' %}" class="ch-dir-form" data-name="{{ d.name|lower }}">
+        {% csrf_token %}
+        <input type="hidden" name="user_id" value="{{ d.pk }}">
+        <button type="submit" class="ch-dir-item">
+          <div class="ch-avatar" style="width:2rem;height:2rem;font-size:.75rem;">{{ d.name|slice:":1"|upper }}</div>
+          <div>
+            <div class="ch-dir-name">{{ d.name }}</div>
+            <div class="ch-dir-role">{{ d.role }}{% if d.has_thread %} · ya tienen chat{% endif %}</div>
+          </div>
+        </button>
+      </form>
+      {% empty %}
+      <div class="ch-empty" style="padding:1.5rem 0;">No hay más personas activas en el sistema.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+function chOpenModal(){ document.getElementById('ch-modal').classList.add('show'); document.getElementById('ch-search').focus(); }
+function chCloseModal(){ document.getElementById('ch-modal').classList.remove('show'); }
+function chFilterDirectory(){
+  var q = document.getElementById('ch-search').value.trim().toLowerCase();
+  document.querySelectorAll('.ch-dir-form').forEach(function(f){
+    f.style.display = f.dataset.name.indexOf(q) !== -1 ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

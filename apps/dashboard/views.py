@@ -6222,3 +6222,245 @@ class PanelUbicacionView(View):
         except (TypeError, ValueError) as e:
             return JsonResponse({"ok": False, "error": str(e)}, status=400)
 
+
+# ---------------------------------------------------------------------------
+# CHAT INTERNO — mensajes directos entre cualquier usuario activo del sitio
+# (admins, asesoras/empleados y técnicos/mensajeros comparten auth.User).
+# Vive fuera de /dashadmin/, /panel/ y /campo/ a propósito: esos tres
+# decoradores (da_required, panel_required, campo_required) se excluyen
+# entre sí, así que un espacio propio es la forma más simple de que
+# cualquier tipo de usuario entre sin tocar esos decoradores existentes.
+# ---------------------------------------------------------------------------
+
+def chat_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_active:
+            return redirect(f"/dashadmin/acceso/?next={request.path}")
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+chat_decorator = method_decorator(chat_required, name="dispatch")
+
+
+def _chat_user_display(u):
+    """(nombre, rol) para mostrar a una persona en el directorio de chat."""
+    from apps.dashboard.models import FieldUser
+    name = u.get_full_name() or u.username
+    if u.is_staff:
+        role = "Administrador"
+    else:
+        try:
+            role = u.field_profile.get_role_display()
+        except FieldUser.DoesNotExist:
+            role = "Asesora"
+    return name, role
+
+
+def _chat_portal_home(user):
+    """A dónde volver desde el chat según el tipo de usuario."""
+    if user.is_staff:
+        return "/dashadmin/"
+    from apps.dashboard.models import FieldUser
+    try:
+        user.field_profile
+        return "/campo/"
+    except FieldUser.DoesNotExist:
+        return "/panel/"
+
+
+def _chat_thread_unread(thread, user):
+    from apps.dashboard.models import ChatRead
+    read = ChatRead.objects.filter(thread=thread, user=user).first()
+    qs = thread.messages.exclude(sender=user)
+    if read:
+        qs = qs.filter(created_at__gt=read.last_read_at)
+    return qs.count()
+
+
+@chat_decorator
+class ChatListView(View):
+    template_name = "chat/list.html"
+
+    def get(self, request):
+        from django.contrib.auth import get_user_model
+        from apps.dashboard.models import ChatThread
+        User = get_user_model()
+
+        threads = (
+            ChatThread.objects.filter(participants=request.user)
+            .prefetch_related("participants")
+            .order_by("-updated_at")
+        )
+        thread_rows = []
+        for t in threads:
+            other = t.other_participant(request.user)
+            if not other:
+                continue
+            name, role = _chat_user_display(other)
+            last = t.messages.order_by("-created_at").first()
+            thread_rows.append({
+                "pk": t.pk,
+                "other_name": name,
+                "other_role": role,
+                "last_body": last.body if last else "",
+                "last_ago": _time_ago(last.created_at) if last else "",
+                "last_mine": bool(last and last.sender_id == request.user.pk),
+                "unread": _chat_thread_unread(t, request.user),
+            })
+
+        existing_other_ids = {
+            t.other_participant(request.user).pk
+            for t in threads if t.other_participant(request.user)
+        }
+        directory = (
+            User.objects.filter(is_active=True)
+            .exclude(pk=request.user.pk)
+            .order_by("first_name", "username")
+        )
+        directory_rows = [
+            {"pk": u.pk, "name": _chat_user_display(u)[0], "role": _chat_user_display(u)[1],
+             "has_thread": u.pk in existing_other_ids}
+            for u in directory
+        ]
+
+        return render(request, self.template_name, {
+            "threads": thread_rows,
+            "directory": directory_rows,
+            "portal_home": _chat_portal_home(request.user),
+        })
+
+
+@chat_decorator
+class ChatStartView(View):
+    """POST: obtiene o crea la conversación directa con otro usuario y redirige a ella."""
+    def post(self, request):
+        from django.contrib.auth import get_user_model
+        from apps.dashboard.models import ChatThread
+        User = get_user_model()
+        target = get_object_or_404(User, pk=request.POST.get("user_id"), is_active=True)
+        if target.pk == request.user.pk:
+            return redirect("chat:list")
+
+        thread = (
+            ChatThread.objects.filter(kind=ChatThread.Kind.DIRECT, participants=request.user)
+            .filter(participants=target)
+            .first()
+        )
+        if not thread:
+            thread = ChatThread.objects.create(kind=ChatThread.Kind.DIRECT)
+            thread.participants.set([request.user, target])
+        return redirect("chat:thread", pk=thread.pk)
+
+
+@chat_decorator
+class ChatThreadView(View):
+    template_name = "chat/thread.html"
+
+    def get(self, request, pk):
+        from apps.dashboard.models import ChatThread, ChatRead
+        thread = get_object_or_404(ChatThread, pk=pk, participants=request.user)
+        other = thread.other_participant(request.user)
+        name, role = _chat_user_display(other) if other else ("—", "")
+
+        ChatRead.objects.update_or_create(
+            thread=thread, user=request.user, defaults={"last_read_at": timezone.now()}
+        )
+
+        messages_qs = thread.messages.select_related("sender").order_by("created_at")[:200]
+        return render(request, self.template_name, {
+            "thread": thread,
+            "other_name": name,
+            "other_role": role,
+            "chat_messages": [
+                {
+                    "id": m.pk,
+                    "body": m.body,
+                    "mine": m.sender_id == request.user.pk,
+                    "ago": _time_ago(m.created_at),
+                    "created_at": m.created_at.isoformat(),
+                }
+                for m in messages_qs
+            ],
+            "portal_home": _chat_portal_home(request.user),
+        })
+
+    def post(self, request, pk):
+        from apps.dashboard.models import ChatThread, ChatMessage, Notification
+        thread = get_object_or_404(ChatThread, pk=pk, participants=request.user)
+        body = request.POST.get("body", "").strip()
+        if not body:
+            return JsonResponse({"ok": False, "error": "Mensaje vacío"}, status=400)
+        if len(body) > 4000:
+            body = body[:4000]
+
+        msg = ChatMessage.objects.create(thread=thread, sender=request.user, body=body)
+        thread.updated_at = timezone.now()
+        thread.save(update_fields=["updated_at"])
+
+        sender_name, _ = _chat_user_display(request.user)
+        for recipient in thread.participants.exclude(pk=request.user.pk):
+            Notification.push(
+                user=recipient,
+                type=Notification.Type.CHAT_MESSAGE,
+                title=f"Mensaje de {sender_name}",
+                message=body[:140],
+                link=f"/chat/{thread.pk}/",
+            )
+
+        return JsonResponse({
+            "ok": True,
+            "message": {
+                "id": msg.pk,
+                "body": msg.body,
+                "mine": True,
+                "ago": "ahora",
+                "created_at": msg.created_at.isoformat(),
+            },
+        })
+
+
+@chat_decorator
+class ChatPollView(View):
+    """GET: mensajes nuevos de un hilo desde el id indicado (para refrescar sin recargar)."""
+    def get(self, request, pk):
+        from apps.dashboard.models import ChatThread, ChatRead
+        thread = get_object_or_404(ChatThread, pk=pk, participants=request.user)
+        after = request.GET.get("after")
+        qs = thread.messages.select_related("sender").order_by("created_at")
+        if after:
+            try:
+                qs = qs.filter(pk__gt=int(after))
+            except (TypeError, ValueError):
+                pass
+        new_messages = list(qs[:100])
+        if new_messages:
+            ChatRead.objects.update_or_create(
+                thread=thread, user=request.user, defaults={"last_read_at": timezone.now()}
+            )
+        return JsonResponse({
+            "messages": [
+                {
+                    "id": m.pk,
+                    "body": m.body,
+                    "mine": m.sender_id == request.user.pk,
+                    "ago": _time_ago(m.created_at),
+                    "created_at": m.created_at.isoformat(),
+                }
+                for m in new_messages
+            ],
+        })
+
+
+@chat_decorator
+class ChatUnreadCountJsonView(View):
+    """GET: total de mensajes sin leer del usuario, para el badge del chat en las topbars."""
+    def get(self, request):
+        from apps.dashboard.models import ChatThread
+        total = sum(
+            _chat_thread_unread(t, request.user)
+            for t in ChatThread.objects.filter(participants=request.user)
+        )
+        return JsonResponse({"unread": total})
+

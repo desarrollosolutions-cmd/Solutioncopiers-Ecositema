@@ -160,6 +160,7 @@ class Notification(models.Model):
         TICKET_STATUS      = "ticket_status",      "Ticket actualizado por técnico"
         TICKET_ARRIVAL     = "ticket_arrival",     "Llegada a sitio"
         LUNCH_BREAK        = "lunch_break",        "Almuerzo"
+        CHAT_MESSAGE       = "chat_message",       "Mensaje de chat"
 
     user       = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
@@ -399,3 +400,66 @@ class FieldLocationLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} · {self.shift_date} · {self.recorded_at:%H:%M}"
+
+
+# ---------------------------------------------------------------------------
+# Chat interno — mensajes directos entre cualquier par de usuarios activos
+# (admins, asesoras/empleados y técnicos/mensajeros comparten la tabla User).
+# ---------------------------------------------------------------------------
+
+class ChatThread(models.Model):
+    """Una conversación. Por ahora solo directas (1 a 1); el campo `kind`
+    deja la puerta abierta a canales grupales sin necesitar otra migración."""
+    class Kind(models.TextChoices):
+        DIRECT = "direct", "Directo"
+
+    kind         = models.CharField(max_length=10, choices=Kind.choices, default=Kind.DIRECT)
+    participants = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, related_name="chat_threads"
+    )
+    created_at   = models.DateTimeField(auto_now_add=True)
+    updated_at   = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering            = ["-updated_at"]
+        verbose_name        = "Conversación"
+        verbose_name_plural = "Conversaciones"
+
+    def __str__(self):
+        names = ", ".join(u.get_full_name() or u.username for u in self.participants.all())
+        return f"Chat: {names}"
+
+    def other_participant(self, user):
+        """Solo tiene sentido para hilos directos."""
+        return self.participants.exclude(pk=user.pk).first()
+
+
+class ChatMessage(models.Model):
+    thread     = models.ForeignKey(ChatThread, on_delete=models.CASCADE, related_name="messages")
+    sender     = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_chat_messages"
+    )
+    body       = models.TextField("mensaje")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering            = ["created_at"]
+        verbose_name        = "Mensaje de chat"
+        verbose_name_plural = "Mensajes de chat"
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.body[:40]}"
+
+
+class ChatRead(models.Model):
+    """Hasta qué momento leyó cada usuario cada hilo — para contar no leídos."""
+    thread        = models.ForeignKey(ChatThread, on_delete=models.CASCADE, related_name="reads")
+    user          = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chat_reads"
+    )
+    last_read_at  = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together     = ("thread", "user")
+        verbose_name        = "Lectura de chat"
+        verbose_name_plural = "Lecturas de chat"
