@@ -11,6 +11,7 @@ from django.views.static import serve as static_serve
 
 from apps.seo.sitemaps import sitemaps_dict
 from apps.seo.views import robots_txt
+from apps.dashboard.views import UnifiedLoginView
 
 # Rutas sin traducción (portales internos, admin, SEO técnico)
 urlpatterns = [
@@ -24,6 +25,11 @@ urlpatterns = [
     # --- Service worker del chat/push, debe servirse en la raíz para que
     #     su scope cubra todo el sitio (no solo /static/) ---
     path("sw.js", static_serve, {"document_root": settings.BASE_DIR / "static" / "dashboard", "path": "sw.js"}, name="service_worker"),
+
+    # --- Login único de la PWA: detecta el rol y manda a cada quien a su
+    #     panel (dashadmin / panel / campo). Las 3 URLs de acceso viejas
+    #     se mantienen intactas por compatibilidad. ---
+    path("acceso/", UnifiedLoginView.as_view(), name="unified_login"),
 
     # --- Selector de idioma (POST set_language) ---
     path("i18n/", include("django.conf.urls.i18n")),

@@ -132,6 +132,53 @@ su_decorator = method_decorator(superuser_required, name="dispatch")
 
 
 # ---------------------------------------------------------------------------
+# LOGIN UNIFICADO — un solo formulario para admins, asesoras y
+# técnicos/mensajeros. Es el start_url de la PWA: detecta el rol después
+# de autenticar y manda a cada quien a su panel, sin que nadie tenga que
+# saber ni recordar cuál de las 3 URLs de acceso le corresponde.
+# ---------------------------------------------------------------------------
+class UnifiedLoginView(View):
+    template_name = "unified_login.html"
+
+    def _redirect_for_role(self, user):
+        from apps.dashboard.models import FieldUser
+        if user.is_staff:
+            return redirect("dashboard:home")
+        try:
+            user.field_profile
+            return redirect("campo:turno")
+        except FieldUser.DoesNotExist:
+            return redirect("panel:home")
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            return self._redirect_for_role(request.user)
+        return render(request, self.template_name)
+
+    def post(self, request):
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+        ip       = _client_ip(request)
+
+        if _is_locked_out(ip, username):
+            _auth_logger.warning("Login unificado bloqueado para %s desde %s", username, ip)
+            return render(request, self.template_name, {
+                "error": "Acceso bloqueado temporalmente por múltiples intentos fallidos. Intenta de nuevo en 15 minutos."
+            })
+
+        user = authenticate(request, username=username, password=password)
+        if user and user.is_active:
+            _clear_failed_logins(ip, username)
+            login(request, user)
+            _auth_logger.info("Login unificado exitoso: %s desde %s", username, ip)
+            return self._redirect_for_role(user)
+
+        attempts = _record_failed_login(ip, username)
+        _auth_logger.warning("Login unificado fallido para '%s' desde %s (intento %d)", username, ip, attempts)
+        return render(request, self.template_name, {"error": "Usuario o contraseña incorrectos."})
+
+
+# ---------------------------------------------------------------------------
 # LOGIN / LOGOUT
 # ---------------------------------------------------------------------------
 class DashboardLoginView(View):

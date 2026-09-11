@@ -4,19 +4,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Portal de Campo — Solution Copiers</title>
+<title>Acceso — Solution Copiers</title>
 
-{# ── PWA: instalable como app propia para técnicos/mensajeros ── #}
 <link rel="manifest" href="{% static 'pwa/manifest.json' %}">
 <meta name="theme-color" content="#100808">
 <link rel="icon" href="{% static 'images/favicon.ico' %}">
 <link rel="apple-touch-icon" href="{% static 'images/icons/apple-touch-icon.png' %}">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SC Campo">
+<meta name="apple-mobile-web-app-title" content="Solution Copiers">
+<meta name="robots" content="noindex,nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{min-height:100vh;background:linear-gradient(135deg,#1A0E0E 0%,#221414 60%,#1A0E0E 100%);display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif;padding:1.5rem;}
+body{min-height:100vh;background:linear-gradient(135deg,#1A0E0E 0%,#221414 60%,#1A0E0E 100%);display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif;padding:1.5rem;-webkit-font-smoothing:antialiased;}
 .card{background:#221414;border:1px solid #3A2020;border-radius:1.25rem;padding:2rem 1.75rem;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
 .logo{background:#fff;border-radius:.75rem;padding:.75rem 1rem;margin:0 auto 1.25rem;max-width:220px;box-shadow:0 8px 24px rgba(0,0,0,.35);}
 .logo img{width:100%;height:auto;display:block;}
@@ -36,8 +39,8 @@ button:active{transform:scale(.98);opacity:.9;}
   <div class="logo">
     <img src="{% static 'images/logo.webp' %}" alt="Solution Copiers">
   </div>
-  <h1>Portal de Campo</h1>
-  <p class="sub">Solution Copiers · Equipo externo</p>
+  <h1>Acceso</h1>
+  <p class="sub">Administradores · Asesoras · Técnicos · Mensajeros</p>
   {% if error %}
   <div class="error">{{ error }}</div>
   {% endif %}
