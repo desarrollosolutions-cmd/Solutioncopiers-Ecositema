@@ -76,28 +76,28 @@ def _safe_next(request, fallback: str) -> str:
 
 def _scheduled_dates_payload() -> dict:
     """Cuenta, por fecha, cuantas tareas de entrega/seguimiento y tickets ya
-    estan agendados — usado por los calendarios de los formularios para
-    subrayar fechas que ya tienen algo montado."""
+    estan montados ese dia — usado por los calendarios de los formularios
+    para subrayar fechas que ya tienen algo, sin importar su estado (incluye
+    tareas completadas/canceladas y tickets cerrados, no solo los vigentes)."""
     from datetime import timedelta
     from collections import Counter
     from apps.dashboard.models import DeliveryTask
     from apps.leads.models import FollowUpTask, ServiceTicket
 
     today = timezone.localdate()
-    start = today - timedelta(days=14)
+    start = today - timedelta(days=730)
     end   = today + timedelta(days=180)
 
     counts = Counter()
     for d in DeliveryTask.objects.filter(
-        status=DeliveryTask.Status.PENDING, due_date__range=(start, end)
+        due_date__range=(start, end)
     ).values_list("due_date", flat=True):
         counts[d.isoformat()] += 1
     for d in FollowUpTask.objects.filter(
-        is_done=False, due_date__range=(start, end)
+        due_date__range=(start, end)
     ).values_list("due_date", flat=True):
         counts[d.isoformat()] += 1
     for dt in ServiceTicket.objects.filter(
-        status__in=("open", "in_progress", "waiting_parts"),
         scheduled_for__date__range=(start, end),
     ).values_list("scheduled_for", flat=True):
         if dt:
