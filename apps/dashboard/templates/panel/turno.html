@@ -359,6 +359,12 @@
           <span id="pn-photo-label-txt" style="font-size:.8rem;color:var(--color-text-muted);">Toca para tomar o elegir foto</span>
           <input type="file" id="pn-photo-input" accept="image/*" capture="environment" style="display:none;" onchange="onPhotoSelected(this)">
         </label>
+        <div style="text-align:center;margin-top:.375rem;">
+          <button type="button" onclick="pnShowPermHelp()"
+            style="background:none;border:none;color:var(--color-text-muted);font-size:.68rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.25rem;">
+            ¿No te deja usar la cámara o el micrófono?
+          </button>
+        </div>
       </div>
       <div style="margin-bottom:1.125rem;">
         <label class="pndm-label">Firma del receptor</label>
@@ -373,6 +379,19 @@
       </button>
       <button type="button" class="pndm-btn-cancel" onclick="closeDModal()">Cancelar</button>
     </form>
+  </div>
+</div>
+
+{# ── Ayuda cuando el celular bloquea camara/microfono ── #}
+<div id="pn-perm-modal" class="pndm-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this)pnClosePermHelp()">
+  <div class="pndm-sheet" onclick="event.stopPropagation()" style="max-width:360px;margin:auto;">
+    <div class="pndm-handle"></div>
+    <p style="font-size:.85rem;font-weight:700;margin-bottom:.5rem;color:var(--color-text-primary);">Activar cámara y micrófono</p>
+    <p style="font-size:.8rem;color:var(--color-text-muted);line-height:1.6;margin-bottom:.875rem;">
+      La primera vez el sistema te pregunta si quieres permitirlo. Si ya lo rechazaste antes, actívalo manualmente:
+    </p>
+    <ol id="pn-perm-steps" style="font-size:.78rem;color:var(--color-text-muted);line-height:1.8;margin:0 0 1rem;padding-left:1.1rem;"></ol>
+    <button type="button" class="pndm-btn-cancel" onclick="pnClosePermHelp()">Entendido</button>
   </div>
 </div>
 
@@ -791,5 +810,42 @@ window._lunchStartedAt = new Date("{{ location.lunch_started_at|date:'c' }}");
 updateLunchCountdown();
 lunchTimer = setInterval(updateLunchCountdown, 15000);
 {% endif %}
+
+/* ── Ayuda: activar camara/microfono bloqueados ── */
+function pnIsAndroid(){ return /Android/i.test(navigator.userAgent); }
+function pnIsIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+function pnIsStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function pnShowPermHelp(){
+  const stepsEl = document.getElementById('pn-perm-steps');
+  let steps;
+  if (pnIsAndroid() && pnIsStandalone()) {
+    steps = ['Mantén presionado el ícono de esta app en tu pantalla de inicio y toca "Información de la app" (o ve a Ajustes → Apps).',
+              'Busca "Solution Copiers" en la lista. Si no aparece, busca "Chrome" (el navegador con el que la instalaste).',
+              'Entra a "Permisos" y activa Cámara y Micrófono.',
+              'Vuelve aquí e intenta de nuevo.'];
+  } else if (pnIsAndroid()) {
+    steps = ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
+              'Entra a "Permisos del sitio" (o "Información del sitio").',
+              'Busca "Cámara" y "Micrófono" y cámbialos a "Permitir".',
+              'Si sigue sin funcionar, revisa en Ajustes del celular → Apps → Chrome → Permisos.'];
+  } else if (pnIsIOS()) {
+    steps = ['Abre Ajustes del iPhone.',
+              'Busca tu navegador (Safari o Chrome) — o el nombre de esta app si la instalaste — en la lista de apps.',
+              'Entra y activa "Cámara" y "Micrófono".',
+              'Vuelve aquí e intenta de nuevo.'];
+  } else {
+    steps = ['Toca el candado 🔒 junto a la dirección del sitio.',
+              'Busca "Cámara" y "Micrófono" en los permisos.',
+              'Cámbialos a "Permitir".'];
+  }
+  stepsEl.innerHTML = '';
+  steps.forEach(s => { const li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
+  document.getElementById('pn-perm-modal').classList.add('pndm-open');
+}
+function pnClosePermHelp(){
+  document.getElementById('pn-perm-modal').classList.remove('pndm-open');
+}
 </script>
 {% endblock %}

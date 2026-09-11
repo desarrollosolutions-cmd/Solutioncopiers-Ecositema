@@ -114,6 +114,12 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0l-6 6m6-6l6 6"/></svg>
     </button>
   </form>
+  <div style="max-width:720px;margin:0 auto;padding:0 .75rem .5rem;text-align:center;">
+    <button type="button" onclick="chShowPermHelp({name:'NotAllowedError'})"
+      style="background:none;border:none;color:var(--color-text-muted);font-size:.68rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.25rem;">
+      ¿No te deja usar el micrófono o la cámara?
+    </button>
+  </div>
 </div>
 
 {# ── Ayuda cuando el navegador bloquea el micrófono ── #}
@@ -282,6 +288,9 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
 
   function chIsAndroid(){ return /Android/i.test(navigator.userAgent); }
   function chIsIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+  function chIsStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
 
   window.chShowPermHelp = function(err){
     var titleEl = document.getElementById('ch-perm-title-text');
@@ -294,22 +303,30 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
       titleEl.textContent = 'Este sitio no es seguro (https)';
       textEl.textContent = 'Los navegadores solo permiten grabar audio en sitios con https. Entra usando el enlace https:// que te compartieron, no por http:// ni por IP.';
     } else if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError') {
-      titleEl.textContent = 'El micrófono está bloqueado para este sitio';
-      textEl.textContent = 'Ya lo habías rechazado antes, así que el navegador no vuelve a preguntar solo. Actívalo manualmente:';
-      var steps = chIsAndroid()
-        ? ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
-           'Entra a "Permisos del sitio" (o "Información del sitio").',
-           'Busca "Micrófono" y cámbialo a "Permitir".',
-           'Si sigue sin funcionar, revisa en Ajustes del celular que Chrome (o tu navegador) tenga permiso de Micrófono.']
-        : chIsIOS()
-        ? ['Abre Ajustes del iPhone.',
-           'Busca tu navegador (Safari o Chrome) en la lista de apps.',
-           'Entra a "Micrófono" y actívalo.',
-           'Vuelve aquí y toca "Reintentar".']
-        : ['Toca el candado 🔒 junto a la dirección del sitio, arriba del navegador.',
-           'Busca "Micrófono" en los permisos.',
-           'Cámbialo a "Permitir".',
-           'Toca "Reintentar" abajo.'];
+      titleEl.textContent = 'El micrófono está bloqueado para esta app';
+      textEl.textContent = 'Ya se rechazó antes (o el celular nunca dio el permiso), así que no vuelve a preguntar solo. Actívalo manualmente — estos mismos pasos también activan la Cámara para las fotos:';
+      var steps;
+      if (chIsAndroid() && chIsStandalone()) {
+        steps = ['Mantén presionado el ícono de esta app en tu pantalla de inicio y toca "Información de la app" (o ve a Ajustes → Apps).',
+                  'Busca "Solution Copiers" en la lista. Si no aparece, busca "Chrome" (el navegador con el que la instalaste).',
+                  'Entra a "Permisos" y activa Micrófono y Cámara.',
+                  'Vuelve aquí y toca "Reintentar".'];
+      } else if (chIsAndroid()) {
+        steps = ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
+                  'Entra a "Permisos del sitio" (o "Información del sitio").',
+                  'Busca "Micrófono" y "Cámara" y cámbialos a "Permitir".',
+                  'Si sigue sin funcionar, revisa en Ajustes del celular → Apps → Chrome → Permisos.'];
+      } else if (chIsIOS()) {
+        steps = ['Abre Ajustes del iPhone.',
+                  'Busca tu navegador (Safari o Chrome) en la lista de apps — o el nombre de esta app si la instalaste.',
+                  'Entra a "Micrófono" y "Cámara" y actívalos.',
+                  'Vuelve aquí y toca "Reintentar".'];
+      } else {
+        steps = ['Toca el candado 🔒 junto a la dirección del sitio, arriba del navegador.',
+                  'Busca "Micrófono" y "Cámara" en los permisos.',
+                  'Cámbialos a "Permitir".',
+                  'Toca "Reintentar" abajo.'];
+      }
       steps.forEach(function(s){ var li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
     } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
       titleEl.textContent = 'No se encontró un micrófono';

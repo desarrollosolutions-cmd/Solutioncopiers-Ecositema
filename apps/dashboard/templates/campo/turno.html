@@ -315,6 +315,12 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
       </label>
       <input type="file" id="campo-photo-input" accept="image/*" capture="environment"
         style="display:none;" onchange="onCampoPhoto(this)">
+      <div style="text-align:center;margin:-.5rem 0 .875rem;">
+        <button type="button" onclick="campoShowPermHelp()"
+          style="background:none;border:none;color:#7A6060;font-size:.68rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.25rem;">
+          ¿No te deja usar la cámara o el micrófono?
+        </button>
+      </div>
 
       <label class="modal-label">Firma del receptor</label>
       <div class="sig-wrap">
@@ -327,6 +333,18 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
       </button>
       <button type="button" class="btn-cancel-modal" onclick="closeModal()">Cancelar</button>
     </form>
+  </div>
+</div>
+
+{# ── Ayuda cuando el celular bloquea camara/microfono ── #}
+<div class="modal-overlay" id="perm-help-modal" style="display:none;align-items:center;" onclick="if(event.target===this)campoClosePermHelp()">
+  <div class="modal-sheet" style="max-width:360px;margin:0 auto;">
+    <div class="modal-title">Activar cámara y micrófono</div>
+    <p style="font-size:.8rem;color:#C0A8A8;line-height:1.6;margin-bottom:.875rem;">
+      La primera vez el sistema te pregunta si quieres permitirlo. Si ya lo rechazaste antes, actívalo manualmente:
+    </p>
+    <ol id="perm-help-steps" style="font-size:.78rem;color:#C0A8A8;line-height:1.8;margin:0 0 1rem;padding-left:1.1rem;"></ol>
+    <button type="button" class="btn-cancel-modal" onclick="campoClosePermHelp()">Entendido</button>
   </div>
 </div>
 
@@ -752,6 +770,43 @@ function submitComplete(e) {
   refresh();
   setInterval(refresh, 25000);
 })();
+
+// ── Ayuda: activar camara/microfono bloqueados ──
+function campoIsAndroid(){ return /Android/i.test(navigator.userAgent); }
+function campoIsIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+function campoIsStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function campoShowPermHelp(){
+  var stepsEl = document.getElementById('perm-help-steps');
+  var steps;
+  if (campoIsAndroid() && campoIsStandalone()) {
+    steps = ['Mantén presionado el ícono de esta app en tu pantalla de inicio y toca "Información de la app" (o ve a Ajustes → Apps).',
+              'Busca "Solution Copiers" en la lista. Si no aparece, busca "Chrome" (el navegador con el que la instalaste).',
+              'Entra a "Permisos" y activa Cámara y Micrófono.',
+              'Vuelve aquí e intenta de nuevo.'];
+  } else if (campoIsAndroid()) {
+    steps = ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
+              'Entra a "Permisos del sitio" (o "Información del sitio").',
+              'Busca "Cámara" y "Micrófono" y cámbialos a "Permitir".',
+              'Si sigue sin funcionar, revisa en Ajustes del celular → Apps → Chrome → Permisos.'];
+  } else if (campoIsIOS()) {
+    steps = ['Abre Ajustes del iPhone.',
+              'Busca tu navegador (Safari o Chrome) — o el nombre de esta app si la instalaste — en la lista de apps.',
+              'Entra y activa "Cámara" y "Micrófono".',
+              'Vuelve aquí e intenta de nuevo.'];
+  } else {
+    steps = ['Toca el candado 🔒 junto a la dirección del sitio.',
+              'Busca "Cámara" y "Micrófono" en los permisos.',
+              'Cámbialos a "Permitir".'];
+  }
+  stepsEl.innerHTML = '';
+  steps.forEach(function(s){ var li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
+  document.getElementById('perm-help-modal').style.display = 'flex';
+}
+function campoClosePermHelp(){
+  document.getElementById('perm-help-modal').style.display = 'none';
+}
 </script>
 
 <script src="{% static 'dashboard/push.js' %}"></script>
