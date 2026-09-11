@@ -5625,7 +5625,7 @@ class CampoTaskListView(View):
             "field_users":    FieldUser.objects.select_related("user").order_by("user__first_name"),
             "filter_user":    fu_pk,
             "filter_status":  status,
-            "filter_date":    date_str,
+            "filter_date":    date_str or "",
             "today":          timezone.localdate().isoformat(),
             "status_choices": DeliveryTask.Status.choices,
             "task_type_choices": DeliveryTask.TaskType.choices,
