@@ -1,5 +1,7 @@
-/* Service worker minimo — solo existe para poder recibir Web Push y mostrar
- * la notificacion del sistema operativo aunque el sitio no este abierto. */
+/* Service worker minimo — recibe Web Push y muestra la notificacion del
+ * sistema operativo aunque el sitio no este abierto, y habilita que el
+ * sitio se pueda instalar como PWA (icono propio en el celular/PC). No
+ * cachea nada todavia, asi que no hay riesgo de servir contenido viejo. */
 
 self.addEventListener('install', function (event) {
   self.skipWaiting();
@@ -9,6 +11,11 @@ self.addEventListener('activate', function (event) {
   event.waitUntil(self.clients.claim());
 });
 
+// Passthrough — requisito de algunos navegadores para ofrecer "Instalar app".
+self.addEventListener('fetch', function (event) {
+  event.respondWith(fetch(event.request));
+});
+
 self.addEventListener('push', function (event) {
   var data = {};
   try { data = event.data ? event.data.json() : {}; } catch (e) {}
@@ -16,8 +23,8 @@ self.addEventListener('push', function (event) {
   var title = data.title || 'Solution Copiers';
   var options = {
     body: data.body || '',
-    icon: '/static/images/logo.webp',
-    badge: '/static/images/logo.webp',
+    icon: '/static/images/icons/icon-192.png',
+    badge: '/static/images/icons/icon-192.png',
     data: { url: data.url || '/' },
     vibrate: [100, 50, 100],
   };

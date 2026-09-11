@@ -5,6 +5,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Portal de Campo — Solution Copiers</title>
+
+{# ── PWA: instalable como app propia para técnicos/mensajeros ── #}
+<link rel="manifest" href="{% static 'pwa/manifest-campo.json' %}">
+<meta name="theme-color" content="#100808">
+<link rel="icon" href="{% static 'images/favicon.ico' %}">
+<link rel="apple-touch-icon" href="{% static 'images/icons/apple-touch-icon.png' %}">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SC Campo">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{min-height:100vh;background:linear-gradient(135deg,#1A0E0E 0%,#221414 60%,#1A0E0E 100%);display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif;padding:1.5rem;}

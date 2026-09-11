@@ -11,6 +11,15 @@
   <link rel="stylesheet" href="{% static 'dist/css/main.css' %}">
   <link rel="stylesheet" href="{% static 'dashboard/datepicker.css' %}">
   <meta name="robots" content="noindex,nofollow">
+
+  {# ── PWA: instalable como app propia para el panel admin ── #}
+  <link rel="manifest" href="{% static 'pwa/manifest-dashboard.json' %}">
+  <meta name="theme-color" content="#100808">
+  <link rel="icon" href="{% static 'images/favicon.ico' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/icons/apple-touch-icon.png' %}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SC Admin">
   <script>
     (function(){
       var t = localStorage.getItem('da-theme') || 'dark';
@@ -1507,9 +1516,7 @@ function crmBell() {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   {% vapid_public_key as da_vapid_key %}
-  {% if da_vapid_key %}
   if (window.SCPush) window.SCPush.init('{{ da_vapid_key }}');
-  {% endif %}
 });
 </script>
 </body>

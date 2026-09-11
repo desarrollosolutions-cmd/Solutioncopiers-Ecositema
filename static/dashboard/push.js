@@ -8,8 +8,12 @@
   var DISMISS_KEY = 'sc-push-dismissed-at';
   var DISMISS_DAYS = 3;
 
-  function supported() {
-    return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  function swSupported() {
+    return 'serviceWorker' in navigator;
+  }
+
+  function pushSupported() {
+    return swSupported() && 'PushManager' in window && 'Notification' in window;
   }
 
   function urlBase64ToUint8Array(base64String) {
@@ -105,9 +109,14 @@
 
   window.SCPush = {
     init: function (vapidPublicKey) {
-      if (!supported() || !vapidPublicKey) return;
+      // El service worker se registra siempre que el navegador lo soporte
+      // (habilita "Instalar app"), independiente de si el push ya está
+      // configurado (VAPID_PUBLIC_KEY) o no.
+      if (!swSupported()) return;
 
       navigator.serviceWorker.register('/sw.js').then(function (registration) {
+        if (!pushSupported() || !vapidPublicKey) return;
+
         if (Notification.permission === 'granted') {
           subscribe(vapidPublicKey, registration).catch(function () {});
         } else if (Notification.permission === 'default') {

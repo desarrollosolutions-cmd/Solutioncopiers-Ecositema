@@ -11,6 +11,16 @@
   <link rel="stylesheet" href="{% static 'dist/css/main.css' %}">
   <link rel="stylesheet" href="{% static 'dashboard/datepicker.css' %}">
   <meta name="robots" content="noindex,nofollow">
+
+  {# ── PWA: instalable como app propia para el panel de asesoras ── #}
+  <link rel="manifest" href="{% static 'pwa/manifest-panel.json' %}">
+  <meta name="theme-color" content="#100808">
+  <link rel="icon" href="{% static 'images/favicon.ico' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/icons/apple-touch-icon.png' %}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SC Panel">
+
   <script>(function(){var t=localStorage.getItem('pn-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
   <style>
     /* ── PALETA DE MARCA DEL PANEL — rojo intenso / vinotinto, igual al logo ── */
@@ -648,9 +658,7 @@ function panelBell() {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   {% vapid_public_key as pn_vapid_key %}
-  {% if pn_vapid_key %}
   if (window.SCPush) window.SCPush.init('{{ pn_vapid_key }}');
-  {% endif %}
 });
 </script>
 </body>
