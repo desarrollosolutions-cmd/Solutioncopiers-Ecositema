@@ -390,6 +390,10 @@
     <p style="font-size:.8rem;color:var(--color-text-muted);line-height:1.6;margin-bottom:.875rem;">
       La primera vez el sistema te pregunta si quieres permitirlo. Si ya lo rechazaste antes, actívalo manualmente:
     </p>
+    <div id="pn-perm-copy-box" style="display:none;gap:.5rem;margin-bottom:.875rem;">
+      <input type="text" id="pn-perm-url" readonly style="flex:1;min-width:0;padding:.55rem .7rem;border-radius:.5rem;border:1.5px solid var(--color-border);background:var(--color-bg);color:var(--color-text-secondary);font-size:.72rem;font-family:inherit;">
+      <button type="button" id="pn-perm-copy-btn" onclick="pnCopyPermUrl()" style="flex-shrink:0;padding:.55rem .75rem;border-radius:.5rem;border:1.5px solid var(--color-primary);background:none;color:var(--color-primary);font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Copiar enlace</button>
+    </div>
     <ol id="pn-perm-steps" style="font-size:.78rem;color:var(--color-text-muted);line-height:1.8;margin:0 0 1rem;padding-left:1.1rem;"></ol>
     <button type="button" class="pndm-btn-cancel" onclick="pnClosePermHelp()">Entendido</button>
   </div>
@@ -819,13 +823,21 @@ function pnIsStandalone(){
 }
 function pnShowPermHelp(){
   const stepsEl = document.getElementById('pn-perm-steps');
-  let steps;
+  const copyBox = document.getElementById('pn-perm-copy-box');
+  copyBox.style.display = 'none';
+  stepsEl.innerHTML = '';
   if (pnIsAndroid() && pnIsStandalone()) {
-    steps = ['Mantén presionado el ícono de esta app en tu pantalla de inicio y toca "Información de la app" (o ve a Ajustes → Apps).',
-              'Busca "Solution Copiers" en la lista. Si no aparece, busca "Chrome" (el navegador con el que la instalaste).',
-              'Entra a "Permisos" y activa Cámara y Micrófono.',
-              'Vuelve aquí e intenta de nuevo.'];
-  } else if (pnIsAndroid()) {
+    document.getElementById('pn-perm-url').value = window.location.origin;
+    copyBox.style.display = 'flex';
+    stepsEl.innerHTML =
+      '<li><strong>Más fácil:</strong> copia el enlace de arriba, ábrelo en Chrome (fuera de esta app) y toca el candado 🔒 junto a la dirección para activar Cámara y Micrófono ahí — quedan activos también dentro de la app instalada.</li>' +
+      '<li>O desde la app instalada: mantén presionado su ícono en la pantalla de inicio → "Información de la app" (o Ajustes → Apps) → busca "Solution Copiers" (o "Chrome" si no aparece) → Permisos → activa Cámara y Micrófono.</li>' +
+      '<li>Vuelve aquí e intenta de nuevo.</li>';
+    document.getElementById('pn-perm-modal').classList.add('pndm-open');
+    return;
+  }
+  let steps;
+  if (pnIsAndroid()) {
     steps = ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
               'Entra a "Permisos del sitio" (o "Información del sitio").',
               'Busca "Cámara" y "Micrófono" y cámbialos a "Permitir".',
@@ -840,9 +852,25 @@ function pnShowPermHelp(){
               'Busca "Cámara" y "Micrófono" en los permisos.',
               'Cámbialos a "Permitir".'];
   }
-  stepsEl.innerHTML = '';
   steps.forEach(s => { const li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
   document.getElementById('pn-perm-modal').classList.add('pndm-open');
+}
+function pnCopyPermUrl(){
+  const input = document.getElementById('pn-perm-url');
+  const btn = document.getElementById('pn-perm-copy-btn');
+  const done = () => {
+    btn.textContent = 'Copiado ✓';
+    setTimeout(() => { btn.textContent = 'Copiar enlace'; }, 2000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(input.value).then(done).catch(() => {
+      input.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+    });
+  } else {
+    input.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+  }
 }
 function pnClosePermHelp(){
   document.getElementById('pn-perm-modal').classList.remove('pndm-open');

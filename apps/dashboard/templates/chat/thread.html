@@ -56,6 +56,10 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
 .ch-perm-btn{flex:1;padding:.65rem;border-radius:.625rem;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;}
 .ch-perm-btn-primary{background:linear-gradient(135deg,#C4121A,#5A0B0B);color:#fff;}
 .ch-perm-btn-secondary{background:none;border:1.5px solid var(--color-border);color:var(--color-text-primary);}
+.ch-perm-copy-box{display:flex;gap:.5rem;margin-bottom:.875rem;}
+.ch-perm-copy-input{flex:1;min-width:0;padding:.55rem .7rem;border-radius:.5rem;border:1.5px solid var(--color-border);background:var(--color-bg);color:var(--color-text-secondary);font-size:.72rem;font-family:inherit;}
+.ch-perm-copy-btn{flex-shrink:0;padding:.55rem .75rem;border-radius:.5rem;border:1.5px solid var(--color-primary);background:none;color:var(--color-primary);font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.ch-perm-copy-btn.copied{background:var(--color-primary);color:#fff;}
 </style>
 </head>
 <body>
@@ -130,6 +134,10 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
       <span id="ch-perm-title-text">No se pudo acceder al micrófono</span>
     </div>
     <div class="ch-perm-text" id="ch-perm-text"></div>
+    <div class="ch-perm-copy-box" id="ch-perm-copy-box" style="display:none;">
+      <input type="text" id="ch-perm-url" class="ch-perm-copy-input" readonly>
+      <button type="button" id="ch-perm-copy-btn" class="ch-perm-copy-btn" onclick="chCopyPermUrl()">Copiar enlace</button>
+    </div>
     <ol class="ch-perm-steps" id="ch-perm-steps"></ol>
     <div class="ch-perm-actions">
       <button type="button" class="ch-perm-btn ch-perm-btn-secondary" onclick="chClosePermHelp()">Cerrar</button>
@@ -296,38 +304,46 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
     var titleEl = document.getElementById('ch-perm-title-text');
     var textEl  = document.getElementById('ch-perm-text');
     var stepsEl = document.getElementById('ch-perm-steps');
+    var copyBox = document.getElementById('ch-perm-copy-box');
+    var urlInput = document.getElementById('ch-perm-url');
     var name = err && err.name;
     stepsEl.innerHTML = '';
+    stepsEl.style.display = '';
+    copyBox.style.display = 'none';
 
     if (!window.isSecureContext) {
       titleEl.textContent = 'Este sitio no es seguro (https)';
       textEl.textContent = 'Los navegadores solo permiten grabar audio en sitios con https. Entra usando el enlace https:// que te compartieron, no por http:// ni por IP.';
     } else if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError') {
       titleEl.textContent = 'El micrófono está bloqueado para esta app';
-      textEl.textContent = 'Ya se rechazó antes (o el celular nunca dio el permiso), así que no vuelve a preguntar solo. Actívalo manualmente — estos mismos pasos también activan la Cámara para las fotos:';
-      var steps;
+      textEl.textContent = 'Ya se rechazó antes (o el celular nunca dio el permiso), así que no vuelve a preguntar solo. Estos mismos pasos también activan la Cámara para las fotos:';
       if (chIsAndroid() && chIsStandalone()) {
-        steps = ['Mantén presionado el ícono de esta app en tu pantalla de inicio y toca "Información de la app" (o ve a Ajustes → Apps).',
-                  'Busca "Solution Copiers" en la lista. Si no aparece, busca "Chrome" (el navegador con el que la instalaste).',
-                  'Entra a "Permisos" y activa Micrófono y Cámara.',
-                  'Vuelve aquí y toca "Reintentar".'];
-      } else if (chIsAndroid()) {
-        steps = ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
-                  'Entra a "Permisos del sitio" (o "Información del sitio").',
-                  'Busca "Micrófono" y "Cámara" y cámbialos a "Permitir".',
-                  'Si sigue sin funcionar, revisa en Ajustes del celular → Apps → Chrome → Permisos.'];
-      } else if (chIsIOS()) {
-        steps = ['Abre Ajustes del iPhone.',
-                  'Busca tu navegador (Safari o Chrome) en la lista de apps — o el nombre de esta app si la instalaste.',
-                  'Entra a "Micrófono" y "Cámara" y actívalos.',
-                  'Vuelve aquí y toca "Reintentar".'];
+        urlInput.value = window.location.origin;
+        copyBox.style.display = 'flex';
+        stepsEl.innerHTML =
+          '<li><strong>Más fácil:</strong> copia el enlace de arriba, ábrelo en Chrome (fuera de esta app) y toca el candado 🔒 junto a la dirección para activar Cámara y Micrófono ahí — quedan activos también dentro de la app instalada.</li>' +
+          '<li>O desde la app instalada: mantén presionado su ícono en la pantalla de inicio → "Información de la app" (o Ajustes → Apps) → busca "Solution Copiers" (o "Chrome" si no aparece) → Permisos → activa Cámara y Micrófono.</li>' +
+          '<li>Vuelve aquí y toca "Reintentar".</li>';
       } else {
-        steps = ['Toca el candado 🔒 junto a la dirección del sitio, arriba del navegador.',
-                  'Busca "Micrófono" y "Cámara" en los permisos.',
-                  'Cámbialos a "Permitir".',
-                  'Toca "Reintentar" abajo.'];
+        var steps;
+        if (chIsAndroid()) {
+          steps = ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
+                    'Entra a "Permisos del sitio" (o "Información del sitio").',
+                    'Busca "Micrófono" y "Cámara" y cámbialos a "Permitir".',
+                    'Si sigue sin funcionar, revisa en Ajustes del celular → Apps → Chrome → Permisos.'];
+        } else if (chIsIOS()) {
+          steps = ['Abre Ajustes del iPhone.',
+                    'Busca tu navegador (Safari o Chrome) en la lista de apps — o el nombre de esta app si la instalaste.',
+                    'Entra a "Micrófono" y "Cámara" y actívalos.',
+                    'Vuelve aquí y toca "Reintentar".'];
+        } else {
+          steps = ['Toca el candado 🔒 junto a la dirección del sitio, arriba del navegador.',
+                    'Busca "Micrófono" y "Cámara" en los permisos.',
+                    'Cámbialos a "Permitir".',
+                    'Toca "Reintentar" abajo.'];
+        }
+        steps.forEach(function(s){ var li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
       }
-      steps.forEach(function(s){ var li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
     } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
       titleEl.textContent = 'No se encontró un micrófono';
       textEl.textContent = 'Este dispositivo no tiene micrófono disponible, o está siendo usado por otra aplicación.';
@@ -344,6 +360,25 @@ body{margin:0;background:var(--color-bg);font-family:'Inter',system-ui,sans-seri
 
   window.chClosePermHelp = function(){
     document.getElementById('ch-perm-overlay').classList.remove('show');
+  };
+
+  window.chCopyPermUrl = function(){
+    var input = document.getElementById('ch-perm-url');
+    var btn = document.getElementById('ch-perm-copy-btn');
+    var done = function(){
+      btn.textContent = 'Copiado ✓';
+      btn.classList.add('copied');
+      setTimeout(function(){ btn.textContent = 'Copiar enlace'; btn.classList.remove('copied'); }, 2000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).then(done).catch(function(){
+        input.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+      });
+    } else {
+      input.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+    }
   };
 
   function stopRecording(){

@@ -343,6 +343,10 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
     <p style="font-size:.8rem;color:#C0A8A8;line-height:1.6;margin-bottom:.875rem;">
       La primera vez el sistema te pregunta si quieres permitirlo. Si ya lo rechazaste antes, actívalo manualmente:
     </p>
+    <div id="perm-help-copy-box" style="display:none;gap:.5rem;margin-bottom:.875rem;">
+      <input type="text" id="perm-help-url" readonly style="flex:1;min-width:0;padding:.55rem .7rem;border-radius:.5rem;border:1.5px solid #3A2020;background:#100808;color:#C0A8A8;font-size:.72rem;font-family:inherit;">
+      <button type="button" id="perm-help-copy-btn" onclick="campoCopyPermUrl()" style="flex-shrink:0;padding:.55rem .75rem;border-radius:.5rem;border:1.5px solid #C4121A;background:none;color:#C4121A;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Copiar enlace</button>
+    </div>
     <ol id="perm-help-steps" style="font-size:.78rem;color:#C0A8A8;line-height:1.8;margin:0 0 1rem;padding-left:1.1rem;"></ol>
     <button type="button" class="btn-cancel-modal" onclick="campoClosePermHelp()">Entendido</button>
   </div>
@@ -779,13 +783,21 @@ function campoIsStandalone(){
 }
 function campoShowPermHelp(){
   var stepsEl = document.getElementById('perm-help-steps');
-  var steps;
+  var copyBox = document.getElementById('perm-help-copy-box');
+  copyBox.style.display = 'none';
+  stepsEl.innerHTML = '';
   if (campoIsAndroid() && campoIsStandalone()) {
-    steps = ['Mantén presionado el ícono de esta app en tu pantalla de inicio y toca "Información de la app" (o ve a Ajustes → Apps).',
-              'Busca "Solution Copiers" en la lista. Si no aparece, busca "Chrome" (el navegador con el que la instalaste).',
-              'Entra a "Permisos" y activa Cámara y Micrófono.',
-              'Vuelve aquí e intenta de nuevo.'];
-  } else if (campoIsAndroid()) {
+    document.getElementById('perm-help-url').value = window.location.origin;
+    copyBox.style.display = 'flex';
+    stepsEl.innerHTML =
+      '<li><strong>Más fácil:</strong> copia el enlace de arriba, ábrelo en Chrome (fuera de esta app) y toca el candado 🔒 junto a la dirección para activar Cámara y Micrófono ahí — quedan activos también dentro de la app instalada.</li>' +
+      '<li>O desde la app instalada: mantén presionado su ícono en la pantalla de inicio → "Información de la app" (o Ajustes → Apps) → busca "Solution Copiers" (o "Chrome" si no aparece) → Permisos → activa Cámara y Micrófono.</li>' +
+      '<li>Vuelve aquí e intenta de nuevo.</li>';
+    document.getElementById('perm-help-modal').style.display = 'flex';
+    return;
+  }
+  var steps;
+  if (campoIsAndroid()) {
     steps = ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
               'Entra a "Permisos del sitio" (o "Información del sitio").',
               'Busca "Cámara" y "Micrófono" y cámbialos a "Permitir".',
@@ -800,9 +812,25 @@ function campoShowPermHelp(){
               'Busca "Cámara" y "Micrófono" en los permisos.',
               'Cámbialos a "Permitir".'];
   }
-  stepsEl.innerHTML = '';
   steps.forEach(function(s){ var li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
   document.getElementById('perm-help-modal').style.display = 'flex';
+}
+function campoCopyPermUrl(){
+  var input = document.getElementById('perm-help-url');
+  var btn = document.getElementById('perm-help-copy-btn');
+  var done = function(){
+    btn.textContent = 'Copiado ✓';
+    setTimeout(function(){ btn.textContent = 'Copiar enlace'; }, 2000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(input.value).then(done).catch(function(){
+      input.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+    });
+  } else {
+    input.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+  }
 }
 function campoClosePermHelp(){
   document.getElementById('perm-help-modal').style.display = 'none';
