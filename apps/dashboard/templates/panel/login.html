@@ -57,5 +57,8 @@
     <button type="submit" class="btn">Ingresar al panel</button>
   </form>
 </div>
+<script>
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }
+</script>
 </body>
 </html>

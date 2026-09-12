@@ -53,5 +53,8 @@ button:active{transform:scale(.98);opacity:.9;}
     <button type="submit">Ingresar</button>
   </form>
 </div>
+<script>
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }
+</script>
 </body>
 </html>
