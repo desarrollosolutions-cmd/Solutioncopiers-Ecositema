@@ -838,6 +838,7 @@ function campoClosePermHelp(){
 </script>
 
 <script src="{% static 'dashboard/push.js' %}"></script>
+<script src="{% static 'dashboard/install.js' %}"></script>
 <script>
 {% vapid_public_key as campo_vapid_key %}
 if (window.SCPush) window.SCPush.init('{{ campo_vapid_key }}');
