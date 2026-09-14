@@ -3017,6 +3017,10 @@ class PanelTicketDetailView(View):
             )
         ticket.resolution_notes = request.POST.get("resolution_notes", ticket.resolution_notes)
 
+        new_photos = [p.strip() for p in request.POST.getlist("photos_b64") if p.strip()]
+        if new_photos:
+            ticket.evidence_photos = list(ticket.evidence_photos) + new_photos
+
         if ticket.status in ("resolved", "closed") and not ticket.resolved_at:
             ticket.resolved_at = timezone.now()
 
@@ -6008,6 +6012,7 @@ class CampoTicketDetailView(View):
 
         new_status = request.POST.get("status", "").strip()
         notes      = request.POST.get("resolution_notes", "").strip()
+        new_photos = [p.strip() for p in request.POST.getlist("photos_b64") if p.strip()]
 
         valid_transitions = {
             "open":          ["in_progress", "waiting_parts"],
@@ -6026,7 +6031,10 @@ class CampoTicketDetailView(View):
         if notes:
             ticket.resolution_notes = notes
 
-        ticket.save(update_fields=["status", "resolution_notes", "resolved_at"])
+        if new_photos:
+            ticket.evidence_photos = list(ticket.evidence_photos) + new_photos
+
+        ticket.save(update_fields=["status", "resolution_notes", "resolved_at", "evidence_photos"])
 
         if status_changed:
             from apps.dashboard.models import Notification

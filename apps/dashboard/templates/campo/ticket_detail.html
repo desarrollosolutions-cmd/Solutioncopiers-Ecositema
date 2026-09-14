@@ -57,6 +57,16 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .logout-btn{background:none;border:none;color:#7A6060;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;padding:.375rem .625rem;border-radius:.375rem;}
 .toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:#221414;border:1px solid #C4121A;color:#F5EDEB;padding:.625rem 1.25rem;border-radius:.75rem;font-size:.78rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
+.evidence-gallery{display:flex;flex-wrap:wrap;gap:.5rem;}
+.evidence-gallery a{display:block;width:5.5rem;height:5.5rem;border-radius:.75rem;overflow:hidden;border:1px solid #3A2020;}
+.evidence-gallery img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.375rem;padding:1rem;background:#100808;border:1.5px dashed #3A2020;border-radius:.75rem;cursor:pointer;color:#C0A8A8;font-size:.78rem;margin-bottom:.875rem;transition:border-color .2s;}
+.photo-label:active{border-color:#C4121A;}
+.photo-label span:first-child{font-size:1.5rem;}
+.photo-grid{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.875rem;}
+.photo-thumb{position:relative;width:4.5rem;height:4.5rem;border-radius:.625rem;overflow:hidden;flex-shrink:0;}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-thumb button{position:absolute;top:.15rem;right:.15rem;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:9999px;width:1.375rem;height:1.375rem;cursor:pointer;font-size:.65rem;font-weight:700;line-height:1;}
 </style>
 </head>
 <body>
@@ -132,6 +142,16 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
   <div class="text-block" style="border-color:rgba(16,185,129,.25);">{{ ticket.resolution_notes|linebreaksbr }}</div>
   {% endif %}
 
+  {# Evidencia fotográfica ya guardada #}
+  {% if ticket.evidence_photos %}
+  <div class="section-title">Evidencia fotográfica</div>
+  <div class="evidence-gallery" style="margin-bottom:.875rem;">
+    {% for photo in ticket.evidence_photos %}
+    <a href="{{ photo }}" target="_blank" rel="noopener"><img src="{{ photo }}" alt="Evidencia {{ forloop.counter }}"></a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   {# Llegada al sitio #}
   {% if ticket.status != "closed" %}
   <div class="action-card">
@@ -166,6 +186,15 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
       <label class="form-label">Notas de trabajo (opcional)</label>
       <textarea name="resolution_notes" class="form-textarea"
         placeholder="Describe lo que hiciste, piezas instaladas, estado del equipo…">{{ ticket.resolution_notes }}</textarea>
+
+      <label class="form-label">Evidencia fotográfica <span style="font-weight:400;text-transform:none;">(cómo queda el servicio — hasta 6 fotos)</span></label>
+      <div class="photo-grid" id="ticket-photo-grid"></div>
+      <label class="photo-label" id="ticket-photo-label" onclick="document.getElementById('ticket-photo-input').click()">
+        <span>📷</span>
+        <span id="ticket-photo-txt">Toca para tomar o elegir foto</span>
+      </label>
+      <input type="file" id="ticket-photo-input" accept="image/*" capture="environment"
+        style="display:none;" onchange="onTicketPhoto(this)">
 
       <div class="btn-grid">
         {% if ticket.status == "open" %}
@@ -235,7 +264,68 @@ function showToast(msg, ok=true) {
 
 function submitStatus(status) {
   document.getElementById('status-input').value = status;
-  document.getElementById('update-form').submit();
+  const form = document.getElementById('update-form');
+  _ticketPhotos.forEach(function (p) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'photos_b64';
+    input.value = p;
+    form.appendChild(input);
+  });
+  form.submit();
+}
+
+// ── Fotos de evidencia (varias) ──
+const TICKET_MAX_PHOTOS = 6;
+let _ticketPhotos = [];
+
+function renderTicketPhotos() {
+  const grid = document.getElementById('ticket-photo-grid');
+  grid.innerHTML = _ticketPhotos.map((p, i) =>
+    `<div class="photo-thumb"><img src="${p}" alt="foto ${i + 1}"><button type="button" onclick="removeTicketPhoto(${i})">✕</button></div>`
+  ).join('');
+  const label = document.getElementById('ticket-photo-label');
+  const txt   = document.getElementById('ticket-photo-txt');
+  if (_ticketPhotos.length >= TICKET_MAX_PHOTOS) {
+    label.style.display = 'none';
+  } else {
+    label.style.display = '';
+    txt.textContent = _ticketPhotos.length
+      ? `Agregar otra foto (${_ticketPhotos.length}/${TICKET_MAX_PHOTOS})`
+      : 'Toca para tomar o elegir foto';
+  }
+}
+
+function onTicketPhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const orig = new Image();
+    orig.onload = () => {
+      const MAX = 1024;
+      let w = orig.width, h = orig.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(orig, 0, 0, w, h);
+      if (_ticketPhotos.length < TICKET_MAX_PHOTOS) {
+        _ticketPhotos.push(c.toDataURL('image/jpeg', 0.75));
+        renderTicketPhotos();
+      }
+    };
+    orig.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removeTicketPhoto(idx) {
+  _ticketPhotos.splice(idx, 1);
+  renderTicketPhotos();
 }
 
 {% if request.method == 'POST' %}
