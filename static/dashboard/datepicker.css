@@ -11,14 +11,14 @@
 }
 
 .dp-display-input {
-  width: 100%;
+  width: 100% !important;
   cursor: pointer;
   padding-right: 2.25rem !important;
 }
 
 .dp-time-input {
-  flex-shrink: 0;
-  width: 6.75rem;
+  flex: 0 0 6.75rem !important;
+  width: 6.75rem !important;
 }
 
 .dp-trigger {
