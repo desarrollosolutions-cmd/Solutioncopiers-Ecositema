@@ -159,6 +159,7 @@ class Notification(models.Model):
         DELIVERY_DONE      = "delivery_done",      "Entrega/recolección completada"
         TICKET_STATUS      = "ticket_status",      "Ticket actualizado por técnico"
         TICKET_ARRIVAL     = "ticket_arrival",     "Llegada a sitio"
+        TICKET_DEPARTURE   = "ticket_departure",   "Salida de sitio"
         LUNCH_BREAK        = "lunch_break",        "Almuerzo"
         CHAT_MESSAGE       = "chat_message",       "Mensaje de chat"
 

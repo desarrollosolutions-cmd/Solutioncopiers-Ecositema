@@ -359,6 +359,7 @@ class ServiceTicket(TimeStampedModel):
     )
     scheduled_for = models.DateTimeField(_("visita programada"), null=True, blank=True)
     arrived_at    = models.DateTimeField(_("llegada al sitio"), null=True, blank=True)
+    departed_at   = models.DateTimeField(_("salida del sitio"), null=True, blank=True)
     resolved_at   = models.DateTimeField(_("resuelto el"), null=True, blank=True)
     order         = models.PositiveSmallIntegerField(_("orden de ejecución"), default=0)
 

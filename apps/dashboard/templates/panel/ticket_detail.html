@@ -58,6 +58,10 @@
           <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Llegada al sitio</div>
             <div style="font-size:.875rem;font-weight:600;color:#0EA5E9;">{{ ticket.arrived_at|date:"d/m/Y H:i" }}</div></div>
           {% endif %}
+          {% if ticket.departed_at %}
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Salida del sitio</div>
+            <div style="font-size:.875rem;font-weight:600;color:#94A3B8;">{{ ticket.departed_at|date:"d/m/Y H:i" }}</div></div>
+          {% endif %}
           {% if ticket.resolved_at %}
           <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Resuelto</div>
             <div style="font-size:.875rem;color:#10B981;">{{ ticket.resolved_at|date:"d/m/Y H:i" }}</div></div>

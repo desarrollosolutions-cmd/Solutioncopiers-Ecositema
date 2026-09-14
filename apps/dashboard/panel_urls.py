@@ -30,6 +30,7 @@ urlpatterns = [
     path("tickets/<int:pk>/",            views.PanelTicketDetailView.as_view(),       name="ticket_detail"),
     path("tickets/<int:pk>/estado/",     views.PanelTicketStatusUpdateView.as_view(), name="ticket_status"),
     path("tickets/<int:pk>/llegada/",    views.PanelTicketArrivalView.as_view(),      name="ticket_arrival"),
+    path("tickets/<int:pk>/salida/",     views.PanelTicketDepartureView.as_view(),    name="ticket_departure"),
 
     # Contratos
     path("contratos/", views.PanelContractListView.as_view(), name="contracts"),

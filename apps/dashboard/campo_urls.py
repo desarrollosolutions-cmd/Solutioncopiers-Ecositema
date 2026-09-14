@@ -16,5 +16,6 @@ urlpatterns = [
     path("tareas/<int:pk>/completar/", views.CampoTaskCompleteView.as_view(), name="task_complete"),
     path("tickets/<int:pk>/",          views.CampoTicketDetailView.as_view(),  name="ticket_detail"),
     path("tickets/<int:pk>/llegada/",  views.CampoTicketArrivalView.as_view(), name="ticket_arrival"),
+    path("tickets/<int:pk>/salida/",   views.CampoTicketDepartureView.as_view(), name="ticket_departure"),
     path("mapa-ruta/",                 views.CampoTurnoMapView.as_view(),      name="turno_map"),
 ]
