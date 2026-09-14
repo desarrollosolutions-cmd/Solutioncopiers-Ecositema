@@ -24,7 +24,6 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .shift-dot{width:.75rem;height:.75rem;border-radius:50%;flex-shrink:0;}
 .shift-dot.on{background:#10B981;box-shadow:0 0 8px rgba(16,185,129,.6);}
 .shift-dot.off{background:#7A6060;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
 .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:.625rem;}
 .btn{padding:.75rem;border-radius:.75rem;border:none;font-size:.8rem;font-weight:700;cursor:pointer;transition:transform .15s,opacity .18s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.375rem;}
 .btn:active{transform:scale(.96);}
@@ -34,7 +33,7 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .btn-lunch{background:rgba(217,119,6,.12);color:#D97706;border:1px solid rgba(217,119,6,.25);grid-column:1/-1;}
 .btn-lunch-active{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;grid-column:1/-1;}
 .lunch-banner{display:flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:600;color:#D97706;background:rgba(217,119,6,.1);border:1px solid rgba(217,119,6,.25);border-radius:.625rem;padding:.5rem .75rem;margin-bottom:.875rem;}
-.lunch-banner.over{color:#EF4444;background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);animation:pulse 1s infinite;}
+.lunch-banner.over{color:#EF4444;background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);}
 .section-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7A6060;margin:1.25rem 0 .625rem;display:flex;align-items:center;justify-content:space-between;}
 /* Delivery task card */
 .dtask{background:#221414;border:1px solid #3A2020;border-radius:.875rem;padding:.875rem 1rem;margin-bottom:.5rem;display:flex;gap:.75rem;align-items:flex-start;transition:border-color .2s;}
@@ -91,8 +90,6 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .btn-cancel-modal{width:100%;padding:.75rem;background:none;border:1.5px solid #3A2020;color:#C0A8A8;border-radius:.875rem;font-size:.875rem;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.5rem;}
 .gps-pill{display:inline-flex;align-items:center;gap:.3rem;font-size:.62rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:rgba(196,18,26,.1);color:#C4121A;border:1px solid rgba(196,18,26,.2);margin-top:.4rem;}
 .gps-pill.ok{background:rgba(16,185,129,.1);color:#10B981;border-color:rgba(16,185,129,.2);}
-.gps-spin{display:inline-block;animation:spin .8s linear infinite;width:.6rem;height:.6rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;}
-@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
@@ -116,7 +113,7 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
   </a>
   <div style="text-align:right;flex-shrink:0;">
     <div style="font-size:.7rem;color:#C0A8A8;" id="clock"></div>
-    <div id="gps-pill" class="gps-pill"><span class="gps-spin"></span> Buscando GPS…</div>
+    <div id="gps-pill" class="gps-pill">Buscando GPS…</div>
   </div>
 </div>
 
@@ -421,7 +418,7 @@ function updateGpsPill(state, coords) {
   const pill = document.getElementById('gps-pill');
   if (state === 'searching') {
     pill.className = 'gps-pill';
-    pill.innerHTML = '<span class="gps-spin"></span> Buscando…';
+    pill.textContent = 'Buscando GPS…';
   } else if (state === 'ok') {
     pill.className = 'gps-pill ok';
     pill.textContent = 'GPS ✓';
