@@ -25,8 +25,8 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .shift-dot.on{background:#10B981;box-shadow:0 0 8px rgba(16,185,129,.6);}
 .shift-dot.off{background:#7A6060;}
 .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:.625rem;}
-.btn{padding:.75rem;border-radius:.75rem;border:none;font-size:.8rem;font-weight:700;cursor:pointer;transition:transform .15s,opacity .18s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.375rem;}
-.btn:active{transform:scale(.96);}
+.btn{padding:.75rem;border-radius:.75rem;border:none;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.375rem;}
+.btn:active{opacity:.85;}
 .btn svg{width:.9rem;height:.9rem;}
 .btn-start{background:linear-gradient(135deg,#10B981,#059669);color:#fff;}
 .btn-end{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.2);}
@@ -64,7 +64,7 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .battery svg{width:.875rem;height:.875rem;}
 .logout-btn{background:none;border:none;color:#7A6060;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;padding:.375rem .625rem;border-radius:.375rem;}
 .logout-btn:active{background:rgba(239,68,68,.1);color:#EF4444;}
-.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:#221414;border:1px solid #C4121A;color:#F5EDEB;padding:.625rem 1.25rem;border-radius:.75rem;font-size:.78rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:#221414;border:1px solid #C4121A;color:#F5EDEB;padding:.625rem 1.25rem;border-radius:.75rem;font-size:.78rem;font-weight:600;z-index:999;opacity:0;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 /* Modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:flex;align-items:flex-end;}
