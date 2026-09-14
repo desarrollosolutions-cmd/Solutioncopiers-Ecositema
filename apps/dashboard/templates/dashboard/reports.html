@@ -191,14 +191,14 @@
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.75rem;">
 
-  <div class="rpt-chart-card">
-    <div class="rpt-chart-title">Razones de pérdida</div>
-    <canvas id="chartLostByCategory" height="200"></canvas>
+  <div class="chart-card">
+    <div class="chart-card-title">Razones de pérdida</div>
+    <div class="chart-wrap" style="height:200px;"><canvas id="chartLostByCategory"></canvas></div>
   </div>
 
-  <div class="rpt-chart-card">
-    <div class="rpt-chart-title">Pérdidas por servicio</div>
-    <canvas id="chartLostByArea" height="200"></canvas>
+  <div class="chart-card">
+    <div class="chart-card-title">Pérdidas por servicio</div>
+    <div class="chart-wrap" style="height:200px;"><canvas id="chartLostByArea"></canvas></div>
   </div>
 
 </div>
@@ -285,7 +285,7 @@
   Chart.defaults.font.family = get('--font-body') || 'system-ui, sans-serif';
   Chart.defaults.font.size = 11;
 
-  const MONTHS  = {{ months_labels }};
+  const MONTHS  = {{ months_labels|safe }};
   const PALETTE = [
     primary, success, '#D97706', '#2563EB', '#7C3AED',
     '#EC4899', '#06B6D4', '#F59E0B', '#84CC16', '#F97316',
@@ -421,47 +421,47 @@
   // ── Instantiate ───────────────────────────────────────────
 
   // Ventas
-  barChart('chartQuotesByMonth', MONTHS, {{ quotes_by_month }}, primary);
+  barChart('chartQuotesByMonth', MONTHS, {{ quotes_by_month|safe }}, primary);
   doughnutChart('chartQuotesByStatus',
-    {{ quotes_status_labels }},
-    {{ quotes_by_status }},
+    {{ quotes_status_labels|safe }},
+    {{ quotes_by_status|safe }},
     [primary, '#D97706', '#2563EB', success, '#E11D48']
   );
-  hbarChart('chartQuotesByArea', {{ quotes_by_area_labels }}, {{ quotes_by_area_data }});
+  hbarChart('chartQuotesByArea', {{ quotes_by_area_labels|safe }}, {{ quotes_by_area_data|safe }});
 
   // Clientes
-  lineChart('chartClientsByMonth', MONTHS, {{ clients_by_month }}, success);
+  lineChart('chartClientsByMonth', MONTHS, {{ clients_by_month|safe }}, success);
   doughnutChart('chartClientsBySource',
-    {{ clients_by_source_labels }},
-    {{ clients_by_source_data }}
+    {{ clients_by_source_labels|safe }},
+    {{ clients_by_source_data|safe }}
   );
 
   // Contratos
   doughnutChart('chartContractsByStatus',
-    {{ contracts_by_status_labels }},
-    {{ contracts_by_status_data }},
+    {{ contracts_by_status_labels|safe }},
+    {{ contracts_by_status_data|safe }},
     [success, '#E11D48', '#9CA3AF', '#D97706']
   );
 
   // Tickets
-  barChart('chartTicketsByMonth', MONTHS, {{ tickets_by_month }}, '#7C3AED');
+  barChart('chartTicketsByMonth', MONTHS, {{ tickets_by_month|safe }}, '#7C3AED');
   doughnutChart('chartTicketsByStatus',
-    {{ tickets_by_status_labels }},
-    {{ tickets_by_status_data }},
+    {{ tickets_by_status_labels|safe }},
+    {{ tickets_by_status_data|safe }},
     ['#E11D48', '#D97706', '#7C3AED', '#2563EB', success, '#9CA3AF']
   );
-  hbarChart('chartTicketsByType', {{ tickets_by_type_labels }}, {{ tickets_by_type_data }});
+  hbarChart('chartTicketsByType', {{ tickets_by_type_labels|safe }}, {{ tickets_by_type_data|safe }});
 
   // Razones de pérdida
   {% if lost_by_category_labels %}
   doughnutChart('chartLostByCategory',
-    {{ lost_by_category_labels }},
-    {{ lost_by_category_data }},
+    {{ lost_by_category_labels|safe }},
+    {{ lost_by_category_data|safe }},
     ['#EF4444', '#F97316', '#F59E0B', '#8B5CF6', '#6B7280', '#3B82F6', '#10B981']
   );
   {% endif %}
   {% if lost_by_area_labels %}
-  hbarChart('chartLostByArea', {{ lost_by_area_labels }}, {{ lost_by_area_data }});
+  hbarChart('chartLostByArea', {{ lost_by_area_labels|safe }}, {{ lost_by_area_data|safe }});
   {% endif %}
 })();
 </script>
