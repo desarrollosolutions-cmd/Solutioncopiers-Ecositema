@@ -208,6 +208,17 @@
     <div style="flex:1;min-width:0;">
       <div style="font-size:.8125rem;font-weight:600;color:var(--color-text-primary);">{{ task.description|truncatechars:60 }}</div>
       <div style="font-size:.72rem;color:var(--color-text-muted);">{{ task.lead.full_name }}</div>
+      {% if task.lead.address %}
+      <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.25rem;display:flex;align-items:center;gap:.25rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.75rem;height:.75rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        {{ task.lead.address }}
+      </div>
+      <a href="https://maps.google.com/?q={{ task.lead.address|urlencode }},+Colombia" target="_blank"
+         style="font-size:.68rem;color:var(--color-primary);text-decoration:none;font-weight:600;margin-top:.15rem;display:inline-flex;align-items:center;gap:.2rem;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.7rem;height:.7rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        Ver en Google Maps
+      </a>
+      {% endif %}
     </div>
   </div>
   {% endfor %}

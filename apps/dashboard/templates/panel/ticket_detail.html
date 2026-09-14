@@ -38,6 +38,18 @@
             <div style="font-size:.875rem;color:var(--color-text-secondary);">{{ ticket.equipment_description|default:"—" }}</div></div>
           <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Creado</div>
             <div style="font-size:.875rem;color:var(--color-text-secondary);">{{ ticket.created_at|date:"d/m/Y H:i" }}</div></div>
+          {% with ticket_addr=ticket.address|default:ticket.lead.address %}
+          {% if ticket_addr %}
+          <div style="grid-column:1/-1;"><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Dirección de visita</div>
+            <div style="font-size:.875rem;color:var(--color-text-secondary);">{{ ticket_addr }}</div>
+            <a href="https://maps.google.com/?q={{ ticket_addr|urlencode }},+Colombia" target="_blank"
+               style="font-size:.72rem;color:var(--color-primary);text-decoration:none;font-weight:600;margin-top:.25rem;display:inline-flex;align-items:center;gap:.25rem;">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.7rem;height:.7rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Ver en Google Maps
+            </a>
+          </div>
+          {% endif %}
+          {% endwith %}
           {% if ticket.scheduled_for %}
           <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Programado para</div>
             <div style="font-size:.875rem;font-weight:600;color:var(--color-warning);">{{ ticket.scheduled_for|date:"d/m/Y H:i" }}</div></div>
@@ -82,6 +94,11 @@
       <div class="pn-card-body" style="padding:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;">
         <a href="tel:{{ ticket.lead.phone }}" class="pn-btn pn-btn-secondary pn-btn-sm">Llamar: {{ ticket.lead.phone }}</a>
         <a href="https://wa.me/{{ ticket.lead.phone }}" target="_blank" class="pn-btn pn-btn-secondary pn-btn-sm">WhatsApp</a>
+        {% with ticket_addr=ticket.address|default:ticket.lead.address %}
+        {% if ticket_addr %}
+        <a href="https://maps.google.com/?q={{ ticket_addr|urlencode }},+Colombia" target="_blank" class="pn-btn pn-btn-secondary pn-btn-sm">Ver en Google Maps</a>
+        {% endif %}
+        {% endwith %}
         <a href="{% url 'panel:client_detail' ticket.lead.pk %}" class="pn-btn pn-btn-secondary pn-btn-sm">Ver perfil completo</a>
       </div>
     </div>
