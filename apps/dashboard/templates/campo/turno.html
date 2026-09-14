@@ -22,7 +22,7 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .content{padding:1rem 1rem 5rem;}
 .shift-card{background:#221414;border:1px solid #3A2020;border-radius:1rem;padding:1.25rem;margin-bottom:1rem;}
 .shift-dot{width:.75rem;height:.75rem;border-radius:50%;flex-shrink:0;}
-.shift-dot.on{background:#10B981;box-shadow:0 0 8px rgba(16,185,129,.6);animation:pulse 2s infinite;}
+.shift-dot.on{background:#10B981;box-shadow:0 0 8px rgba(16,185,129,.6);}
 .shift-dot.off{background:#7A6060;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
 .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:.625rem;}
@@ -460,18 +460,13 @@ function startGPS() {
     () => {},
     { enableHighAccuracy: false, timeout: 4000, maximumAge: 30000 }
   );
-  // Luego watchPosition de alta precisión (continuo)
+  // Luego watchPosition de alta precisión (continuo — ya cubre el seguimiento,
+  // sin necesidad de un setInterval adicional que duplique lecturas de GPS)
   watchId = navigator.geolocation.watchPosition(
     pos => sendLocation(pos),
     () => updateGpsPill('error'),
     { enableHighAccuracy: true, timeout: 30000, maximumAge: 10000 }
   );
-  // Fallback cada 15 seg
-  setInterval(() => {
-    if (isOnShift && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(sendLocation, () => {}, { enableHighAccuracy: false, timeout: 5000, maximumAge: 10000 });
-    }
-  }, 15000);
 }
 
 function startShift() {
