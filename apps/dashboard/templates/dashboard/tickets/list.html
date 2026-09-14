@@ -70,6 +70,14 @@
     <div class="da-stat-bar"></div>
   </div>
   <div class="da-stat">
+    <div class="da-stat-icon" style="background:color-mix(in srgb,#3B82F6 12%,transparent);color:#2563EB;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m9-8a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div class="da-stat-val" style="color:#2563EB;">{{ count_waiting_quote }}</div>
+    <div class="da-stat-lbl">Pendiente cotización</div>
+    <div class="da-stat-bar"></div>
+  </div>
+  <div class="da-stat">
     <div class="da-stat-icon" style="background:color-mix(in srgb,var(--color-success) 12%,transparent);color:var(--color-success);">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
     </div>
@@ -235,6 +243,7 @@
             {% if t.status == 'open' %}da-badge-new
             {% elif t.status == 'in_progress' %}da-badge-reviewing
             {% elif t.status == 'waiting_parts' %}da-badge-sent
+            {% elif t.status == 'waiting_quote' %}da-badge-waiting_quote
             {% elif t.status == 'resolved' %}da-badge-published
             {% else %}da-badge-draft{% endif %}">
             {{ t.get_status_display }}

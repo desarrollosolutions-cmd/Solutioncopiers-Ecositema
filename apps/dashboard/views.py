@@ -314,7 +314,7 @@ class ReportsView(TemplateView):
         # ── Servicio técnico ───────────────────────────────────────
         tickets_qs = ServiceTicket.objects.all()
         ctx["tickets_total"]    = tickets_qs.count()
-        ctx["tickets_open"]     = tickets_qs.filter(status__in=["open", "in_progress", "waiting_parts"]).count()
+        ctx["tickets_open"]     = tickets_qs.filter(status__in=["open", "in_progress", "waiting_parts", "waiting_quote"]).count()
         ctx["tickets_by_month"] = json.dumps(month_series(tickets_qs))
 
         tkt_status = {s: 0 for s, _ in ServiceTicket.Status.choices}
@@ -453,7 +453,7 @@ class DashboardHomeView(TemplateView):
 
         # ── Tickets abiertos ──
         ctx["tickets_open"] = ServiceTicket.objects.filter(
-            status__in=("open","in_progress","waiting_parts")
+            status__in=("open","in_progress","waiting_parts","waiting_quote")
         ).count()
 
         # ── Badge campana: cotizaciones sin atender + contratos por vencer ──
@@ -882,6 +882,7 @@ class TicketListView(ListView):
         ctx["count_open"]       = ServiceTicket.objects.filter(status="open").count()
         ctx["count_progress"]   = ServiceTicket.objects.filter(status="in_progress").count()
         ctx["count_waiting"]    = ServiceTicket.objects.filter(status="waiting_parts").count()
+        ctx["count_waiting_quote"] = ServiceTicket.objects.filter(status="waiting_quote").count()
         ctx["count_resolved"]   = ServiceTicket.objects.filter(status="resolved").count()
         from django.contrib.auth.models import User
         ctx["technicians"] = User.objects.filter(field_profile__role="tecnico")
@@ -891,7 +892,7 @@ class TicketListView(ListView):
         pipeline_qs = _filter_tickets_qs(self.request, pipeline_qs)
         if not ctx["current_status"]:
             # Por defecto solo lo activo — resueltos/cerrados no necesitan orden de ruta
-            pipeline_qs = pipeline_qs.filter(status__in=("open", "in_progress", "waiting_parts"))
+            pipeline_qs = pipeline_qs.filter(status__in=("open", "in_progress", "waiting_parts", "waiting_quote"))
         all_tickets = list(pipeline_qs[:500])
 
         tech_groups = {}
@@ -1528,7 +1529,7 @@ class TicketReorderView(View):
             return JsonResponse({"ok": False, "error": "Orden vacío"}, status=400)
         tickets = {
             t.pk: t for t in
-            ServiceTicket.objects.filter(pk__in=order_pks, status__in=("open", "in_progress", "waiting_parts"))
+            ServiceTicket.objects.filter(pk__in=order_pks, status__in=("open", "in_progress", "waiting_parts", "waiting_quote"))
         }
         updated = []
         for idx, raw_pk in enumerate(order_pks):
@@ -2464,7 +2465,7 @@ def _panel_base_ctx(request):
         ).count(),
         "my_open_tickets": ServiceTicket.objects.filter(
             assigned_to=request.user,
-            status__in=("open", "in_progress", "waiting_parts")
+            status__in=("open", "in_progress", "waiting_parts", "waiting_quote")
         ).count(),
         "wa_unread_total": wa_unread,
     }
@@ -2603,7 +2604,7 @@ class PanelHomeView(TemplateView):
         # ── Tickets abiertos asignados a la asesora ──────────────────────
         open_tickets = ServiceTicket.objects.filter(
             assigned_to=user,
-            status__in=("open", "in_progress", "waiting_parts")
+            status__in=("open", "in_progress", "waiting_parts", "waiting_quote")
         ).select_related("lead").order_by("priority", "created_at")
         ctx["tickets_open"]     = open_tickets[:5]
         ctx["my_open_tickets"]  = open_tickets.count()
@@ -4054,6 +4055,7 @@ Los tickets son solicitudes de servicio técnico de clientes que ya tienen contr
 - **Abierto** (open) — recién creado, nadie lo ha atendido aún
 - **En proceso** (in_progress) — el técnico está trabajando en ello
 - **Esperando repuestos** (waiting_parts) — el trabajo quedó pausado esperando piezas
+- **Pendiente por cotización** (waiting_quote) — el trabajo quedó pausado esperando que el cliente apruebe una cotización
 - **Resuelto** (resolved) — el problema se solucionó, pendiente de confirmación del cliente
 - **Cerrado** (closed) — el cliente confirmó que está bien, caso cerrado
 
@@ -5167,7 +5169,7 @@ class CampoTurnoView(View):
 
         tickets = ServiceTicket.objects.filter(
             assigned_to=request.user,
-            status__in=("open", "in_progress", "waiting_parts")
+            status__in=("open", "in_progress", "waiting_parts", "waiting_quote")
         ).select_related("lead").order_by("order", "priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
@@ -6015,9 +6017,10 @@ class CampoTicketDetailView(View):
         new_photos = [p.strip() for p in request.POST.getlist("photos_b64") if p.strip()]
 
         valid_transitions = {
-            "open":          ["in_progress", "waiting_parts"],
-            "in_progress":   ["waiting_parts", "resolved"],
+            "open":          ["in_progress", "waiting_parts", "waiting_quote"],
+            "in_progress":   ["waiting_parts", "waiting_quote", "resolved"],
             "waiting_parts": ["in_progress", "resolved"],
+            "waiting_quote": ["in_progress"],
             "resolved":      ["closed"],
         }
         allowed = valid_transitions.get(ticket.status, [])
@@ -6097,7 +6100,7 @@ class PanelTurnoView(View):
 
         tickets = ServiceTicket.objects.filter(
             assigned_to=request.user,
-            status__in=("open", "in_progress", "waiting_parts")
+            status__in=("open", "in_progress", "waiting_parts", "waiting_quote")
         ).select_related("lead").order_by("order", "priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask

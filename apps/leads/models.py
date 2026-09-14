@@ -311,6 +311,7 @@ class ServiceTicket(TimeStampedModel):
         OPEN          = "open",          _("Abierto")
         IN_PROGRESS   = "in_progress",   _("En proceso")
         WAITING_PARTS = "waiting_parts", _("Esperando repuestos")
+        WAITING_QUOTE = "waiting_quote", _("Pendiente por cotización")
         RESOLVED      = "resolved",      _("Resuelto")
         CLOSED        = "closed",        _("Cerrado")
 
@@ -364,9 +365,10 @@ class ServiceTicket(TimeStampedModel):
     # Transiciones válidas para el flujo de staff (panel/dashadmin). El portal de
     # técnicos (CampoTicketDetailView) usa su propio mapa, más estricto, sin reapertura.
     STATUS_TRANSITIONS = {
-        "open":          {"in_progress", "waiting_parts", "closed"},
-        "in_progress":   {"waiting_parts", "resolved", "open"},
+        "open":          {"in_progress", "waiting_parts", "waiting_quote", "closed"},
+        "in_progress":   {"waiting_parts", "waiting_quote", "resolved", "open"},
         "waiting_parts": {"in_progress", "resolved"},
+        "waiting_quote": {"in_progress", "closed"},
         "resolved":      {"closed", "in_progress"},
         "closed":        {"in_progress"},
     }
@@ -381,7 +383,7 @@ class ServiceTicket(TimeStampedModel):
 
     @property
     def is_open(self):
-        return self.status in ("open", "in_progress", "waiting_parts")
+        return self.status in ("open", "in_progress", "waiting_parts", "waiting_quote")
 
     def is_valid_status_transition(self, new_status):
         if new_status == self.status:

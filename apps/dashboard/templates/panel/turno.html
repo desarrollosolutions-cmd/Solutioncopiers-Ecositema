@@ -327,6 +327,9 @@
         <button type="button" data-status="waiting_parts"
           style="padding:.625rem;border-radius:.625rem;border:1.5px solid color-mix(in srgb,#D97706 40%,var(--color-border));background:color-mix(in srgb,#D97706 6%,transparent);color:#D97706;font-size:.78rem;font-weight:700;cursor:pointer;"
           onclick="setTicketStatus('waiting_parts')">⏳ Esperando repuestos</button>
+        <button type="button" data-status="waiting_quote"
+          style="padding:.625rem;border-radius:.625rem;border:1.5px solid color-mix(in srgb,#2563EB 40%,var(--color-border));background:color-mix(in srgb,#2563EB 6%,transparent);color:#2563EB;font-size:.78rem;font-weight:700;cursor:pointer;grid-column:1/-1;"
+          onclick="setTicketStatus('waiting_quote')">💲 Pendiente por cotización</button>
         <button type="button" data-status="resolved"
           style="padding:.625rem;border-radius:.625rem;border:1.5px solid color-mix(in srgb,#10B981 40%,var(--color-border));background:color-mix(in srgb,#10B981 6%,transparent);color:#10B981;font-size:.78rem;font-weight:700;cursor:pointer;grid-column:1/-1;"
           onclick="setTicketStatus('resolved')">✓ Marcar como Resuelto</button>
@@ -608,17 +611,20 @@ let _originalTicketStatus = null;
 
 const STATUS_LABELS = {
   open: 'Abierto', in_progress: 'En proceso',
-  waiting_parts: 'Esperando repuestos', resolved: 'Resuelto', closed: 'Cerrado'
+  waiting_parts: 'Esperando repuestos', waiting_quote: 'Pendiente por cotización',
+  resolved: 'Resuelto', closed: 'Cerrado'
 };
 const STATUS_CLASSES = {
   open: 'pn-badge-open', in_progress: 'pn-badge-in_progress',
-  waiting_parts: 'pn-badge-waiting_parts', resolved: 'pn-badge-resolved', closed: 'pn-badge-closed'
+  waiting_parts: 'pn-badge-waiting_parts', waiting_quote: 'pn-badge-waiting_quote',
+  resolved: 'pn-badge-resolved', closed: 'pn-badge-closed'
 };
 // Debe coincidir con ServiceTicket.STATUS_TRANSITIONS (apps/leads/models.py)
 const STATUS_TRANSITIONS = {
-  open:          ['in_progress', 'waiting_parts', 'closed'],
-  in_progress:   ['waiting_parts', 'resolved', 'open'],
+  open:          ['in_progress', 'waiting_parts', 'waiting_quote', 'closed'],
+  in_progress:   ['waiting_parts', 'waiting_quote', 'resolved', 'open'],
   waiting_parts: ['in_progress', 'resolved'],
+  waiting_quote: ['in_progress', 'closed'],
   resolved:      ['closed', 'in_progress'],
   closed:        ['in_progress'],
 };
