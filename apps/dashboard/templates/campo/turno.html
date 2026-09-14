@@ -142,21 +142,30 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
       <span id="lunch-banner-text">{% if location.lunch_started_at %}En almuerzo desde las {{ location.lunch_started_at|time:"H:i" }}{% endif %}</span>
     </div>
     <div class="btn-grid">
-      <button class="btn btn-start" onclick="startShift()" id="btn-start"
-        {% if location and location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        Iniciar turno
-      </button>
-      <button class="btn btn-end" onclick="endShift()" id="btn-end"
-        {% if not location or not location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
-        Terminar turno
-      </button>
-      <button class="btn {% if location.is_on_lunch %}btn-lunch-active{% else %}btn-lunch{% endif %}" onclick="toggleLunch()" id="btn-lunch"
-        {% if not location or not location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span id="btn-lunch-text">{% if location.is_on_lunch %}Volver de almuerzo{% else %}Salir a almuerzo{% endif %}</span>
-      </button>
+      <form method="post" action="{% url 'campo:shift_start' %}" style="display:contents;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-start" id="btn-start"
+          {% if location and location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Iniciar turno
+        </button>
+      </form>
+      <form method="post" action="{% url 'campo:shift_end' %}" style="display:contents;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-end" id="btn-end"
+          {% if not location or not location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+          Terminar turno
+        </button>
+      </form>
+      <form method="post" action="{% if location.is_on_lunch %}{% url 'campo:lunch_end' %}{% else %}{% url 'campo:lunch_start' %}{% endif %}" style="display:contents;">
+        {% csrf_token %}
+        <button type="submit" class="btn {% if location.is_on_lunch %}btn-lunch-active{% else %}btn-lunch{% endif %}" id="btn-lunch"
+          {% if not location or not location.is_on_shift %}style="opacity:.4;pointer-events:none;"{% endif %}>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span id="btn-lunch-text">{% if location.is_on_lunch %}Volver de almuerzo{% else %}Salir a almuerzo{% endif %}</span>
+        </button>
+      </form>
     </div>
   </div>
 
@@ -466,46 +475,10 @@ function startGPS() {
   );
 }
 
-function startShift() {
-  const fd = new FormData(); fd.append('csrfmiddlewaretoken', CSRF);
-  fetch('{% url "campo:shift_start" %}', { method: 'POST', body: fd })
-    .then(() => {
-      isOnShift = true;
-      document.getElementById('shift-dot').className = 'shift-dot on';
-      document.getElementById('shift-label').textContent = 'En turno — GPS activo';
-      document.getElementById('shift-sub').textContent = 'Ubicación enviando cada 30 seg';
-      document.getElementById('btn-start').style.cssText = 'opacity:.4;pointer-events:none;';
-      document.getElementById('btn-end').style.cssText = '';
-      document.getElementById('btn-lunch').style.cssText = '';
-      document.getElementById('gps-coords-row').style.display = '';
-      startGPS();
-      showToast('Turno iniciado ✓');
-    });
-}
-
-function endShift() {
-  const fd = new FormData(); fd.append('csrfmiddlewaretoken', CSRF);
-  fetch('{% url "campo:shift_end" %}', { method: 'POST', body: fd })
-    .then(() => {
-      isOnShift = false;
-      isOnLunch = false;
-      if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-      document.getElementById('shift-dot').className = 'shift-dot off';
-      document.getElementById('shift-label').textContent = 'Turno terminado';
-      document.getElementById('shift-sub').textContent = 'GPS detenido';
-      document.getElementById('btn-start').style.cssText = '';
-      document.getElementById('btn-end').style.cssText = 'opacity:.4;pointer-events:none;';
-      document.getElementById('btn-lunch').style.cssText = 'opacity:.4;pointer-events:none;';
-      document.getElementById('btn-lunch').className = 'btn btn-lunch';
-      document.getElementById('btn-lunch-text').textContent = 'Salir a almuerzo';
-      document.getElementById('lunch-banner').style.display = 'none';
-      document.getElementById('gps-coords-row').style.display = 'none';
-      updateGpsPill('searching');
-      document.getElementById('gps-pill').innerHTML = 'GPS inactivo';
-      stopLunchTimer();
-      showToast('Turno terminado');
-    });
-}
+// Iniciar/terminar turno y almuerzo ahora son envíos de formulario normales
+// (ver botones arriba) que redirigen y recargan la pantalla completa, en vez
+// de mutar el DOM por partes — así se evita el patrón de varios cambios
+// simultáneos que causaba corrupción visual en algunos celulares.
 
 /* ── Alarma de fin de almuerzo ── */
 let _alarmCtx = null;
@@ -574,35 +547,6 @@ function stopLunchTimer() {
   if (lunchTimer) { clearInterval(lunchTimer); lunchTimer = null; }
   lunchStartedAt = null;
   lunchAlarmFired = false;
-}
-
-function toggleLunch() {
-  const url = isOnLunch ? '{% url "campo:lunch_end" %}' : '{% url "campo:lunch_start" %}';
-  const fd = new FormData(); fd.append('csrfmiddlewaretoken', CSRF);
-  fetch(url, { method: 'POST', body: fd })
-    .then(r => r.json())
-    .then(data => {
-      if (!data.ok) { showToast(data.error || 'No se pudo actualizar', false); return; }
-      if (typeof data.lunch_seconds_used === 'number') lunchSecondsUsed = data.lunch_seconds_used;
-      isOnLunch = !isOnLunch;
-      const btn = document.getElementById('btn-lunch');
-      const banner = document.getElementById('lunch-banner');
-      if (isOnLunch) {
-        btn.className = 'btn btn-lunch-active';
-        document.getElementById('btn-lunch-text').textContent = 'Volver de almuerzo';
-        banner.classList.remove('over');
-        banner.style.display = 'flex';
-        startLunchTimer(new Date());
-        showToast('Buen provecho 🍽️');
-      } else {
-        btn.className = 'btn btn-lunch';
-        document.getElementById('btn-lunch-text').textContent = 'Salir a almuerzo';
-        banner.style.display = 'none';
-        stopLunchTimer();
-        showToast('De vuelta del almuerzo ✓');
-      }
-    })
-    .catch(() => showToast('Error de red', false));
 }
 
 // Iniciar GPS si ya estaba en turno al cargar

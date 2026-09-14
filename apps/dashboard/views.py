@@ -5324,17 +5324,25 @@ class CampoUbicacionUpdateView(View):
 
 @campo_decorator
 class CampoShiftStartView(View):
+    """POST /campo/turno/inicio/ — envío de formulario normal (no AJAX):
+    a propósito no actualiza el DOM por partes, sino que redirige y deja
+    que el servidor vuelva a renderizar la pantalla completa desde cero.
+    Esto evita el patrón de varias mutaciones simultáneas del DOM que
+    causaba corrupción visual en algunos celulares al iniciar turno."""
+
     def post(self, request):
         from apps.dashboard.models import FieldUserLocation
         FieldUserLocation.objects.update_or_create(
             user=request.user,
             defaults={"is_on_shift": True, "latitude": 0, "longitude": 0},
         )
-        return JsonResponse({"ok": True})
+        return redirect("campo:turno")
 
 
 @campo_decorator
 class CampoShiftEndView(View):
+    """POST /campo/turno/fin/ — ver nota en CampoShiftStartView."""
+
     def post(self, request):
         from apps.dashboard.models import FieldUserLocation
         try:
@@ -5345,32 +5353,35 @@ class CampoShiftEndView(View):
             loc.save(update_fields=["is_on_shift"])
         except FieldUserLocation.DoesNotExist:
             pass
-        return JsonResponse({"ok": True})
+        return redirect("campo:turno")
 
 
 @campo_decorator
 class CampoLunchStartView(View):
+    """POST /campo/turno/almuerzo/inicio/ — ver nota en CampoShiftStartView."""
+
     def post(self, request):
         from apps.dashboard.models import FieldUserLocation
         try:
             loc = request.user.field_location
         except FieldUserLocation.DoesNotExist:
             loc = None
-        if not loc or not loc.is_on_shift:
-            return JsonResponse({"ok": False, "error": "Inicia turno primero"}, status=400)
-        loc.start_lunch()
-        from apps.dashboard.models import Notification
-        _notify_admins(
-            type=Notification.Type.LUNCH_BREAK,
-            title=f"Salió a almorzar: {request.user.get_full_name() or request.user.username}",
-            message=f"Desde las {timezone.localtime(loc.lunch_started_at).strftime('%H:%M')}",
-            link="/dashadmin/campo/",
-        )
-        return JsonResponse({"ok": True, "lunch_seconds_used": loc.lunch_seconds_used})
+        if loc and loc.is_on_shift:
+            loc.start_lunch()
+            from apps.dashboard.models import Notification
+            _notify_admins(
+                type=Notification.Type.LUNCH_BREAK,
+                title=f"Salió a almorzar: {request.user.get_full_name() or request.user.username}",
+                message=f"Desde las {timezone.localtime(loc.lunch_started_at).strftime('%H:%M')}",
+                link="/dashadmin/campo/",
+            )
+        return redirect("campo:turno")
 
 
 @campo_decorator
 class CampoLunchEndView(View):
+    """POST /campo/turno/almuerzo/fin/ — ver nota en CampoShiftStartView."""
+
     def post(self, request):
         from apps.dashboard.models import FieldUserLocation
         try:
@@ -5383,9 +5394,9 @@ class CampoLunchEndView(View):
                 message=f"Hora: {timezone.localtime(timezone.now()).strftime('%H:%M')}",
                 link="/dashadmin/campo/",
             )
-            return JsonResponse({"ok": True, "lunch_seconds_used": loc.lunch_seconds_used})
         except FieldUserLocation.DoesNotExist:
-            return JsonResponse({"ok": True, "lunch_seconds_used": 0})
+            pass
+        return redirect("campo:turno")
 
 
 # ---------------------------------------------------------------------------
