@@ -425,7 +425,6 @@ function updateGpsPill(state, coords) {
     pill.textContent = 'GPS ✓';
     if (coords) {
       document.getElementById('gps-coords').textContent = 'Lat ' + coords.lat.toFixed(5) + ', Lng ' + coords.lng.toFixed(5);
-      document.getElementById('gps-coords-row').style.display = '';
       if (coords.acc) document.getElementById('gps-accuracy').textContent = '±' + Math.round(coords.acc) + 'm';
     }
   } else {
@@ -478,6 +477,7 @@ function startShift() {
       document.getElementById('btn-start').style.cssText = 'opacity:.4;pointer-events:none;';
       document.getElementById('btn-end').style.cssText = '';
       document.getElementById('btn-lunch').style.cssText = '';
+      document.getElementById('gps-coords-row').style.display = '';
       startGPS();
       showToast('Turno iniciado ✓');
     });
