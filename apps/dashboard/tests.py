@@ -835,8 +835,10 @@ class CampoTurnoTest(TestCase):
         self.assertContains(r, "Mi Turno")
 
     def test_tecnico_ve_sus_tickets_en_ruta(self):
-        lead   = make_lead("Cliente Campo", "campo@test.co")
-        make_ticket(lead, assigned_to=self.tecnico)
+        lead = make_lead("Cliente Campo", "campo@test.co")
+        ticket = make_ticket(lead, assigned_to=self.tecnico)
+        ticket.scheduled_for = timezone.now()
+        ticket.save(update_fields=["scheduled_for"])
         r = self.client.get("/campo/")
         self.assertContains(r, "Cliente Campo")
 

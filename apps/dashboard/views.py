@@ -5194,7 +5194,8 @@ class CampoTurnoView(View):
 
         tickets = ServiceTicket.objects.filter(
             assigned_to=request.user,
-            status__in=("open", "in_progress", "waiting_parts", "waiting_quote")
+            status__in=("open", "in_progress", "waiting_parts", "waiting_quote"),
+            scheduled_for__date=today,
         ).select_related("lead").order_by("order", "priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
@@ -6156,7 +6157,8 @@ class PanelTurnoView(View):
 
         tickets = ServiceTicket.objects.filter(
             assigned_to=request.user,
-            status__in=("open", "in_progress", "waiting_parts", "waiting_quote")
+            status__in=("open", "in_progress", "waiting_parts", "waiting_quote"),
+            scheduled_for__date=today,
         ).select_related("lead").order_by("order", "priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask

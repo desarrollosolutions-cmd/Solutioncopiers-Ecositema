@@ -264,7 +264,7 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
   {# ── Tickets ── #}
   {% if tickets %}
   <div class="section-title">
-    <span>Tickets asignados ({{ tickets|length }})</span>
+    <span>Tickets de hoy ({{ tickets|length }})</span>
     {% if field_user.role == "tecnico" %}<span style="font-size:.6rem;font-weight:400;color:#C4121A;">Toca para gestionar</span>{% endif %}
   </div>
   {% for ticket in tickets %}
