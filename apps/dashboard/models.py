@@ -408,6 +408,29 @@ class FieldLocationLog(models.Model):
         return f"{self.user.username} · {self.shift_date} · {self.recorded_at:%H:%M}"
 
 
+class FieldShiftLog(models.Model):
+    """Registro histórico de inicio/fin de turno marcado explícitamente por el
+    técnico/mensajero (al presionar Iniciar/Terminar turno). A diferencia de
+    FieldLocationLog (pings GPS periódicos), esto guarda la hora real que la
+    persona marcó, no una hora inferida del primer/último punto GPS."""
+    user        = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="shift_logs"
+    )
+    shift_date  = models.DateField(db_index=True)
+    started_at  = models.DateTimeField()
+    ended_at    = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering            = ["-started_at"]
+        verbose_name        = "Registro de turno"
+        verbose_name_plural = "Registros de turno"
+        indexes             = [models.Index(fields=["user", "shift_date"])]
+
+    def __str__(self):
+        fin = self.ended_at.strftime("%H:%M") if self.ended_at else "—"
+        return f"{self.user.username} · {self.shift_date} · {self.started_at:%H:%M}-{fin}"
+
+
 # ---------------------------------------------------------------------------
 # Chat interno — mensajes directos entre cualquier par de usuarios activos
 # (admins, asesoras/empleados y técnicos/mensajeros comparten la tabla User).

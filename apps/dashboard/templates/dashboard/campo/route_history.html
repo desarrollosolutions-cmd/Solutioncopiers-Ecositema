@@ -75,13 +75,14 @@
           <span id="stat-points" style="font-weight:600;">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;">
-          <span style="color:var(--color-text-muted);">Primer registro</span>
+          <span style="color:var(--color-text-muted);">Inicio de turno</span>
           <span id="stat-start" style="font-weight:600;">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;">
-          <span style="color:var(--color-text-muted);">Último registro</span>
+          <span style="color:var(--color-text-muted);">Fin de turno</span>
           <span id="stat-end" style="font-weight:600;">—</span>
         </div>
+        <div id="stat-source-note" style="font-size:.68rem;color:var(--color-text-muted);font-style:italic;"></div>
         <div style="display:flex;justify-content:space-between;">
           <span style="color:var(--color-text-muted);">Entregas completadas</span>
           <span id="stat-tasks" style="font-weight:600;">—</span>
@@ -120,9 +121,18 @@ fetch(ROUTE_JSON_URL)
     // Actualizar stats
     document.getElementById('stat-points').textContent = points.length || '0';
     document.getElementById('stat-tasks').textContent  = tasks.length  || '0';
-    if (points.length) {
+    const shift = data.shift || {start: null, end: null, open: false};
+    if (shift.start) {
+      // Hora real marcada por el técnico al presionar Iniciar/Terminar turno.
+      document.getElementById('stat-start').textContent = shift.start;
+      document.getElementById('stat-end').textContent   = shift.end ? shift.end : (shift.open ? 'Turno abierto' : '—');
+      document.getElementById('stat-source-note').textContent = '';
+    } else if (points.length) {
+      // Sin turno marcado ese día (datos anteriores a esta función): se estima
+      // con el primer/último punto GPS registrado.
       document.getElementById('stat-start').textContent = points[0].t;
       document.getElementById('stat-end').textContent   = points[points.length - 1].t;
+      document.getElementById('stat-source-note').textContent = 'Estimado por GPS (sin turno marcado)';
     }
 
     if (points.length) {
@@ -130,6 +140,17 @@ fetch(ROUTE_JSON_URL)
       const latlngs = points.map(p => [p.lat, p.lng]);
       const line = L.polyline(latlngs, { color: '#0EA5E9', weight: 4, opacity: .8 }).addTo(map);
       map.fitBounds(line.getBounds(), { padding: [30, 30] });
+
+      // Marcador para cada punto GPS registrado (antes solo se marcaban el
+      // primero y el último, dejando los puntos intermedios invisibles —
+      // solo se veían como parte de la línea, sin poder confirmar por dónde
+      // pasó realmente ni a qué hora).
+      points.forEach((p, i) => {
+        if (i === 0 || i === points.length - 1) return; // el primero y el último llevan su propio marcador más abajo
+        L.circleMarker([p.lat, p.lng], {
+          radius: 5, color: '#0EA5E9', fillColor: '#fff', fillOpacity: 1, weight: 2
+        }).addTo(map).bindPopup(`${p.t}`);
+      });
 
       // Marcador inicio
       L.circleMarker([points[0].lat, points[0].lng], {
@@ -141,7 +162,7 @@ fetch(ROUTE_JSON_URL)
       L.circleMarker([last.lat, last.lng], {
         radius: 8, color: '#EF4444', fillColor: '#EF4444', fillOpacity: 1, weight: 2
       }).addTo(map).bindPopup(`<b>Último registro</b> · ${last.t}`);
-    } else {
+    } else if (!shift.start) {
       document.getElementById('stat-start').textContent = 'Sin datos';
       document.getElementById('stat-end').textContent   = 'Sin datos';
     }

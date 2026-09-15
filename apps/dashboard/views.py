@@ -5323,6 +5323,25 @@ class CampoUbicacionUpdateView(View):
             return JsonResponse({"ok": False, "error": str(e)}, status=400)
 
 
+def _open_shift_log(user):
+    """Crea el registro de turno del día al presionar 'Iniciar turno'. Si ya
+    hay uno abierto hoy (doble clic, reintento de red), lo reutiliza en vez
+    de crear uno duplicado."""
+    from apps.dashboard.models import FieldShiftLog
+    today = timezone.localdate()
+    if not FieldShiftLog.objects.filter(user=user, shift_date=today, ended_at__isnull=True).exists():
+        FieldShiftLog.objects.create(user=user, shift_date=today, started_at=timezone.now())
+
+
+def _close_shift_log(user):
+    """Cierra el turno abierto más reciente al presionar 'Terminar turno'."""
+    from apps.dashboard.models import FieldShiftLog
+    log = FieldShiftLog.objects.filter(user=user, ended_at__isnull=True).order_by("-started_at").first()
+    if log:
+        log.ended_at = timezone.now()
+        log.save(update_fields=["ended_at"])
+
+
 @campo_decorator
 class CampoShiftStartView(View):
     """POST /campo/turno/inicio/ — envío de formulario normal (no AJAX):
@@ -5337,6 +5356,7 @@ class CampoShiftStartView(View):
             user=request.user,
             defaults={"is_on_shift": True, "latitude": 0, "longitude": 0},
         )
+        _open_shift_log(request.user)
         return redirect("campo:turno")
 
 
@@ -5354,6 +5374,7 @@ class CampoShiftEndView(View):
             loc.save(update_fields=["is_on_shift"])
         except FieldUserLocation.DoesNotExist:
             pass
+        _close_shift_log(request.user)
         return redirect("campo:turno")
 
 
@@ -5869,7 +5890,7 @@ class CampoRouteHistoryView(TemplateView):
     template_name = "dashboard/campo/route_history.html"
 
     def get_context_data(self, **kwargs):
-        from apps.dashboard.models import FieldUser, FieldLocationLog
+        from apps.dashboard.models import FieldUser, FieldLocationLog, FieldShiftLog
         ctx = super().get_context_data(**kwargs)
         ctx["field_users"]   = FieldUser.objects.select_related("user").order_by("user__first_name")
         user_pk  = self.request.GET.get("user")
@@ -5877,13 +5898,12 @@ class CampoRouteHistoryView(TemplateView):
         ctx["selected_user"] = user_pk
         ctx["selected_date"] = date_str
         if user_pk:
-            ctx["available_dates"] = (
-                FieldLocationLog.objects
-                .filter(user__pk=user_pk)
-                .values_list("shift_date", flat=True)
-                .distinct()
-                .order_by("-shift_date")[:90]
-            )
+            # Unión de fechas con puntos GPS y fechas con turno marcado -- un técnico
+            # puede haber marcado inicio/fin de turno sin que llegara a registrarse
+            # ningún punto GPS ese día (ej. permiso de ubicación fallido).
+            log_dates   = set(FieldLocationLog.objects.filter(user__pk=user_pk).values_list("shift_date", flat=True))
+            shift_dates = set(FieldShiftLog.objects.filter(user__pk=user_pk).values_list("shift_date", flat=True))
+            ctx["available_dates"] = sorted(log_dates | shift_dates, reverse=True)[:90]
         return ctx
 
 
@@ -5898,7 +5918,7 @@ class CampoRouteExportView(View):
 
     def get(self, request):
         import csv
-        from apps.dashboard.models import FieldLocationLog, DeliveryTask, FieldUser
+        from apps.dashboard.models import FieldLocationLog, DeliveryTask, FieldUser, FieldShiftLog
 
         date_str = request.GET.get("date", timezone.localdate().isoformat())
         user_pk  = request.GET.get("user", "").strip()
@@ -5909,9 +5929,11 @@ class CampoRouteExportView(View):
 
         logs_qs = FieldLocationLog.objects.filter(shift_date=date_str)
         tasks_qs = DeliveryTask.objects.filter(status="done", completed_at__date=date_str)
+        shifts_qs = FieldShiftLog.objects.filter(shift_date=date_str)
         if user_pk:
             logs_qs = logs_qs.filter(user__pk=user_pk)
             tasks_qs = tasks_qs.filter(field_user__user__pk=user_pk)
+            shifts_qs = shifts_qs.filter(user__pk=user_pk)
 
         logs_by_user = {}
         for log in logs_qs.order_by("recorded_at"):
@@ -5921,9 +5943,13 @@ class CampoRouteExportView(View):
         for t in tasks_qs.select_related("field_user__user").order_by("completed_at"):
             tasks_by_user.setdefault(t.field_user.user_id, []).append(t)
 
+        shifts_by_user = {}
+        for sl in shifts_qs.order_by("started_at"):
+            shifts_by_user.setdefault(sl.user_id, []).append(sl)
+
         active_users = [
             fu for fu in field_users
-            if logs_by_user.get(fu.user_id) or tasks_by_user.get(fu.user_id)
+            if logs_by_user.get(fu.user_id) or tasks_by_user.get(fu.user_id) or shifts_by_user.get(fu.user_id)
         ]
 
         filename = f"ruta_{date_str}" + (f"_{active_users[0].user.username}" if user_pk and active_users else "")
@@ -5949,16 +5975,28 @@ class CampoRouteExportView(View):
         for fu in active_users:
             name = fu.user.get_full_name() or fu.user.username
             role = fu.get_role_display()
-            user_logs  = logs_by_user.get(fu.user_id, [])
-            user_tasks = tasks_by_user.get(fu.user_id, [])
-            deliveries = sum(1 for t in user_tasks if t.task_type == "entrega")
-            pickups    = sum(1 for t in user_tasks if t.task_type == "recoleccion")
-            turno_ini  = timezone.localtime(user_logs[0].recorded_at).strftime("%H:%M:%S") if user_logs else "—"
-            turno_fin  = timezone.localtime(user_logs[-1].recorded_at).strftime("%H:%M:%S") if user_logs else "—"
+            user_logs   = logs_by_user.get(fu.user_id, [])
+            user_tasks  = tasks_by_user.get(fu.user_id, [])
+            user_shifts = shifts_by_user.get(fu.user_id, [])
+            deliveries  = sum(1 for t in user_tasks if t.task_type == "entrega")
+            pickups     = sum(1 for t in user_tasks if t.task_type == "recoleccion")
+
+            if user_shifts:
+                # Hora real marcada por el técnico al presionar Iniciar/Terminar turno.
+                turno_ini   = timezone.localtime(user_shifts[0].started_at).strftime("%H:%M:%S")
+                last_shift  = user_shifts[-1]
+                turno_fin   = timezone.localtime(last_shift.ended_at).strftime("%H:%M:%S") if last_shift.ended_at else "turno sin cerrar"
+                turno_label = "Turno (marcado por el técnico)"
+            else:
+                # Sin registro de turno marcado (datos anteriores a esta función) --
+                # se estima con el primer/último punto GPS del día.
+                turno_ini   = timezone.localtime(user_logs[0].recorded_at).strftime("%H:%M:%S") if user_logs else "—"
+                turno_fin   = timezone.localtime(user_logs[-1].recorded_at).strftime("%H:%M:%S") if user_logs else "—"
+                turno_label = "Turno (estimado por primer/último punto GPS)"
 
             writer.writerow([f"{name.upper()} — {role}"])
             writer.writerow([
-                "Turno (primer/último punto GPS)", f"{turno_ini} - {turno_fin}",
+                turno_label, f"{turno_ini} - {turno_fin}",
                 "Puntos GPS", len(user_logs),
                 "Entregas", deliveries,
                 "Recolecciones", pickups,
@@ -5994,7 +6032,7 @@ class CampoRouteExportView(View):
 @da_decorator
 class CampoRouteJsonView(View):
     def get(self, request):
-        from apps.dashboard.models import FieldLocationLog, DeliveryTask, FieldUser
+        from apps.dashboard.models import FieldLocationLog, DeliveryTask, FieldUser, FieldShiftLog
         user_pk  = request.GET.get("user")
         date_str = request.GET.get("date")
         if not user_pk or not date_str:
@@ -6006,6 +6044,22 @@ class CampoRouteJsonView(View):
             .values("latitude", "longitude", "recorded_at")
             .order_by("recorded_at")
         )
+
+        # Hora real marcada por el técnico (Iniciar/Terminar turno), no inferida
+        # del primer/último punto GPS. Si hubo varios turnos el mismo día (ej.
+        # turno partido), se toma el primer inicio y el último fin.
+        shift_logs = list(
+            FieldShiftLog.objects.filter(user__pk=user_pk, shift_date=date_str).order_by("started_at")
+        )
+        if shift_logs:
+            last_shift = shift_logs[-1]
+            shift = {
+                "start": timezone.localtime(shift_logs[0].started_at).strftime("%H:%M"),
+                "end": timezone.localtime(last_shift.ended_at).strftime("%H:%M") if last_shift.ended_at else None,
+                "open": last_shift.ended_at is None,
+            }
+        else:
+            shift = {"start": None, "end": None, "open": False}
         try:
             fu = FieldUser.objects.get(user__pk=user_pk)
             tasks_qs = DeliveryTask.objects.filter(
@@ -6029,6 +6083,7 @@ class CampoRouteJsonView(View):
                  "time": timezone.localtime(t["completed_at"]).strftime("%H:%M") if t["completed_at"] else ""}
                 for t in tasks
             ],
+            "shift": shift,
         })
 
 
@@ -6273,6 +6328,7 @@ class PanelShiftStartView(View):
             user=request.user,
             defaults={"is_on_shift": True, "latitude": 0, "longitude": 0},
         )
+        _open_shift_log(request.user)
         return redirect("panel:turno")
 
     def get(self, request):
@@ -6291,6 +6347,7 @@ class PanelShiftEndView(View):
             loc.save(update_fields=["is_on_shift"])
         except FieldUserLocation.DoesNotExist:
             pass
+        _close_shift_log(request.user)
         return redirect("panel:turno")
 
     def get(self, request):
