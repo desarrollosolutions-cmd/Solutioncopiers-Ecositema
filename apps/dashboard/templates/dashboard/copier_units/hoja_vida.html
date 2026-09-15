@@ -57,6 +57,52 @@
   </div>
 </div>
 
+{# ── Notas de control -- bitácora manual del equipo, con fecha propia por nota ── #}
+<div class="da-card" style="margin-bottom:1.25rem;overflow:visible;">
+  <div class="da-card-header" style="border-top-left-radius:1rem;border-top-right-radius:1rem;">
+    Notas de control
+    <span style="font-size:.7rem;font-weight:600;color:var(--color-text-muted);">{{ notes|length }}</span>
+  </div>
+  <div class="da-card-body">
+    <form method="post" action="{% url 'dashboard:copier_unit_note_create' unit.pk %}" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--color-border);">
+      {% csrf_token %}
+      <div style="min-width:160px;">
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Fecha</label>
+        <input type="date" name="date" class="da-input dp-input" value="{{ today|date:'Y-m-d' }}" style="width:100%;">
+      </div>
+      <div style="flex:1;min-width:260px;">
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Nota</label>
+        <input type="text" name="note" class="da-input" placeholder="Ej: Se cambió el fusor, cliente reportó ruido extraño" required style="width:100%;">
+      </div>
+      <button type="submit" class="da-btn da-btn-primary">+ Agregar</button>
+    </form>
+
+    {% if not notes %}
+    <div style="text-align:center;color:var(--color-text-muted);font-size:.8rem;padding:.5rem 0;">Sin notas registradas todavía.</div>
+    {% else %}
+    <div style="display:flex;flex-direction:column;">
+      {% for n in notes %}
+      <div style="display:flex;gap:.875rem;padding:.75rem 0;{% if not forloop.last %}border-bottom:1px solid var(--color-border);{% endif %}">
+        <div style="flex-shrink:0;width:5.5rem;font-size:.72rem;font-weight:700;color:var(--color-primary);">{{ n.date|date:"d/m/Y" }}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.8125rem;color:var(--color-text-secondary);line-height:1.5;white-space:pre-wrap;">{{ n.note }}</div>
+          <div style="font-size:.68rem;color:var(--color-text-muted);margin-top:.3rem;">
+            {% if n.created_by %}{{ n.created_by.get_full_name|default:n.created_by.username }}{% else %}—{% endif %}
+          </div>
+        </div>
+        <form method="post" action="{% url 'dashboard:copier_unit_note_delete' unit.pk n.pk %}" onsubmit="return confirm('¿Eliminar esta nota?');" style="flex-shrink:0;">
+          {% csrf_token %}
+          <button type="submit" title="Eliminar" style="background:none;border:none;cursor:pointer;padding:.3rem;color:var(--color-text-muted);">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
 <div class="da-grid-sidebar">
 
   {# ── Historial de servicio ── #}

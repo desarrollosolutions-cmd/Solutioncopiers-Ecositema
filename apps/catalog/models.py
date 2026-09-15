@@ -239,6 +239,29 @@ class CopierUnit(TimeStampedModel):
         return f"{self.copier.brand} {self.copier.model_number} — SN: {self.serial_number}"
 
 
+class CopierUnitNote(TimeStampedModel):
+    """Nota puntual en la hoja de vida de un equipo (control manual del admin
+    -- aparte de lo que ya se registra solo vía contratos y tickets)."""
+    unit = models.ForeignKey(
+        CopierUnit, on_delete=models.CASCADE, related_name="notes",
+        verbose_name=_("equipo"),
+    )
+    date = models.DateField(_("fecha"))
+    note = models.TextField(_("nota"))
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="copier_unit_notes", verbose_name=_("registrado por"),
+    )
+
+    class Meta:
+        verbose_name = _("Nota de hoja de vida")
+        verbose_name_plural = _("Notas de hoja de vida")
+        ordering = ["-date", "-created_at"]
+
+    def __str__(self):
+        return f"{self.unit} — {self.date}: {self.note[:50]}"
+
+
 class CablingService(
     TimeStampedModel, SluggableModel, SEOModel, MainImageModel,
     PublishableModel, OrderableModel, FeatureableModel,

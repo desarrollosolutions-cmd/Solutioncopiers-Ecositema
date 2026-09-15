@@ -5214,13 +5214,38 @@ class CopierUnitHojaVidaView(TemplateView):
         unit = get_object_or_404(CopierUnit, pk=kwargs["pk"])
         contracts = RentalContract.objects.filter(unit=unit).select_related("lead").order_by("-start_date")
         tickets = ServiceTicket.objects.filter(unit=unit).select_related("lead", "assigned_to").order_by("-created_at")
+        notes = unit.notes.select_related("created_by")
         ctx.update({
             "unit": unit,
             "contracts": contracts,
             "tickets": tickets,
+            "notes": notes,
             "current_contract": contracts.filter(status=RentalContract.Status.ACTIVE).first(),
+            "today": timezone.localdate(),
         })
         return ctx
+
+
+@da_decorator
+class CopierUnitNoteCreateView(View):
+    def post(self, request, pk):
+        from apps.catalog.models import CopierUnit, CopierUnitNote
+        unit = get_object_or_404(CopierUnit, pk=pk)
+        note_text = request.POST.get("note", "").strip()
+        note_date = request.POST.get("date") or timezone.localdate()
+        if note_text:
+            CopierUnitNote.objects.create(
+                unit=unit, date=note_date, note=note_text, created_by=request.user,
+            )
+        return redirect("dashboard:copier_unit_hoja_vida", pk=pk)
+
+
+@da_decorator
+class CopierUnitNoteDeleteView(View):
+    def post(self, request, pk, note_pk):
+        from apps.catalog.models import CopierUnitNote
+        CopierUnitNote.objects.filter(pk=note_pk, unit_id=pk).delete()
+        return redirect("dashboard:copier_unit_hoja_vida", pk=pk)
 
 # ===========================================================================
 # PORTAL DE CAMPO — /campo/  (mensajeros y tecnicos)
