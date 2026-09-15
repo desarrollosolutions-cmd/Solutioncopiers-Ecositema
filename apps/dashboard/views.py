@@ -5348,14 +5348,23 @@ class CampoTurnoView(View):
             assigned_to=request.user, is_done=False, due_date=today
         ).select_related("lead").order_by("pk")[:20]
 
+        from django.db.models import Case, When, IntegerField, Value
         tickets = ServiceTicket.objects.filter(
             assigned_to=request.user,
             status__in=("open", "in_progress", "waiting_parts", "waiting_quote"),
             scheduled_for__date=today,
-        ).select_related("lead").order_by("order", "priority", "created_at")[:20]
+        ).select_related("lead").annotate(
+            # Los que ya tienen gestión pero siguen sin cerrar (en proceso /
+            # pendiente por repuestos) van de últimas -- arriba siempre los
+            # abiertos/agendados que aún no se han tocado.
+            _ord=Case(
+                When(status__in=("in_progress", "waiting_parts"), then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            )
+        ).order_by("_ord", "order", "priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
-        from django.db.models import Case, When, IntegerField, Value
         delivery_tasks = (
             DeliveryTask.objects
             .filter(field_user=field_user)
@@ -6454,14 +6463,23 @@ class PanelTurnoView(View):
             assigned_to=request.user, is_done=False, due_date=today
         ).select_related("lead").order_by("pk")[:20]
 
+        from django.db.models import Case, When, IntegerField, Value
         tickets = ServiceTicket.objects.filter(
             assigned_to=request.user,
             status__in=("open", "in_progress", "waiting_parts", "waiting_quote"),
             scheduled_for__date=today,
-        ).select_related("lead").order_by("order", "priority", "created_at")[:20]
+        ).select_related("lead").annotate(
+            # Los que ya tienen gestión pero siguen sin cerrar (en proceso /
+            # pendiente por repuestos) van de últimas -- arriba siempre los
+            # abiertos/agendados que aún no se han tocado.
+            _ord=Case(
+                When(status__in=("in_progress", "waiting_parts"), then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            )
+        ).order_by("_ord", "order", "priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
-        from django.db.models import Case, When, IntegerField, Value
         delivery_tasks = (
             DeliveryTask.objects
             .filter(field_user=field_user)
