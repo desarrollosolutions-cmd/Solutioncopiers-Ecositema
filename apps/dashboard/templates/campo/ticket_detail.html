@@ -400,8 +400,10 @@ showToast('Ticket actualizado ✓');
 {% endif %}
 </script>
 
-{# ── Lightbox de fotos -- las fotos van en base64 (data:...); un <a href> a
-   eso con target="_blank" lo bloquean los navegadores (pestaña en blanco). #}
+{% comment %}
+── Lightbox de fotos -- las fotos van en base64 (data:...); un <a href> a
+eso con target="_blank" lo bloquean los navegadores (pestaña en blanco).
+{% endcomment %}
 <div id="photo-lightbox" onclick="closePhotoLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;padding:2rem;cursor:zoom-out;">
   <img id="photo-lightbox-img" src="" alt="" style="max-width:100%;max-height:100%;border-radius:.5rem;box-shadow:0 20px 60px rgba(0,0,0,.5);">
 </div>
