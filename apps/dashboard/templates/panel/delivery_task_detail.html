@@ -1,0 +1,393 @@
+{% extends "panel/_base.html" %}
+{% block title %}{{ task.title }}{% endblock %}
+{% block nav_turno %}active{% endblock %}
+{% block breadcrumb %}
+<span class="pn-breadcrumb-sep">/</span>
+<a href="{% url 'panel:turno' %}" style="color:var(--color-text-muted);text-decoration:none;">Mi Turno</a>
+<span class="pn-breadcrumb-sep">/</span>
+<span class="pn-breadcrumb-current">{{ task.title }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="pn-page-header">
+  <div>
+    <h1 class="pn-page-title">{{ task.title }}</h1>
+    <div style="font-size:.8rem;color:var(--color-text-muted);margin-top:.125rem;">{{ task.get_task_type_display }}{% if task.client_name %} · {{ task.client_name }}{% endif %}</div>
+  </div>
+  <div style="display:flex;gap:.5rem;align-items:center;">
+    <span class="pn-badge" style="font-size:.8rem;padding:.375rem .875rem;
+      {% if task.status == 'done' %}background:color-mix(in srgb,#10B981 13%,transparent);color:#10B981;border:1px solid color-mix(in srgb,#10B981 22%,transparent);
+      {% elif task.status == 'cancelled' %}background:color-mix(in srgb,#6B7280 13%,transparent);color:#6B7280;border:1px solid color-mix(in srgb,#6B7280 22%,transparent);
+      {% else %}background:color-mix(in srgb,#F59E0B 13%,transparent);color:#D97706;border:1px solid color-mix(in srgb,#F59E0B 22%,transparent);{% endif %}">
+      {{ task.get_status_display }}
+    </span>
+    <span class="pn-badge" style="font-size:.8rem;padding:.375rem .875rem;
+      {% if task.priority == 'urgent' %}background:color-mix(in srgb,#EF4444 13%,transparent);color:#EF4444;border:1px solid color-mix(in srgb,#EF4444 22%,transparent);
+      {% elif task.priority == 'high' %}background:color-mix(in srgb,#F59E0B 13%,transparent);color:#D97706;border:1px solid color-mix(in srgb,#F59E0B 22%,transparent);
+      {% elif task.priority == 'low' %}background:color-mix(in srgb,#6B7280 13%,transparent);color:#6B7280;border:1px solid color-mix(in srgb,#6B7280 22%,transparent);
+      {% else %}background:color-mix(in srgb,var(--color-primary) 13%,transparent);color:var(--color-primary);border:1px solid color-mix(in srgb,var(--color-primary) 22%,transparent);{% endif %}">
+      {{ task.get_priority_display }}
+    </span>
+  </div>
+</div>
+
+<div class="pn-grid-sidebar">
+
+  {# Columna principal #}
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+
+    <div class="pn-card">
+      <div class="pn-card-header">Detalles de la tarea</div>
+      <div class="pn-card-body">
+        <div class="pn-grid-2" style="gap:.75rem .5rem;margin-bottom:.875rem;">
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Cliente</div>
+            <div style="font-size:.875rem;font-weight:600;color:var(--color-text-primary);">{{ task.client_name|default:"—" }}</div></div>
+          {% if task.payment_method %}
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Pago esperado</div>
+            <div style="font-size:.875rem;color:var(--color-text-secondary);">{{ task.get_payment_method_display }}</div></div>
+          {% endif %}
+          {% if task.due_date %}
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Fecha</div>
+            <div style="font-size:.875rem;color:var(--color-text-secondary);">{{ task.due_date|date:"d/m/Y" }}</div></div>
+          {% endif %}
+          {% if task.address %}
+          <div style="grid-column:1/-1;"><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Dirección</div>
+            <div style="font-size:.875rem;color:var(--color-text-secondary);">{{ task.address }}</div>
+            <a href="https://maps.google.com/?q={{ task.address|urlencode }},+Colombia" target="_blank"
+               style="font-size:.72rem;color:var(--color-primary);text-decoration:none;font-weight:600;margin-top:.25rem;display:inline-flex;align-items:center;gap:.25rem;">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.7rem;height:.7rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Ver en Google Maps
+            </a>
+          </div>
+          {% endif %}
+          {% if task.completed_at %}
+          <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Completada</div>
+            <div style="font-size:.875rem;color:#10B981;">{{ task.completed_at|date:"d/m/Y H:i" }}</div></div>
+          {% endif %}
+        </div>
+        {% if task.description %}
+        <div style="padding:.75rem;background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.625rem;">
+          <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.375rem;">Detalle</div>
+          <div style="font-size:.8125rem;color:var(--color-text-secondary);line-height:1.6;white-space:pre-wrap;">{{ task.description }}</div>
+        </div>
+        {% endif %}
+
+        {% if task.status == "done" %}
+          {% if task.completion_notes %}
+          <div style="padding:.75rem;background:color-mix(in srgb,#10B981 8%,var(--color-bg-alt));border:1px solid color-mix(in srgb,#10B981 25%,var(--color-border));border-radius:.625rem;margin-top:.75rem;">
+            <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#10B981;margin-bottom:.375rem;">Notas de entrega</div>
+            <div style="font-size:.8125rem;color:var(--color-text-secondary);line-height:1.6;white-space:pre-wrap;">{{ task.completion_notes }}</div>
+          </div>
+          {% endif %}
+          {% if task.completion_invoice or task.completion_cash_amount or task.completion_transfer_amount %}
+          <div style="margin-top:.75rem;" class="pn-grid-2">
+            {% if task.completion_invoice %}
+            <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;"># Factura/Remisión</div>
+              <div style="font-size:.875rem;font-weight:600;color:var(--color-text-primary);">{{ task.completion_invoice }}</div></div>
+            {% endif %}
+            {% if task.completion_cash_amount %}
+            <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Efectivo</div>
+              <div style="font-size:.875rem;font-weight:600;color:#10B981;">${{ task.completion_cash_amount|floatformat:0 }}</div></div>
+            {% endif %}
+            {% if task.completion_transfer_amount %}
+            <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem;">Transferencia</div>
+              <div style="font-size:.875rem;font-weight:600;color:#10B981;">${{ task.completion_transfer_amount|floatformat:0 }}</div></div>
+            {% endif %}
+          </div>
+          {% endif %}
+          {% if task.all_completion_photos %}
+          <div style="margin-top:.75rem;">
+            <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.5rem;">Fotos de la entrega</div>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+              {% for photo in task.all_completion_photos %}
+              <a href="{{ photo }}" target="_blank" rel="noopener" style="display:block;width:5.5rem;height:5.5rem;border-radius:.625rem;overflow:hidden;border:1px solid var(--color-border);">
+                <img src="{{ photo }}" alt="Foto {{ forloop.counter }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {% if task.completion_signature %}
+          <div style="margin-top:.75rem;">
+            <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.5rem;">Firma del receptor</div>
+            <div style="background:#fff;border-radius:.625rem;overflow:hidden;"><img src="{{ task.completion_signature }}" style="width:100%;display:block;"></div>
+          </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  {# Panel lateral — completar tarea #}
+  {% if task.status != "done" %}
+  <div>
+    <form method="post" id="pn-dtask-form">
+      {% csrf_token %}
+      <div class="pn-card" style="margin-bottom:1rem;">
+        <div class="pn-card-header">Completar tarea</div>
+        <div class="pn-card-body" style="padding:.75rem;display:flex;flex-direction:column;gap:.75rem;">
+
+          <div class="pn-field">
+            <label class="pn-label">Notas de entrega</label>
+            <textarea name="notes" class="pn-input" rows="3" placeholder="¿Qué se entregó? Observaciones…" style="resize:vertical;"></textarea>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label"># Factura / Remisión (opcional)</label>
+            <input type="text" name="invoice" class="pn-input" placeholder="FAC-001, REM-2345" autocomplete="off">
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">Pago recibido <span style="font-weight:400;text-transform:none;">(opcional — si fue mixto, llena los dos)</span></label>
+            <div class="pn-grid-2" style="gap:.5rem;">
+              <div>
+                <label style="font-size:.72rem;color:var(--color-text-muted);display:block;margin-bottom:.25rem;">Efectivo</label>
+                <input type="number" inputmode="decimal" min="0" step="0.01" name="cash_amount" class="pn-input" placeholder="$ 0">
+              </div>
+              <div>
+                <label style="font-size:.72rem;color:var(--color-text-muted);display:block;margin-bottom:.25rem;">Transferencia</label>
+                <input type="number" inputmode="decimal" min="0" step="0.01" name="transfer_amount" class="pn-input" placeholder="$ 0">
+              </div>
+            </div>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">Fotos de la entrega <span style="font-weight:400;text-transform:none;">(opcional, hasta 6)</span></label>
+            <div id="pn-photo-grid" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem;"></div>
+            <label id="pn-photo-label" style="display:flex;align-items:center;gap:.625rem;padding:.625rem .875rem;border:1.5px dashed var(--color-border);border-radius:.625rem;cursor:pointer;background:var(--color-bg-alt);">
+              <span style="font-size:1.25rem;">📷</span>
+              <span id="pn-photo-label-txt" style="font-size:.8rem;color:var(--color-text-muted);">Toca para tomar o elegir foto</span>
+              <input type="file" id="pn-photo-input" accept="image/*" capture="environment" style="display:none;" onchange="onDtaskPhoto(this)">
+            </label>
+            <div style="text-align:center;margin-top:.375rem;">
+              <button type="button" onclick="showPermHelp()"
+                style="background:none;border:none;color:var(--color-text-muted);font-size:.68rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.25rem;">
+                ¿No te deja usar la cámara o el micrófono?
+              </button>
+            </div>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">Firma del receptor</label>
+            <div style="position:relative;background:#fff;border:1.5px solid var(--color-border);border-radius:.625rem;overflow:hidden;touch-action:none;">
+              <canvas id="pn-sig-canvas" style="display:block;width:100%;height:130px;cursor:crosshair;"></canvas>
+              <button type="button" onclick="clearSig()" style="position:absolute;top:.375rem;right:.375rem;background:rgba(0,0,0,.12);border:none;border-radius:.375rem;padding:.2rem .5rem;font-size:.72rem;color:#333;cursor:pointer;line-height:1.4;">Borrar</button>
+            </div>
+            <p style="font-size:.72rem;color:var(--color-text-muted);margin:.35rem 0 0;">Dibuja la firma con el dedo o el mouse</p>
+          </div>
+
+          <button type="submit" class="pn-btn pn-btn-primary" style="justify-content:center;">Confirmar entrega</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+</div>
+
+{# ── Ayuda cuando el navegador bloquea camara/microfono ── #}
+<div id="pn-perm-modal" class="pndm-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this)closePermHelp()">
+  <div class="pndm-sheet" onclick="event.stopPropagation()" style="max-width:360px;margin:auto;">
+    <div class="pndm-handle"></div>
+    <p style="font-size:.85rem;font-weight:700;margin-bottom:.5rem;color:var(--color-text-primary);">Activar cámara y micrófono</p>
+    <p style="font-size:.8rem;color:var(--color-text-muted);line-height:1.6;margin-bottom:.875rem;">
+      La primera vez el sistema te pregunta si quieres permitirlo. Si ya lo rechazaste antes, actívalo manualmente:
+    </p>
+    <div id="pn-perm-copy-box" style="display:none;gap:.5rem;margin-bottom:.875rem;">
+      <input type="text" id="pn-perm-url" readonly style="flex:1;min-width:0;padding:.55rem .7rem;border-radius:.5rem;border:1.5px solid var(--color-border);background:var(--color-bg);color:var(--color-text-secondary);font-size:.72rem;font-family:inherit;">
+      <button type="button" id="pn-perm-copy-btn" onclick="copyPermUrl()" style="flex-shrink:0;padding:.55rem .75rem;border-radius:.5rem;border:1.5px solid var(--color-primary);background:none;color:var(--color-primary);font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Copiar enlace</button>
+    </div>
+    <ol id="pn-perm-steps" style="font-size:.78rem;color:var(--color-text-muted);line-height:1.8;margin:0 0 1rem;padding-left:1.1rem;"></ol>
+    <button type="button" class="pn-btn pn-btn-secondary" style="width:100%;justify-content:center;" onclick="closePermHelp()">Entendido</button>
+  </div>
+</div>
+
+<style>
+.pndm-overlay { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.65); align-items:center; justify-content:center; }
+.pndm-overlay.pndm-open { display:flex; }
+.pndm-sheet { background:var(--color-surface); border-radius:1.25rem; padding:1.25rem; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 -8px 32px rgba(0,0,0,.3); }
+.pndm-handle { width:2.5rem; height:.25rem; background:var(--color-border); border-radius:9999px; margin:0 auto .875rem; }
+</style>
+
+<script>
+(function(){
+  const DTASK_MAX_PHOTOS = 6;
+  let _dtaskPhotos = [];
+
+  function renderDtaskPhotos() {
+    const grid = document.getElementById('pn-photo-grid');
+    grid.innerHTML = _dtaskPhotos.map((p, i) =>
+      `<div style="position:relative;width:4.5rem;height:4.5rem;border-radius:.625rem;overflow:hidden;flex-shrink:0;border:1px solid var(--color-border);">
+         <img src="${p}" alt="foto ${i + 1}" style="width:100%;height:100%;object-fit:cover;display:block;">
+         <button type="button" onclick="removeDtaskPhoto(${i})" style="position:absolute;top:.15rem;right:.15rem;background:rgba(0,0,0,.6);border:none;border-radius:9999px;width:1.375rem;height:1.375rem;font-size:.65rem;font-weight:700;color:#fff;cursor:pointer;line-height:1;">✕</button>
+       </div>`
+    ).join('');
+    const label = document.getElementById('pn-photo-label');
+    const txt   = document.getElementById('pn-photo-label-txt');
+    if (!label) return;
+    if (_dtaskPhotos.length >= DTASK_MAX_PHOTOS) {
+      label.style.display = 'none';
+    } else {
+      label.style.display = '';
+      txt.textContent = _dtaskPhotos.length
+        ? `Agregar otra foto (${_dtaskPhotos.length}/${DTASK_MAX_PHOTOS})`
+        : 'Toca para tomar o elegir foto';
+    }
+  }
+
+  window.onDtaskPhoto = function (input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = new Image();
+      img.onload = function () {
+        const MAX = 1024;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else       { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        if (_dtaskPhotos.length < DTASK_MAX_PHOTOS) {
+          _dtaskPhotos.push(c.toDataURL('image/jpeg', 0.75));
+          renderDtaskPhotos();
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  };
+
+  window.removeDtaskPhoto = function (idx) {
+    _dtaskPhotos.splice(idx, 1);
+    renderDtaskPhotos();
+  };
+
+  /* ── Firma canvas ── */
+  let _sigCanvas, _sigCtx, _sigDrawing = false;
+
+  function initSigCanvas() {
+    _sigCanvas = document.getElementById('pn-sig-canvas');
+    if (!_sigCanvas) return;
+    _sigCtx = _sigCanvas.getContext('2d');
+    const rect = _sigCanvas.getBoundingClientRect();
+    _sigCanvas.width  = rect.width  * window.devicePixelRatio;
+    _sigCanvas.height = rect.height * window.devicePixelRatio;
+    _sigCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    _sigCtx.strokeStyle = '#1a1a2e';
+    _sigCtx.lineWidth   = 2.5;
+    _sigCtx.lineCap     = 'round';
+    _sigCtx.lineJoin    = 'round';
+
+    function pos(e) {
+      const r = _sigCanvas.getBoundingClientRect();
+      const src = e.touches ? e.touches[0] : e;
+      return { x: src.clientX - r.left, y: src.clientY - r.top };
+    }
+    function start(e) { e.preventDefault(); _sigDrawing = true; const p = pos(e); _sigCtx.beginPath(); _sigCtx.moveTo(p.x, p.y); }
+    function move(e)  { e.preventDefault(); if (!_sigDrawing) return; const p = pos(e); _sigCtx.lineTo(p.x, p.y); _sigCtx.stroke(); }
+    function end()    { _sigDrawing = false; }
+    _sigCanvas.addEventListener('mousedown',  start, { passive: false });
+    _sigCanvas.addEventListener('mousemove',  move,  { passive: false });
+    _sigCanvas.addEventListener('mouseup',    end);
+    _sigCanvas.addEventListener('mouseleave', end);
+    _sigCanvas.addEventListener('touchstart', start, { passive: false });
+    _sigCanvas.addEventListener('touchmove',  move,  { passive: false });
+    _sigCanvas.addEventListener('touchend',   end,   { passive: false });
+  }
+
+  window.clearSig = function () {
+    if (_sigCtx) _sigCtx.clearRect(0, 0, _sigCanvas.width, _sigCanvas.height);
+  };
+
+  function isSigEmpty() {
+    if (!_sigCanvas) return true;
+    const d = _sigCtx.getImageData(0, 0, _sigCanvas.width, _sigCanvas.height).data;
+    return !d.some(v => v !== 0);
+  }
+
+  if (document.getElementById('pn-sig-canvas')) {
+    requestAnimationFrame(initSigCanvas);
+    document.getElementById('pn-dtask-form').addEventListener('submit', function () {
+      const form = this;
+      _dtaskPhotos.forEach(function (p) {
+        const input = document.createElement('input');
+        input.type = 'hidden'; input.name = 'photos_b64'; input.value = p;
+        form.appendChild(input);
+      });
+      if (!isSigEmpty()) {
+        const sigInput = document.createElement('input');
+        sigInput.type = 'hidden'; sigInput.name = 'signature'; sigInput.value = _sigCanvas.toDataURL('image/png');
+        form.appendChild(sigInput);
+      }
+    });
+  }
+
+  /* ── Ayuda: activar camara/microfono bloqueados ── */
+  function isAndroid(){ return /Android/i.test(navigator.userAgent); }
+  function isIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+  window.showPermHelp = function(){
+    const stepsEl = document.getElementById('pn-perm-steps');
+    const copyBox = document.getElementById('pn-perm-copy-box');
+    copyBox.style.display = 'none';
+    stepsEl.innerHTML = '';
+    if (isAndroid() && isStandalone()) {
+      document.getElementById('pn-perm-url').value = window.location.origin;
+      copyBox.style.display = 'flex';
+      stepsEl.innerHTML =
+        '<li><strong>Más fácil:</strong> copia el enlace de arriba, ábrelo en Chrome (fuera de esta app) y toca el candado 🔒 junto a la dirección para activar Cámara y Micrófono ahí — quedan activos también dentro de la app instalada.</li>' +
+        '<li>O desde la app instalada: mantén presionado su ícono en la pantalla de inicio → "Información de la app" (o Ajustes → Apps) → busca "Solution Copiers" (o "Chrome" si no aparece) → Permisos → activa Cámara y Micrófono.</li>' +
+        '<li>Vuelve aquí e intenta de nuevo.</li>';
+      document.getElementById('pn-perm-modal').classList.add('pndm-open');
+      return;
+    }
+    let steps;
+    if (isAndroid()) {
+      steps = ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
+                'Entra a "Permisos del sitio" (o "Información del sitio").',
+                'Busca "Cámara" y "Micrófono" y cámbialos a "Permitir".',
+                'Si sigue sin funcionar, revisa en Ajustes del celular → Apps → Chrome → Permisos.'];
+    } else if (isIOS()) {
+      steps = ['Abre Ajustes del iPhone.',
+                'Busca tu navegador (Safari o Chrome) — o el nombre de esta app si la instalaste — en la lista de apps.',
+                'Entra y activa "Cámara" y "Micrófono".',
+                'Vuelve aquí e intenta de nuevo.'];
+    } else {
+      steps = ['Toca el candado 🔒 junto a la dirección del sitio.',
+                'Busca "Cámara" y "Micrófono" en los permisos.',
+                'Cámbialos a "Permitir".'];
+    }
+    steps.forEach(s => { const li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
+    document.getElementById('pn-perm-modal').classList.add('pndm-open');
+  };
+  window.copyPermUrl = function(){
+    const input = document.getElementById('pn-perm-url');
+    const btn = document.getElementById('pn-perm-copy-btn');
+    const done = () => {
+      btn.textContent = 'Copiado ✓';
+      setTimeout(() => { btn.textContent = 'Copiar enlace'; }, 2000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).then(done).catch(() => {
+        input.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+      });
+    } else {
+      input.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+    }
+  };
+  window.closePermHelp = function(){
+    document.getElementById('pn-perm-modal').classList.remove('pndm-open');
+  };
+})();
+</script>
+{% endblock %}

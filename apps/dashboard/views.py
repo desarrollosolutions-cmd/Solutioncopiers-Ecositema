@@ -5584,8 +5584,19 @@ def _parse_money(value):
 
 
 @campo_decorator
-class CampoTaskCompleteView(View):
-    """El mensajero/técnico completa una tarea desde /campo/."""
+class CampoDeliveryTaskDetailView(View):
+    """El mensajero/técnico ve todos los detalles de una tarea de entrega/
+    recolección y la completa desde /campo/. GET muestra la info completa
+    (más el formulario si sigue pendiente); POST la marca como completada
+    y vuelve a renderizar la misma pantalla ya con el estado actualizado
+    (igual que CampoTicketDetailView — sin AJAX, para evitar el patrón de
+    mutación incremental del DOM que causaba corrupción visual en Mi Turno)."""
+    template_name = "campo/delivery_task_detail.html"
+
+    def get(self, request, pk):
+        from apps.dashboard.models import DeliveryTask
+        task = get_object_or_404(DeliveryTask, pk=pk, field_user__user=request.user)
+        return render(request, self.template_name, {"task": task})
 
     def post(self, request, pk):
         from apps.dashboard.models import DeliveryTask
@@ -5616,7 +5627,7 @@ class CampoTaskCompleteView(View):
             message=f"{request.user.get_full_name() or request.user.username} — {task.client_name or ''}".strip(" —"),
             link=f"/dashadmin/campo/tareas/{task.pk}/",
         )
-        return JsonResponse({"ok": True, "task_id": task.pk})
+        return render(request, self.template_name, {"task": task})
 
 
 def _filter_delivery_tasks_qs(params, qs):
@@ -6206,15 +6217,24 @@ class PanelTurnoView(View):
 
 
 @panel_decorator
-class PanelDeliveryCompleteView(View):
-    """Completar una tarea de entrega desde el portal del panel/mensajero."""
+class PanelDeliveryTaskDetailView(View):
+    """El mensajero/técnico ve todos los detalles de una tarea de entrega/
+    recolección y la completa desde /panel/ (ver nota en
+    CampoDeliveryTaskDetailView — mismo patrón sin AJAX)."""
+    template_name = "panel/delivery_task_detail.html"
+
+    def get(self, request, pk):
+        from apps.dashboard.models import DeliveryTask
+        task = get_object_or_404(DeliveryTask, pk=pk, field_user__user=request.user)
+        return render(request, self.template_name, {"task": task})
+
     def post(self, request, pk):
-        from apps.dashboard.models import DeliveryTask, FieldUser
-        try:
-            fu = request.user.field_profile
-        except FieldUser.DoesNotExist:
-            return JsonResponse({"ok": False, "error": "Sin perfil de campo"}, status=403)
-        task = get_object_or_404(DeliveryTask, pk=pk, field_user=fu, status=DeliveryTask.Status.PENDING)
+        from apps.dashboard.models import DeliveryTask
+        task = get_object_or_404(
+            DeliveryTask, pk=pk,
+            field_user__user=request.user,
+            status=DeliveryTask.Status.PENDING,
+        )
         photos = [p.strip() for p in request.POST.getlist("photos_b64") if p.strip()]
         if not photos:
             legacy = request.POST.get("photo_b64", "").strip()
@@ -6238,7 +6258,7 @@ class PanelDeliveryCompleteView(View):
             message=f"{request.user.get_full_name() or request.user.username} — {task.client_name or ''}".strip(" —"),
             link=f"/dashadmin/campo/tareas/{task.pk}/",
         )
-        return JsonResponse({"ok": True, "task_id": task.pk})
+        return render(request, self.template_name, {"task": task})
 
 
 @panel_decorator

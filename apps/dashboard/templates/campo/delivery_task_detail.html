@@ -1,0 +1,466 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#100808">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>{{ task.title }}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-serif;color:#F5EDEB;-webkit-font-smoothing:antialiased;}
+.topbar{background:#221414;border-bottom:1px solid #3A2020;padding:.875rem 1.125rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:10;}
+.back-btn{background:none;border:none;color:#C4121A;cursor:pointer;padding:.25rem;display:flex;align-items:center;flex-shrink:0;}
+.back-btn svg{width:1.25rem;height:1.25rem;}
+.topbar-info{flex:1;min-width:0;}
+.topbar-ticket{font-size:.875rem;font-weight:700;color:#F5EDEB;}
+.topbar-client{font-size:.7rem;color:#C0A8A8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.content{padding:1rem 1rem 5rem;}
+.info-card{background:#221414;border:1px solid #3A2020;border-radius:1rem;padding:1.125rem;margin-bottom:.875rem;}
+.info-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;}
+.info-row:last-child{margin-bottom:0;}
+.info-label{font-size:.68rem;font-weight:600;color:#7A6060;text-transform:uppercase;letter-spacing:.06em;}
+.info-value{font-size:.8125rem;font-weight:600;color:#F5EDEB;text-align:right;}
+.section-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7A6060;margin:1.25rem 0 .625rem;}
+.text-block{background:#221414;border:1px solid #3A2020;border-radius:.875rem;padding:.875rem 1rem;font-size:.8rem;line-height:1.6;color:#C0A8A8;}
+.badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;font-weight:700;padding:.25rem .625rem;border-radius:9999px;}
+.badge-pending{background:rgba(245,158,11,.12);color:#F59E0B;border:1px solid rgba(245,158,11,.2);}
+.badge-done{background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.2);}
+.badge-cancelled{background:rgba(100,116,139,.12);color:#64748B;border:1px solid rgba(100,116,139,.2);}
+.badge-high{background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.2);}
+.badge-urgent{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.2);}
+.badge-medium{background:rgba(196,18,26,.12);color:#C4121A;border:1px solid rgba(196,18,26,.2);}
+.badge-low{background:rgba(100,116,139,.12);color:#94A3B8;border:1px solid rgba(100,116,139,.2);}
+.action-card{background:#221414;border:1px solid #3A2020;border-radius:1rem;padding:1.25rem;margin-bottom:.875rem;}
+.form-label{font-size:.7rem;font-weight:600;color:#C0A8A8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;display:block;}
+.form-textarea{width:100%;padding:.75rem .875rem;background:#100808;border:1.5px solid #3A2020;border-radius:.75rem;color:#F5EDEB;font-size:.875rem;font-family:inherit;outline:none;resize:vertical;min-height:80px;transition:border-color .18s;margin-bottom:1rem;}
+.form-textarea:focus{border-color:#C4121A;}
+.form-input{width:100%;padding:.7rem .875rem;background:#100808;border:1.5px solid #3A2020;border-radius:.75rem;color:#F5EDEB;font-size:.875rem;font-family:inherit;outline:none;transition:border-color .18s;}
+.form-input:focus{border-color:#C4121A;}
+.btn{width:100%;padding:.8rem;border-radius:.75rem;border:none;font-size:.8125rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.4rem;}
+.btn:active{opacity:.85;}
+.btn svg{width:.9rem;height:.9rem;}
+.resolved-banner{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:.875rem;padding:1rem;display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem;}
+.resolved-banner svg{width:1.5rem;height:1.5rem;color:#10B981;flex-shrink:0;}
+.resolved-text{font-size:.8125rem;font-weight:600;color:#10B981;}
+.resolved-sub{font-size:.72rem;color:#C0A8A8;margin-top:.15rem;}
+.bottombar{position:fixed;bottom:0;left:0;right:0;background:#221414;border-top:1px solid #3A2020;padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
+.bottombar-tick{font-size:.72rem;color:#7A6060;}
+.logout-btn{background:none;border:none;color:#7A6060;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;padding:.375rem .625rem;border-radius:.375rem;}
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:#221414;border:1px solid #C4121A;color:#F5EDEB;padding:.625rem 1.25rem;border-radius:.75rem;font-size:.78rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+.evidence-gallery{display:flex;flex-wrap:wrap;gap:.5rem;}
+.evidence-gallery a{display:block;width:5.5rem;height:5.5rem;border-radius:.75rem;overflow:hidden;border:1px solid #3A2020;}
+.evidence-gallery img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.375rem;padding:1rem;background:#100808;border:1.5px dashed #3A2020;border-radius:.75rem;cursor:pointer;color:#C0A8A8;font-size:.78rem;margin-bottom:.875rem;transition:border-color .2s;}
+.photo-label:active{border-color:#C4121A;}
+.photo-label span:first-child{font-size:1.5rem;}
+.photo-grid{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.875rem;}
+.photo-thumb{position:relative;width:4.5rem;height:4.5rem;border-radius:.625rem;overflow:hidden;flex-shrink:0;}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-thumb button{position:absolute;top:.15rem;right:.15rem;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:9999px;width:1.375rem;height:1.375rem;cursor:pointer;font-size:.65rem;font-weight:700;line-height:1;}
+.sig-wrap{background:#100808;border:1.5px solid #3A2020;border-radius:.75rem;overflow:hidden;margin-bottom:.875rem;position:relative;}
+.sig-canvas{width:100%;height:140px;touch-action:none;display:block;}
+.sig-clear{position:absolute;top:.4rem;right:.4rem;background:rgba(0,0,0,.5);border:none;color:#C0A8A8;font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:.375rem;cursor:pointer;}
+.sig-preview{background:#fff;border-radius:.75rem;overflow:hidden;margin-bottom:.875rem;}
+.sig-preview img{width:100%;display:block;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:none;align-items:flex-end;}
+.modal-sheet{background:#221414;border-top:1px solid #3A2020;border-radius:1.25rem 1.25rem 0 0;padding:1.5rem 1.25rem;width:100%;max-height:90vh;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.modal-title{font-size:1rem;font-weight:800;margin-bottom:1.25rem;color:#F5EDEB;}
+.btn-cancel-modal{width:100%;padding:.75rem;background:none;border:1.5px solid #3A2020;color:#C0A8A8;border-radius:.875rem;font-size:.875rem;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.5rem;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="{% url 'campo:turno' %}" class="back-btn" aria-label="Volver">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+    </svg>
+  </a>
+  <div class="topbar-info">
+    <div class="topbar-ticket">{{ task.title }}</div>
+    <div class="topbar-client">{{ task.client_name }}</div>
+  </div>
+  <span class="badge badge-{{ task.status }}">{{ task.get_status_display }}</span>
+</div>
+
+<div class="content">
+
+  {% if task.status == "done" %}
+  <div class="resolved-banner">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div>
+      <div class="resolved-text">Entrega completada</div>
+      {% if task.completed_at %}<div class="resolved-sub">{{ task.completed_at|date:"d/m/Y H:i" }}</div>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="section-title">Información de la tarea</div>
+  <div class="info-card">
+    <div class="info-row">
+      <span class="info-label">Tipo</span>
+      <span class="info-value">{{ task.get_task_type_display }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Prioridad</span>
+      <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+    </div>
+    {% if task.payment_method %}
+    <div class="info-row">
+      <span class="info-label">Pago esperado</span>
+      <span class="info-value">{{ task.get_payment_method_display }}</span>
+    </div>
+    {% endif %}
+    {% if task.due_date %}
+    <div class="info-row">
+      <span class="info-label">Fecha</span>
+      <span class="info-value">{{ task.due_date|date:"d/m/Y" }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if task.client_name or task.address %}
+  <div class="info-card">
+    {% if task.client_name %}
+    <div class="info-row" style="margin-bottom:{% if task.address %}.75rem{% else %}0{% endif %};">
+      <span class="info-label">Cliente</span>
+      <span class="info-value">{{ task.client_name }}</span>
+    </div>
+    {% endif %}
+    {% if task.address %}
+    <div style="display:flex;align-items:flex-start;gap:.5rem;{% if task.client_name %}padding-top:.75rem;border-top:1px solid #3A2020;{% endif %}">
+      <svg fill="none" stroke="#C4121A" viewBox="0 0 24 24" stroke-width="2" style="width:1.1rem;height:1.1rem;flex-shrink:0;margin-top:.1rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.8125rem;color:#F5EDEB;line-height:1.4;">{{ task.address }}</div>
+        <a href="https://maps.google.com/?q={{ task.address|urlencode }},+Colombia" target="_blank"
+           style="font-size:.72rem;color:#C4121A;text-decoration:none;font-weight:600;margin-top:.3rem;display:inline-flex;align-items:center;gap:.25rem;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.7rem;height:.7rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          Ver en Google Maps
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if task.description %}
+  <div class="section-title">Detalle</div>
+  <div class="text-block">{{ task.description|linebreaksbr }}</div>
+  {% endif %}
+
+  {% if task.status == "done" %}
+
+    {% if task.completion_notes %}
+    <div class="section-title">Notas de entrega</div>
+    <div class="text-block" style="border-color:rgba(16,185,129,.25);">{{ task.completion_notes|linebreaksbr }}</div>
+    {% endif %}
+
+    {% if task.completion_invoice or task.completion_cash_amount or task.completion_transfer_amount %}
+    <div class="section-title">Pago recibido</div>
+    <div class="info-card">
+      {% if task.completion_invoice %}
+      <div class="info-row" style="margin-bottom:{% if task.completion_cash_amount or task.completion_transfer_amount %}.5rem{% else %}0{% endif %};">
+        <span class="info-label"># Factura/Remisión</span>
+        <span class="info-value">{{ task.completion_invoice }}</span>
+      </div>
+      {% endif %}
+      {% if task.completion_cash_amount %}
+      <div class="info-row">
+        <span class="info-label">Efectivo</span>
+        <span class="info-value">${{ task.completion_cash_amount|floatformat:0 }}</span>
+      </div>
+      {% endif %}
+      {% if task.completion_transfer_amount %}
+      <div class="info-row">
+        <span class="info-label">Transferencia</span>
+        <span class="info-value">${{ task.completion_transfer_amount|floatformat:0 }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if task.all_completion_photos %}
+    <div class="section-title">Fotos de la entrega</div>
+    <div class="evidence-gallery" style="margin-bottom:.875rem;">
+      {% for photo in task.all_completion_photos %}
+      <a href="{{ photo }}" target="_blank" rel="noopener"><img src="{{ photo }}" alt="Foto {{ forloop.counter }}"></a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if task.completion_signature %}
+    <div class="section-title">Firma del receptor</div>
+    <div class="sig-preview"><img src="{{ task.completion_signature }}" alt="Firma"></div>
+    {% endif %}
+
+  {% else %}
+
+    <div class="section-title">Completar tarea</div>
+    <div class="action-card">
+      <form method="post" id="complete-form">
+        {% csrf_token %}
+
+        <label class="form-label">Notas de entrega</label>
+        <textarea name="notes" id="task-notes" class="form-textarea"
+          placeholder="¿Qué se entregó? ¿Hay observaciones?"></textarea>
+
+        <label class="form-label">Pago recibido <span style="font-weight:400;text-transform:none;">(opcional — si fue mixto, llena los dos)</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem;">
+          <div>
+            <label style="font-size:.68rem;color:#7A6060;display:block;margin-bottom:.25rem;">Efectivo</label>
+            <input type="number" inputmode="decimal" min="0" step="0.01" name="cash_amount" class="form-input" placeholder="$ 0">
+          </div>
+          <div>
+            <label style="font-size:.68rem;color:#7A6060;display:block;margin-bottom:.25rem;">Transferencia</label>
+            <input type="number" inputmode="decimal" min="0" step="0.01" name="transfer_amount" class="form-input" placeholder="$ 0">
+          </div>
+        </div>
+
+        <label class="form-label">Fotos del comprobante <span style="font-weight:400;text-transform:none;">(hasta 6 — toca varias veces para agregar más)</span></label>
+        <div class="photo-grid" id="task-photo-grid"></div>
+        <label class="photo-label" id="task-photo-label" onclick="document.getElementById('task-photo-input').click()">
+          <span>📷</span>
+          <span id="task-photo-txt">Toca para tomar o elegir foto</span>
+        </label>
+        <input type="file" id="task-photo-input" accept="image/*" capture="environment"
+          style="display:none;" onchange="onTaskPhoto(this)">
+        <div style="text-align:center;margin:-.5rem 0 .875rem;">
+          <button type="button" onclick="showPermHelp()"
+            style="background:none;border:none;color:#7A6060;font-size:.68rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.25rem;">
+            ¿No te deja usar la cámara o el micrófono?
+          </button>
+        </div>
+
+        <label class="form-label">Firma del receptor</label>
+        <div class="sig-wrap">
+          <canvas id="sig-canvas" class="sig-canvas"></canvas>
+          <button type="button" class="sig-clear" onclick="clearSig()">Limpiar</button>
+        </div>
+
+        <button type="submit" class="btn" style="background:linear-gradient(135deg,#10B981,#059669);color:#fff;margin-top:.5rem;">
+          Confirmar entrega
+        </button>
+      </form>
+    </div>
+
+  {% endif %}
+
+</div>
+
+{# ── Ayuda cuando el celular bloquea camara/microfono ── #}
+<div class="modal-overlay" id="perm-help-modal" onclick="if(event.target===this)closePermHelp()">
+  <div class="modal-sheet" style="max-width:360px;margin:0 auto;">
+    <div class="modal-title">Activar cámara y micrófono</div>
+    <p style="font-size:.8rem;color:#C0A8A8;line-height:1.6;margin-bottom:.875rem;">
+      La primera vez el sistema te pregunta si quieres permitirlo. Si ya lo rechazaste antes, actívalo manualmente:
+    </p>
+    <div id="perm-help-copy-box" style="display:none;gap:.5rem;margin-bottom:.875rem;">
+      <input type="text" id="perm-help-url" readonly style="flex:1;min-width:0;padding:.55rem .7rem;border-radius:.5rem;border:1.5px solid #3A2020;background:#100808;color:#C0A8A8;font-size:.72rem;font-family:inherit;">
+      <button type="button" id="perm-help-copy-btn" onclick="copyPermUrl()" style="flex-shrink:0;padding:.55rem .75rem;border-radius:.5rem;border:1.5px solid #C4121A;background:none;color:#C4121A;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Copiar enlace</button>
+    </div>
+    <ol id="perm-help-steps" style="font-size:.78rem;color:#C0A8A8;line-height:1.8;margin:0 0 1rem;padding-left:1.1rem;"></ol>
+    <button type="button" class="btn-cancel-modal" onclick="closePermHelp()">Entendido</button>
+  </div>
+</div>
+
+<div class="bottombar">
+  <div class="bottombar-tick">{{ task.get_task_type_display }}</div>
+  <form method="post" action="{% url 'campo:logout' %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="logout-btn">Salir</button>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = ok ? '#10B981' : '#EF4444';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Fotos del comprobante (varias) ──
+const TASK_MAX_PHOTOS = 6;
+let _taskPhotos = [];
+
+function renderTaskPhotos() {
+  const grid = document.getElementById('task-photo-grid');
+  grid.innerHTML = _taskPhotos.map((p, i) =>
+    `<div class="photo-thumb"><img src="${p}" alt="foto ${i + 1}"><button type="button" onclick="removeTaskPhoto(${i})">✕</button></div>`
+  ).join('');
+  const label = document.getElementById('task-photo-label');
+  const txt   = document.getElementById('task-photo-txt');
+  if (_taskPhotos.length >= TASK_MAX_PHOTOS) {
+    label.style.display = 'none';
+  } else {
+    label.style.display = '';
+    txt.textContent = _taskPhotos.length
+      ? `Agregar otra foto (${_taskPhotos.length}/${TASK_MAX_PHOTOS})`
+      : 'Toca para tomar o elegir foto';
+  }
+}
+
+function onTaskPhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const orig = new Image();
+    orig.onload = () => {
+      const MAX = 1024;
+      let w = orig.width, h = orig.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(orig, 0, 0, w, h);
+      if (_taskPhotos.length < TASK_MAX_PHOTOS) {
+        _taskPhotos.push(c.toDataURL('image/jpeg', 0.75));
+        renderTaskPhotos();
+      }
+    };
+    orig.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removeTaskPhoto(idx) {
+  _taskPhotos.splice(idx, 1);
+  renderTaskPhotos();
+}
+
+// ── Canvas firma ──
+let _sigCanvas, _sigCtx, _drawing = false, _sigEmpty = true;
+
+function initSig() {
+  _sigCanvas = document.getElementById('sig-canvas');
+  if (!_sigCanvas) return;
+  _sigCanvas.width  = _sigCanvas.offsetWidth  || 320;
+  _sigCanvas.height = _sigCanvas.offsetHeight || 140;
+  _sigCtx = _sigCanvas.getContext('2d');
+  _sigCtx.strokeStyle = '#F5EDEB';
+  _sigCtx.lineWidth   = 2;
+  _sigCtx.lineCap     = 'round';
+  _sigCtx.lineJoin    = 'round';
+
+  function pt(e) {
+    const r = _sigCanvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - r.left, y: src.clientY - r.top };
+  }
+  function down(e) { e.preventDefault(); _drawing = true; _sigEmpty = false; const p = pt(e); _sigCtx.beginPath(); _sigCtx.moveTo(p.x, p.y); }
+  function move(e) { e.preventDefault(); if (!_drawing) return; const p = pt(e); _sigCtx.lineTo(p.x, p.y); _sigCtx.stroke(); }
+  function up(e)   { e.preventDefault(); _drawing = false; }
+  _sigCanvas.addEventListener('mousedown',  down);
+  _sigCanvas.addEventListener('mousemove',  move);
+  _sigCanvas.addEventListener('mouseup',    up);
+  _sigCanvas.addEventListener('touchstart', down, { passive: false });
+  _sigCanvas.addEventListener('touchmove',  move, { passive: false });
+  _sigCanvas.addEventListener('touchend',   up,   { passive: false });
+}
+
+function clearSig() {
+  if (_sigCtx) _sigCtx.clearRect(0, 0, _sigCanvas.width, _sigCanvas.height);
+  _sigEmpty = true;
+}
+
+if (document.getElementById('sig-canvas')) {
+  setTimeout(initSig, 50);
+  document.getElementById('complete-form').addEventListener('submit', function () {
+    const form = this;
+    _taskPhotos.forEach(function (p) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'photos_b64';
+      input.value = p;
+      form.appendChild(input);
+    });
+    if (_sigCanvas && !_sigEmpty) {
+      const sigInput = document.createElement('input');
+      sigInput.type = 'hidden';
+      sigInput.name = 'signature';
+      sigInput.value = _sigCanvas.toDataURL('image/png');
+      form.appendChild(sigInput);
+    }
+  });
+}
+
+// ── Ayuda: activar camara/microfono bloqueados ──
+function isAndroid(){ return /Android/i.test(navigator.userAgent); }
+function isIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function showPermHelp(){
+  var stepsEl = document.getElementById('perm-help-steps');
+  var copyBox = document.getElementById('perm-help-copy-box');
+  copyBox.style.display = 'none';
+  stepsEl.innerHTML = '';
+  if (isAndroid() && isStandalone()) {
+    document.getElementById('perm-help-url').value = window.location.origin;
+    copyBox.style.display = 'flex';
+    stepsEl.innerHTML =
+      '<li><strong>Más fácil:</strong> copia el enlace de arriba, ábrelo en Chrome (fuera de esta app) y toca el candado 🔒 junto a la dirección para activar Cámara y Micrófono ahí — quedan activos también dentro de la app instalada.</li>' +
+      '<li>O desde la app instalada: mantén presionado su ícono en la pantalla de inicio → "Información de la app" (o Ajustes → Apps) → busca "Solution Copiers" (o "Chrome" si no aparece) → Permisos → activa Cámara y Micrófono.</li>' +
+      '<li>Vuelve aquí e intenta de nuevo.</li>';
+    document.getElementById('perm-help-modal').style.display = 'flex';
+    return;
+  }
+  var steps;
+  if (isAndroid()) {
+    steps = ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
+              'Entra a "Permisos del sitio" (o "Información del sitio").',
+              'Busca "Cámara" y "Micrófono" y cámbialos a "Permitir".',
+              'Si sigue sin funcionar, revisa en Ajustes del celular → Apps → Chrome → Permisos.'];
+  } else if (isIOS()) {
+    steps = ['Abre Ajustes del iPhone.',
+              'Busca tu navegador (Safari o Chrome) — o el nombre de esta app si la instalaste — en la lista de apps.',
+              'Entra y activa "Cámara" y "Micrófono".',
+              'Vuelve aquí e intenta de nuevo.'];
+  } else {
+    steps = ['Toca el candado 🔒 junto a la dirección del sitio.',
+              'Busca "Cámara" y "Micrófono" en los permisos.',
+              'Cámbialos a "Permitir".'];
+  }
+  steps.forEach(function(s){ var li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
+  document.getElementById('perm-help-modal').style.display = 'flex';
+}
+function copyPermUrl(){
+  var input = document.getElementById('perm-help-url');
+  var btn = document.getElementById('perm-help-copy-btn');
+  var done = function(){
+    btn.textContent = 'Copiado ✓';
+    setTimeout(function(){ btn.textContent = 'Copiar enlace'; }, 2000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(input.value).then(done).catch(function(){
+      input.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+    });
+  } else {
+    input.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+  }
+}
+function closePermHelp(){
+  document.getElementById('perm-help-modal').style.display = 'none';
+}
+
+{% if request.method == 'POST' %}
+showToast('Entrega registrada ✓');
+{% endif %}
+</script>
+</body>
+</html>

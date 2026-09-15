@@ -48,7 +48,6 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .dtask-title{font-size:.8125rem;font-weight:600;color:#F5EDEB;line-height:1.4;}
 .dtask-addr{font-size:.7rem;color:#C0A8A8;margin-top:.2rem;display:flex;align-items:center;gap:.25rem;}
 .dtask-desc{font-size:.7rem;color:#C0A8A8;margin-top:.15rem;}
-.dtask-complete-btn{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;border:none;padding:.5rem .875rem;border-radius:.625rem;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;margin-top:.25rem;}
 .dtask-done-info{font-size:.68rem;color:#10B981;margin-top:.3rem;display:flex;align-items:center;gap:.25rem;}
 /* Other task cards */
 .task-card{background:#221414;border:1px solid #3A2020;border-radius:.875rem;padding:.875rem 1rem;margin-bottom:.5rem;display:flex;gap:.75rem;align-items:flex-start;}
@@ -70,29 +69,6 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .logout-btn:active{background:rgba(239,68,68,.1);color:#EF4444;}
 .toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:#221414;border:1px solid #C4121A;color:#F5EDEB;padding:.625rem 1.25rem;border-radius:.75rem;font-size:.78rem;font-weight:600;z-index:999;opacity:0;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
-/* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:flex;align-items:flex-end;}
-.modal-sheet{background:#221414;border-top:1px solid #3A2020;border-radius:1.25rem 1.25rem 0 0;padding:1.5rem 1.25rem;width:100%;max-height:90vh;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.modal-title{font-size:1rem;font-weight:800;margin-bottom:1.25rem;color:#F5EDEB;}
-.modal-label{font-size:.7rem;font-weight:600;color:#C0A8A8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;display:block;}
-.modal-input{width:100%;padding:.7rem .875rem;background:#100808;border:1.5px solid #3A2020;border-radius:.75rem;color:#F5EDEB;font-size:.875rem;font-family:inherit;outline:none;transition:border-color .18s;margin-bottom:.875rem;}
-.modal-input:focus{border-color:#C4121A;}
-.modal-textarea{resize:vertical;min-height:90px;}
-.photo-label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.375rem;padding:1rem;background:#100808;border:1.5px dashed #3A2020;border-radius:.75rem;cursor:pointer;color:#C0A8A8;font-size:.78rem;margin-bottom:.875rem;transition:border-color .2s;}
-.photo-label:active{border-color:#C4121A;}
-.photo-label span:first-child{font-size:1.5rem;}
-.photo-preview-box{margin-bottom:.875rem;position:relative;}
-.photo-preview-box img{width:100%;border-radius:.75rem;display:block;}
-.photo-clear-btn{position:absolute;top:.5rem;right:.5rem;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:9999px;width:1.75rem;height:1.75rem;cursor:pointer;font-size:.75rem;font-weight:700;line-height:1;}
-.photo-grid{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.875rem;}
-.photo-thumb{position:relative;width:4.5rem;height:4.5rem;border-radius:.625rem;overflow:hidden;flex-shrink:0;}
-.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-.photo-thumb button{position:absolute;top:.15rem;right:.15rem;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:9999px;width:1.375rem;height:1.375rem;cursor:pointer;font-size:.65rem;font-weight:700;line-height:1;}
-.sig-wrap{background:#100808;border:1.5px solid #3A2020;border-radius:.75rem;overflow:hidden;margin-bottom:.875rem;position:relative;}
-.sig-canvas{width:100%;height:140px;touch-action:none;display:block;}
-.sig-clear{position:absolute;top:.4rem;right:.4rem;background:rgba(0,0,0,.5);border:none;color:#C0A8A8;font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:.375rem;cursor:pointer;}
-.btn-confirm{width:100%;padding:.875rem;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:.875rem;font-size:.9375rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:.5rem;}
-.btn-cancel-modal{width:100%;padding:.75rem;background:none;border:1.5px solid #3A2020;color:#C0A8A8;border-radius:.875rem;font-size:.875rem;font-weight:600;cursor:pointer;font-family:inherit;margin-top:.5rem;}
 .gps-pill{display:inline-flex;align-items:center;gap:.3rem;font-size:.62rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:rgba(196,18,26,.1);color:#C4121A;border:1px solid rgba(196,18,26,.2);margin-top:.4rem;}
 .gps-pill.ok{background:rgba(16,185,129,.1);color:#10B981;border-color:rgba(16,185,129,.2);}
 </style>
@@ -198,7 +174,8 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
   </div>
 
   {% for dt in delivery_tasks %}
-  <div class="dtask {% if dt.status == 'done' %}done{% endif %}" id="dtask-{{ dt.pk }}">
+  <div class="dtask {% if dt.status == 'done' %}done{% endif %}" id="dtask-{{ dt.pk }}" style="cursor:pointer;"
+    onclick="if(!event.target.closest('a')){location.href='{% url 'campo:task_detail' dt.pk %}';}">
     <div class="dtask-num">{% if dt.status == 'done' %}✓{% else %}{{ forloop.counter }}{% endif %}</div>
     <div class="dtask-body" style="flex:1;">
       <div class="dtask-title">{{ dt.title }}</div>
@@ -227,7 +204,7 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
         {% if dt.completed_at %} · {{ dt.completed_at|time:"H:i" }}{% endif %}
       </div>
       {% else %}
-      <button class="dtask-complete-btn" onclick="openComplete({{ dt.pk }}, '{{ dt.title|escapejs }}')">Completar</button>
+      <span style="display:inline-block;margin-top:.375rem;font-size:.6rem;color:#C0A8A8;">Toca para ver detalle y completar &rsaquo;</span>
       {% endif %}
     </div>
   </div>
@@ -323,77 +300,6 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
   </form>
 </div>
 
-{# ── Modal completar tarea ── #}
-<div class="modal-overlay" id="complete-modal" style="display:none;" onclick="if(event.target===this)closeModal()">
-  <button type="button" onclick="closeModal()" aria-label="Cerrar"
-    style="position:absolute;top:max(.75rem, env(safe-area-inset-top, .75rem));right:1rem;width:2rem;height:2rem;border-radius:9999px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:1.1rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1;">✕</button>
-  <div class="modal-sheet">
-    <div class="modal-title" id="modal-task-title">Completar entrega</div>
-
-    <form id="complete-form" onsubmit="submitComplete(event)">
-      <input type="hidden" id="modal-task-id" name="task_id">
-
-      <label class="modal-label">Notas de entrega</label>
-      <textarea name="notes" id="modal-notes" class="modal-input modal-textarea"
-        placeholder="¿Qué se entregó? ¿Hay observaciones?"></textarea>
-
-      <label class="modal-label">Pago recibido <span style="font-weight:400;text-transform:none;">(opcional — si fue mixto, llena los dos)</span></label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.875rem;">
-        <div>
-          <label style="font-size:.68rem;color:#7A6060;display:block;margin-bottom:.25rem;">Efectivo</label>
-          <input type="number" inputmode="decimal" min="0" step="0.01" id="modal-cash" class="modal-input" placeholder="$ 0" style="margin-bottom:0;">
-        </div>
-        <div>
-          <label style="font-size:.68rem;color:#7A6060;display:block;margin-bottom:.25rem;">Transferencia</label>
-          <input type="number" inputmode="decimal" min="0" step="0.01" id="modal-transfer" class="modal-input" placeholder="$ 0" style="margin-bottom:0;">
-        </div>
-      </div>
-
-      <label class="modal-label">Fotos del comprobante <span style="font-weight:400;text-transform:none;">(hasta 6 — toca varias veces para agregar más)</span></label>
-      <div class="photo-grid" id="campo-photo-grid"></div>
-      <label class="photo-label" id="campo-photo-label" onclick="document.getElementById('campo-photo-input').click()">
-        <span>📷</span>
-        <span id="campo-photo-txt">Toca para tomar o elegir foto</span>
-      </label>
-      <input type="file" id="campo-photo-input" accept="image/*" capture="environment"
-        style="display:none;" onchange="onCampoPhoto(this)">
-      <div style="text-align:center;margin:-.5rem 0 .875rem;">
-        <button type="button" onclick="campoShowPermHelp()"
-          style="background:none;border:none;color:#7A6060;font-size:.68rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.25rem;">
-          ¿No te deja usar la cámara o el micrófono?
-        </button>
-      </div>
-
-      <label class="modal-label">Firma del receptor</label>
-      <div class="sig-wrap">
-        <canvas id="campo-sig-canvas" class="sig-canvas"></canvas>
-        <button type="button" class="sig-clear" onclick="clearCampoSig()">Limpiar</button>
-      </div>
-
-      <button type="submit" class="btn-confirm" id="btn-confirm">
-        <span id="confirm-text">Confirmar entrega</span>
-      </button>
-      <button type="button" class="btn-cancel-modal" onclick="closeModal()">Cancelar</button>
-    </form>
-  </div>
-</div>
-
-{# ── Ayuda cuando el celular bloquea camara/microfono ── #}
-<div class="modal-overlay" id="perm-help-modal" style="display:none;align-items:center;" onclick="if(event.target===this)campoClosePermHelp()">
-  <div class="modal-sheet" style="max-width:360px;margin:0 auto;">
-    <div class="modal-title">Activar cámara y micrófono</div>
-    <p style="font-size:.8rem;color:#C0A8A8;line-height:1.6;margin-bottom:.875rem;">
-      La primera vez el sistema te pregunta si quieres permitirlo. Si ya lo rechazaste antes, actívalo manualmente:
-    </p>
-    <div id="perm-help-copy-box" style="display:none;gap:.5rem;margin-bottom:.875rem;">
-      <input type="text" id="perm-help-url" readonly style="flex:1;min-width:0;padding:.55rem .7rem;border-radius:.5rem;border:1.5px solid #3A2020;background:#100808;color:#C0A8A8;font-size:.72rem;font-family:inherit;">
-      <button type="button" id="perm-help-copy-btn" onclick="campoCopyPermUrl()" style="flex-shrink:0;padding:.55rem .75rem;border-radius:.5rem;border:1.5px solid #C4121A;background:none;color:#C4121A;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Copiar enlace</button>
-    </div>
-    <ol id="perm-help-steps" style="font-size:.78rem;color:#C0A8A8;line-height:1.8;margin:0 0 1rem;padding-left:1.1rem;"></ol>
-    <button type="button" class="btn-cancel-modal" onclick="campoClosePermHelp()">Entendido</button>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -402,7 +308,6 @@ let watchId = null;
 let isOnShift = {{ location.is_on_shift|yesno:"true,false" }};
 let isOnLunch = {{ location.is_on_lunch|yesno:"true,false" }};
 let batteryLevel = null;
-let currentTaskId = null;
 const LUNCH_MINUTES = {{ lunch_duration_minutes|default:60 }};
 {% if location and location.lunch_started_at %}let lunchStartedAt = new Date("{{ location.lunch_started_at|date:'c' }}");{% else %}let lunchStartedAt = null;{% endif %}
 let lunchSecondsUsed = {{ lunch_seconds_used|default:0 }};  // acumulado de hoy antes de este período (si está en almuerzo ahora)
@@ -568,171 +473,6 @@ if (isOnShift) startGPS();
 // Retomar el conteo de almuerzo si ya estaba en curso al cargar la página
 if (isOnLunch && lunchStartedAt) startLunchTimer(lunchStartedAt);
 
-// ── Fotos base64 (varias) ──
-const CAMPO_MAX_PHOTOS = 6;
-let _campoPhotos = [];
-
-function renderCampoPhotos() {
-  const grid = document.getElementById('campo-photo-grid');
-  grid.innerHTML = _campoPhotos.map((p, i) =>
-    `<div class="photo-thumb"><img src="${p}" alt="foto ${i + 1}"><button type="button" onclick="removeCampoPhoto(${i})">✕</button></div>`
-  ).join('');
-  const label = document.getElementById('campo-photo-label');
-  const txt   = document.getElementById('campo-photo-txt');
-  if (_campoPhotos.length >= CAMPO_MAX_PHOTOS) {
-    label.style.display = 'none';
-  } else {
-    label.style.display = '';
-    txt.textContent = _campoPhotos.length
-      ? `Agregar otra foto (${_campoPhotos.length}/${CAMPO_MAX_PHOTOS})`
-      : 'Toca para tomar o elegir foto';
-  }
-}
-
-function onCampoPhoto(input) {
-  if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
-  const reader = new FileReader();
-  reader.onload = evt => {
-    const orig = new Image();
-    orig.onload = () => {
-      const MAX = 1024;
-      let w = orig.width, h = orig.height;
-      if (w > MAX || h > MAX) {
-        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-        else       { w = Math.round(w * MAX / h); h = MAX; }
-      }
-      const c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      c.getContext('2d').drawImage(orig, 0, 0, w, h);
-      if (_campoPhotos.length < CAMPO_MAX_PHOTOS) {
-        _campoPhotos.push(c.toDataURL('image/jpeg', 0.75));
-        renderCampoPhotos();
-      }
-    };
-    orig.src = evt.target.result;
-  };
-  reader.readAsDataURL(file);
-  input.value = '';
-}
-
-function removeCampoPhoto(idx) {
-  _campoPhotos.splice(idx, 1);
-  renderCampoPhotos();
-}
-
-function clearCampoPhoto() {
-  _campoPhotos = [];
-  document.getElementById('campo-photo-input').value = '';
-  renderCampoPhotos();
-}
-
-// ── Canvas firma ──
-let _campoSigCanvas, _campoSigCtx, _campoDrawing = false, _campoSigEmpty = true;
-
-function initCampoSig() {
-  _campoSigCanvas = document.getElementById('campo-sig-canvas');
-  if (!_campoSigCanvas) return;
-  _campoSigCanvas.width  = _campoSigCanvas.offsetWidth  || 320;
-  _campoSigCanvas.height = _campoSigCanvas.offsetHeight || 140;
-  _campoSigCtx = _campoSigCanvas.getContext('2d');
-  _campoSigCtx.strokeStyle = '#F5EDEB';
-  _campoSigCtx.lineWidth   = 2;
-  _campoSigCtx.lineCap     = 'round';
-  _campoSigCtx.lineJoin    = 'round';
-
-  function pt(e) {
-    const r = _campoSigCanvas.getBoundingClientRect();
-    const src = e.touches ? e.touches[0] : e;
-    return { x: src.clientX - r.left, y: src.clientY - r.top };
-  }
-  function down(e) { e.preventDefault(); _campoDrawing = true; _campoSigEmpty = false; const p = pt(e); _campoSigCtx.beginPath(); _campoSigCtx.moveTo(p.x, p.y); }
-  function move(e) { e.preventDefault(); if (!_campoDrawing) return; const p = pt(e); _campoSigCtx.lineTo(p.x, p.y); _campoSigCtx.stroke(); }
-  function up(e)   { e.preventDefault(); _campoDrawing = false; }
-  _campoSigCanvas.addEventListener('mousedown',  down);
-  _campoSigCanvas.addEventListener('mousemove',  move);
-  _campoSigCanvas.addEventListener('mouseup',    up);
-  _campoSigCanvas.addEventListener('touchstart', down, { passive: false });
-  _campoSigCanvas.addEventListener('touchmove',  move, { passive: false });
-  _campoSigCanvas.addEventListener('touchend',   up,   { passive: false });
-}
-
-function clearCampoSig() {
-  if (_campoSigCtx) _campoSigCtx.clearRect(0, 0, _campoSigCanvas.width, _campoSigCanvas.height);
-  _campoSigEmpty = true;
-}
-
-// ── Modal completar tarea ──
-function openComplete(taskId, title) {
-  currentTaskId = taskId;
-  document.getElementById('modal-task-id').value = taskId;
-  document.getElementById('modal-task-title').textContent = title;
-  document.getElementById('modal-notes').value = '';
-  document.getElementById('modal-cash').value = '';
-  document.getElementById('modal-transfer').value = '';
-  clearCampoPhoto();
-  clearCampoSig();
-  document.getElementById('confirm-text').textContent = 'Confirmar entrega';
-  document.getElementById('btn-confirm').disabled = false;
-  document.getElementById('complete-modal').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  // Init canvas after modal is visible so offsetWidth is correct
-  setTimeout(initCampoSig, 50);
-}
-
-function closeModal() {
-  document.getElementById('complete-modal').style.display = 'none';
-  document.body.style.overflow = '';
-}
-
-function submitComplete(e) {
-  e.preventDefault();
-  const taskId = document.getElementById('modal-task-id').value;
-  const fd = new FormData();
-  fd.append('csrfmiddlewaretoken', CSRF);
-  fd.append('task_id',  taskId);
-  fd.append('notes',    document.getElementById('modal-notes').value);
-  fd.append('cash_amount',     document.getElementById('modal-cash').value);
-  fd.append('transfer_amount', document.getElementById('modal-transfer').value);
-  _campoPhotos.forEach(p => fd.append('photos_b64', p));
-  if (_campoSigCanvas && !_campoSigEmpty) {
-    fd.append('signature', _campoSigCanvas.toDataURL('image/png'));
-  }
-
-  document.getElementById('confirm-text').textContent = 'Enviando…';
-  document.getElementById('btn-confirm').disabled = true;
-
-  fetch(`/campo/tareas/${taskId}/completar/`, { method: 'POST', body: fd })
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok) {
-        closeModal();
-        const card = document.getElementById('dtask-' + taskId);
-        if (card) {
-          card.classList.add('done');
-          card.querySelector('.dtask-num').textContent = '✓';
-          const btn = card.querySelector('.dtask-complete-btn');
-          if (btn) {
-            const info = document.createElement('div');
-            info.className = 'dtask-done-info';
-            info.innerHTML = '✓ Completada ahora';
-            btn.replaceWith(info);
-          }
-        }
-        showToast('Entrega registrada ✓');
-      } else {
-        showToast('Error al guardar', false);
-        document.getElementById('confirm-text').textContent = 'Confirmar entrega';
-        document.getElementById('btn-confirm').disabled = false;
-      }
-    })
-    .catch(() => {
-      showToast('Error de conexión', false);
-      document.getElementById('confirm-text').textContent = 'Confirmar entrega';
-      document.getElementById('btn-confirm').disabled = false;
-    });
-}
-
 // ── Badge de chat interno sin leer ──
 (function () {
   const badge = document.getElementById('chat-unread-badge');
@@ -751,66 +491,6 @@ function submitComplete(e) {
   setInterval(refresh, 25000);
 })();
 
-// ── Ayuda: activar camara/microfono bloqueados ──
-function campoIsAndroid(){ return /Android/i.test(navigator.userAgent); }
-function campoIsIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
-function campoIsStandalone(){
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-}
-function campoShowPermHelp(){
-  var stepsEl = document.getElementById('perm-help-steps');
-  var copyBox = document.getElementById('perm-help-copy-box');
-  copyBox.style.display = 'none';
-  stepsEl.innerHTML = '';
-  if (campoIsAndroid() && campoIsStandalone()) {
-    document.getElementById('perm-help-url').value = window.location.origin;
-    copyBox.style.display = 'flex';
-    stepsEl.innerHTML =
-      '<li><strong>Más fácil:</strong> copia el enlace de arriba, ábrelo en Chrome (fuera de esta app) y toca el candado 🔒 junto a la dirección para activar Cámara y Micrófono ahí — quedan activos también dentro de la app instalada.</li>' +
-      '<li>O desde la app instalada: mantén presionado su ícono en la pantalla de inicio → "Información de la app" (o Ajustes → Apps) → busca "Solution Copiers" (o "Chrome" si no aparece) → Permisos → activa Cámara y Micrófono.</li>' +
-      '<li>Vuelve aquí e intenta de nuevo.</li>';
-    document.getElementById('perm-help-modal').style.display = 'flex';
-    return;
-  }
-  var steps;
-  if (campoIsAndroid()) {
-    steps = ['Toca los tres puntos ⋮ o el candado 🔒 junto a la dirección del sitio.',
-              'Entra a "Permisos del sitio" (o "Información del sitio").',
-              'Busca "Cámara" y "Micrófono" y cámbialos a "Permitir".',
-              'Si sigue sin funcionar, revisa en Ajustes del celular → Apps → Chrome → Permisos.'];
-  } else if (campoIsIOS()) {
-    steps = ['Abre Ajustes del iPhone.',
-              'Busca tu navegador (Safari o Chrome) — o el nombre de esta app si la instalaste — en la lista de apps.',
-              'Entra y activa "Cámara" y "Micrófono".',
-              'Vuelve aquí e intenta de nuevo.'];
-  } else {
-    steps = ['Toca el candado 🔒 junto a la dirección del sitio.',
-              'Busca "Cámara" y "Micrófono" en los permisos.',
-              'Cámbialos a "Permitir".'];
-  }
-  steps.forEach(function(s){ var li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
-  document.getElementById('perm-help-modal').style.display = 'flex';
-}
-function campoCopyPermUrl(){
-  var input = document.getElementById('perm-help-url');
-  var btn = document.getElementById('perm-help-copy-btn');
-  var done = function(){
-    btn.textContent = 'Copiado ✓';
-    setTimeout(function(){ btn.textContent = 'Copiar enlace'; }, 2000);
-  };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(input.value).then(done).catch(function(){
-      input.select();
-      try { document.execCommand('copy'); done(); } catch (e) {}
-    });
-  } else {
-    input.select();
-    try { document.execCommand('copy'); done(); } catch (e) {}
-  }
-}
-function campoClosePermHelp(){
-  document.getElementById('perm-help-modal').style.display = 'none';
-}
 </script>
 
 <script src="{% static 'dashboard/push.js' %}"></script>

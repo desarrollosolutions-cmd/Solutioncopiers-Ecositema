@@ -60,6 +60,6 @@ urlpatterns = [
     path("turno/almuerzo/inicio/",           views.PanelLunchStartView.as_view(),        name="lunch_start"),
     path("turno/almuerzo/fin/",              views.PanelLunchEndView.as_view(),          name="lunch_end"),
     path("ubicacion/",                       views.PanelUbicacionView.as_view(),         name="ubicacion"),
-    path("entregas/<int:pk>/completar/",     views.PanelDeliveryCompleteView.as_view(),  name="delivery_complete"),
+    path("entregas/<int:pk>/",               views.PanelDeliveryTaskDetailView.as_view(), name="delivery_task_detail"),
     path("turno/mapa/",                      views.PanelTurnoMapView.as_view(),          name="turno_map"),
 ]
