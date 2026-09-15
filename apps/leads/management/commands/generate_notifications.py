@@ -141,11 +141,21 @@ class Command(BaseCommand):
         return created
 
     # ------------------------------------------------------------------
+    MAX_PERSONAL_REMINDERS_PER_DAY = 3
+
     def _personal_tasks_due(self, dry) -> int:
         """A diferencia de los demás checks (que avisan a TODO el staff),
         esto avisa solo al dueño de la tarea -- son recordatorios personales
-        de "Mis tareas" (admin o asesora), no del equipo."""
+        de "Mis tareas" (admin o asesora), no del equipo.
+
+        Además, a diferencia de los demás (que usan Notification.push() y
+        se saltan el aviso si ya hay uno sin leer), aquí SÍ se repite aunque
+        el anterior siga sin leerse: hasta MAX_PERSONAL_REMINDERS_PER_DAY
+        avisos por día mientras la tarea siga sin marcarse como gestionada
+        (is_done=False). Pensado para correr 3 veces al día (ver render.yaml)
+        y así insistir varias veces el mismo día, no solo una."""
         from apps.dashboard.models import PersonalTask, Notification
+        from apps.dashboard.push import send_web_push
 
         today = datetime.date.today()
         tasks = PersonalTask.objects.filter(
@@ -155,19 +165,27 @@ class Command(BaseCommand):
         created = 0
         for task in tasks:
             title = f"Recordatorio: {task.title}"
-            when = "Hoy" if task.due_date == today else f"Venció el {task.due_date:%d/%m/%Y}"
+            sent_today = Notification.objects.filter(
+                user=task.user, type=Notification.Type.PERSONAL_TASK,
+                title=title, created_at__date=today,
+            ).count()
+            if sent_today >= self.MAX_PERSONAL_REMINDERS_PER_DAY:
+                continue
+
+            when = (
+                "Debes gestionar esta tarea hoy" if task.due_date == today
+                else f"Venció el {task.due_date:%d/%m/%Y} -- aún sin gestionar"
+            )
             link = "/dashadmin/mis-tareas/" if task.user.is_staff else "/panel/mis-tareas/"
             if dry:
-                self.stdout.write(f"  [DRY] {task.user.username} <- {title}")
+                self.stdout.write(f"  [DRY] {task.user.username} <- {title} ({sent_today + 1}/{self.MAX_PERSONAL_REMINDERS_PER_DAY})")
                 created += 1
             else:
-                Notification.push(
-                    user=task.user,
-                    type=Notification.Type.PERSONAL_TASK,
-                    title=title,
-                    message=when,
-                    link=link,
+                Notification.objects.create(
+                    user=task.user, type=Notification.Type.PERSONAL_TASK,
+                    title=title, message=when, link=link,
                 )
+                send_web_push(task.user, title, when, link)
                 created += 1
         return created
 

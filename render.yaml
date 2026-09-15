@@ -80,8 +80,11 @@ services:
 
   # ── Cron Job: genera las notificaciones internas (tareas/recordatorios
   # vencidos, contratos por vencer, cotizaciones sin atender, leads fríos,
-  # y desde ahora los recordatorios de "Mis tareas"). Corre todos los días
-  # a las 8:00 a.m. hora Colombia (13:00 UTC, sin horario de verano).
+  # y los recordatorios de "Mis tareas"). Corre 3 veces al día -- 8:00 a.m.,
+  # 1:00 p.m. y 6:00 p.m. hora Colombia (13:00/18:00/23:00 UTC, sin horario
+  # de verano) -- porque "Mis tareas" insiste hasta 3 veces el mismo día
+  # mientras la tarea siga sin gestionar (ver MAX_PERSONAL_REMINDERS_PER_DAY
+  # en generate_notifications.py).
   # IMPORTANTE: es un servicio nuevo y separado del web -- Render NO copia
   # las variables "sync: false" del otro servicio automáticamente, hay que
   # pegarlas de nuevo aquí en el dashboard de Render (Environment).
@@ -90,7 +93,7 @@ services:
     runtime: python
     plan: starter
     region: oregon
-    schedule: "0 13 * * *"
+    schedule: "0 13,18,23 * * *"
     buildCommand: "bash build.sh"
     startCommand: "python manage.py generate_notifications"
     envVars:
