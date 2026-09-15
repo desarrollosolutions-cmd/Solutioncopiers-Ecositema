@@ -60,7 +60,7 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:#221414;border:1px solid #C4121A;color:#F5EDEB;padding:.625rem 1.25rem;border-radius:.75rem;font-size:.78rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 .evidence-gallery{display:flex;flex-wrap:wrap;gap:.5rem;}
-.evidence-gallery a{display:block;width:5.5rem;height:5.5rem;border-radius:.75rem;overflow:hidden;border:1px solid #3A2020;}
+.evidence-gallery .photo-link{display:block;width:5.5rem;height:5.5rem;border-radius:.75rem;overflow:hidden;border:1px solid #3A2020;cursor:pointer;}
 .evidence-gallery img{width:100%;height:100%;object-fit:cover;display:block;}
 .photo-label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.375rem;padding:1rem;background:#100808;border:1.5px dashed #3A2020;border-radius:.75rem;cursor:pointer;color:#C0A8A8;font-size:.78rem;margin-bottom:.875rem;transition:border-color .2s;}
 .photo-label:active{border-color:#C4121A;}
@@ -184,7 +184,7 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
   <div class="section-title">Evidencia fotográfica</div>
   <div class="evidence-gallery" style="margin-bottom:.875rem;">
     {% for photo in ticket.evidence_photos %}
-    <a href="{{ photo }}" target="_blank" rel="noopener"><img src="{{ photo }}" alt="Evidencia {{ forloop.counter }}"></a>
+    <div class="photo-link" onclick="openPhotoLightbox(this)" role="button" tabindex="0"><img src="{{ photo }}" alt="Evidencia {{ forloop.counter }}"></div>
     {% endfor %}
   </div>
   {% endif %}
@@ -398,6 +398,24 @@ function removeTicketPhoto(idx) {
 {% if request.method == 'POST' %}
 showToast('Ticket actualizado ✓');
 {% endif %}
+</script>
+
+{# ── Lightbox de fotos -- las fotos van en base64 (data:...); un <a href> a
+   eso con target="_blank" lo bloquean los navegadores (pestaña en blanco). #}
+<div id="photo-lightbox" onclick="closePhotoLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;padding:2rem;cursor:zoom-out;">
+  <img id="photo-lightbox-img" src="" alt="" style="max-width:100%;max-height:100%;border-radius:.5rem;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+</div>
+<script>
+function openPhotoLightbox(el) {
+  var img = el.querySelector('img');
+  if (!img) return;
+  document.getElementById('photo-lightbox-img').src = img.src;
+  document.getElementById('photo-lightbox').style.display = 'flex';
+}
+function closePhotoLightbox() {
+  document.getElementById('photo-lightbox').style.display = 'none';
+  document.getElementById('photo-lightbox-img').src = '';
+}
 </script>
 </body>
 </html>

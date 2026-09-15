@@ -136,9 +136,9 @@
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:.625rem;">
             {% for photo in task.all_completion_photos %}
-            <a href="{{ photo }}" target="_blank" rel="noopener" style="display:block;width:9.5rem;height:9.5rem;border-radius:.875rem;border:1px solid var(--color-border);overflow:hidden;">
+            <div onclick="openPhotoLightbox(this)" role="button" tabindex="0" style="display:block;width:9.5rem;height:9.5rem;border-radius:.875rem;border:1px solid var(--color-border);overflow:hidden;cursor:pointer;">
               <img src="{{ photo }}" alt="Foto de entrega {{ forloop.counter }}" style="width:100%;height:100%;object-fit:cover;display:block;">
-            </a>
+            </div>
             {% endfor %}
           </div>
         </div>
@@ -203,7 +203,7 @@
           </select>
         </div>
         <div style="font-size:.72rem;color:var(--color-text-muted);padding-top:.5rem;border-top:1px solid var(--color-border);">
-          Creada {{ task.created_at|date:"d/m/Y H:i" }} por {{ task.created_by.get_full_name|default:task.created_by.username|default:"—" }} · Orden #{{ task.order }}
+          Creada {{ task.created_at|date:"d/m/Y H:i" }} por {% if task.created_by %}{{ task.created_by.get_full_name|default:task.created_by.username }}{% else %}—{% endif %} · Orden #{{ task.order }}
         </div>
         <button type="submit" class="da-btn da-btn-primary" style="width:100%;justify-content:center;">Guardar cambios</button>
       </div>
@@ -241,7 +241,7 @@
         </div>
         <div style="display:flex;justify-content:space-between;">
           <span style="color:var(--color-text-muted);">Creada por</span>
-          <span>{{ task.created_by.get_full_name|default:task.created_by.username|default:"—" }}</span>
+          <span>{% if task.created_by %}{{ task.created_by.get_full_name|default:task.created_by.username }}{% else %}—{% endif %}</span>
         </div>
         <div style="display:flex;justify-content:space-between;">
           <span style="color:var(--color-text-muted);">Orden</span>
