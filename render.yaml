@@ -77,3 +77,75 @@ services:
         sync: false
       - key: R2_CUSTOM_DOMAIN
         sync: false
+
+  # ── Cron Job: genera las notificaciones internas (tareas/recordatorios
+  # vencidos, contratos por vencer, cotizaciones sin atender, leads fríos,
+  # y desde ahora los recordatorios de "Mis tareas"). Corre todos los días
+  # a las 8:00 a.m. hora Colombia (13:00 UTC, sin horario de verano).
+  # IMPORTANTE: es un servicio nuevo y separado del web -- Render NO copia
+  # las variables "sync: false" del otro servicio automáticamente, hay que
+  # pegarlas de nuevo aquí en el dashboard de Render (Environment).
+  - type: cron
+    name: solution-copiers-notificaciones
+    runtime: python
+    plan: starter
+    region: oregon
+    schedule: "0 13 * * *"
+    buildCommand: "bash build.sh"
+    startCommand: "python manage.py generate_notifications"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.5
+      - key: DJANGO_SETTINGS_MODULE
+        value: solution_copiers.settings.production
+      - key: DEBUG
+        value: "False"
+
+      - key: DJANGO_SECRET_KEY
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        sync: false
+      - key: EMAIL_USE_TLS
+        sync: false
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+      - key: LEADS_NOTIFICATION_EMAIL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CALLMEBOT_APIKEY
+        sync: false
+      - key: WHATSAPP_NOTIFY_PHONE
+        sync: false
+      - key: WOMPI_PUBLIC_KEY
+        sync: false
+      - key: WOMPI_PRIVATE_KEY
+        sync: false
+      - key: WOMPI_INTEGRITY_KEY
+        sync: false
+      - key: WOMPI_EVENTS_KEY
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+      - key: R2_CUSTOM_DOMAIN
+        sync: false
