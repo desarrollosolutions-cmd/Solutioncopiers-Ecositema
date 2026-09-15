@@ -2451,6 +2451,26 @@ def panel_required(view_func):
 panel_decorator = method_decorator(panel_required, name="dispatch")
 
 
+def panel_asesor_required(view_func):
+    """Como panel_required, pero además excluye a técnicos/mensajeros -- para
+    secciones que son solo de asesoras (ej. Mis tareas)."""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/panel/acceso/?next={request.path}")
+        if request.user.is_staff:
+            return redirect("/dashadmin/")
+        if not request.user.is_active:
+            return redirect("/panel/acceso/")
+        if hasattr(request.user, "field_profile"):
+            return redirect("panel:turno")
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+panel_asesor_decorator = method_decorator(panel_asesor_required, name="dispatch")
+
+
 def _panel_base_ctx(request):
     """Contexto mínimo compartido por todas las vistas del panel."""
     from apps.leads.models import Quote, ServiceTicket
@@ -4684,6 +4704,49 @@ class PanelNotificationMarkAllReadView(View):
         return JsonResponse({"ok": True})
 
 
+# ---------------------------------------------------------------------------
+# MIS TAREAS (PersonalTask) -- solo asesoras, ver panel_asesor_decorator.
+# Misma lógica que la vista de dashadmin, ver PersonalTaskListView.
+# ---------------------------------------------------------------------------
+
+@panel_asesor_decorator
+class PanelPersonalTaskListView(View):
+    template_name = "panel/personal_tasks.html"
+
+    def get(self, request):
+        from apps.dashboard.models import PersonalTask
+        tasks = PersonalTask.objects.filter(user=request.user)
+        return render(request, self.template_name, {
+            "pending": tasks.filter(is_done=False).order_by("due_date"),
+            "done": tasks.filter(is_done=True).order_by("-done_at")[:30],
+            "today": timezone.localdate(),
+        })
+
+    def post(self, request):
+        from apps.dashboard.models import PersonalTask
+        title = request.POST.get("title", "").strip()
+        due_date = request.POST.get("due_date", "").strip()
+        notes = request.POST.get("notes", "").strip()
+        if title and due_date:
+            PersonalTask.objects.create(user=request.user, title=title, due_date=due_date, notes=notes)
+        return redirect("panel:personal_tasks")
+
+
+@panel_asesor_decorator
+class PanelPersonalTaskUpdateView(View):
+    def post(self, request, pk):
+        from apps.dashboard.models import PersonalTask
+        task = get_object_or_404(PersonalTask, pk=pk, user=request.user)
+        action = request.POST.get("action")
+        if action == "toggle":
+            task.is_done = not task.is_done
+            task.done_at = timezone.now() if task.is_done else None
+            task.save(update_fields=["is_done", "done_at"])
+        elif action == "delete":
+            task.delete()
+        return redirect("panel:personal_tasks")
+
+
 def _time_ago(dt):
     from django.utils import timezone as tz
     import math
@@ -4696,6 +4759,51 @@ def _time_ago(dt):
         return f"hace {int(diff // 3600)} h"
     days = int(diff // 86400)
     return f"hace {days} d"
+
+
+# ---------------------------------------------------------------------------
+# MIS TAREAS (PersonalTask) -- recordatorios/pendientes individuales de
+# administradores y asesoras. No están ligados a un cliente (a diferencia de
+# FollowUpTask); al llegar la fecha, generate_notifications avisa solo al
+# dueño de la tarea.
+# ---------------------------------------------------------------------------
+
+@da_decorator
+class PersonalTaskListView(View):
+    template_name = "dashboard/personal_tasks.html"
+
+    def get(self, request):
+        from apps.dashboard.models import PersonalTask
+        tasks = PersonalTask.objects.filter(user=request.user)
+        return render(request, self.template_name, {
+            "pending": tasks.filter(is_done=False).order_by("due_date"),
+            "done": tasks.filter(is_done=True).order_by("-done_at")[:30],
+            "today": timezone.localdate(),
+        })
+
+    def post(self, request):
+        from apps.dashboard.models import PersonalTask
+        title = request.POST.get("title", "").strip()
+        due_date = request.POST.get("due_date", "").strip()
+        notes = request.POST.get("notes", "").strip()
+        if title and due_date:
+            PersonalTask.objects.create(user=request.user, title=title, due_date=due_date, notes=notes)
+        return redirect("dashboard:personal_tasks")
+
+
+@da_decorator
+class PersonalTaskUpdateView(View):
+    def post(self, request, pk):
+        from apps.dashboard.models import PersonalTask
+        task = get_object_or_404(PersonalTask, pk=pk, user=request.user)
+        action = request.POST.get("action")
+        if action == "toggle":
+            task.is_done = not task.is_done
+            task.done_at = timezone.now() if task.is_done else None
+            task.save(update_fields=["is_done", "done_at"])
+        elif action == "delete":
+            task.delete()
+        return redirect("dashboard:personal_tasks")
 
 
 # ---------------------------------------------------------------------------

@@ -42,6 +42,7 @@ class Command(BaseCommand):
         total += self._expiring_contracts(staff_users, dry)
         total += self._stale_quotes(staff_users, dry)
         total += self._cold_leads(staff_users, dry)
+        total += self._personal_tasks_due(dry)
 
         mode = "[DRY RUN] " if dry else ""
         self.stdout.write(self.style.SUCCESS(f"{mode}Notificaciones generadas: {total}"))
@@ -137,6 +138,37 @@ class Command(BaseCommand):
                         link=link,
                     )
                     created += 1
+        return created
+
+    # ------------------------------------------------------------------
+    def _personal_tasks_due(self, dry) -> int:
+        """A diferencia de los demás checks (que avisan a TODO el staff),
+        esto avisa solo al dueño de la tarea -- son recordatorios personales
+        de "Mis tareas" (admin o asesora), no del equipo."""
+        from apps.dashboard.models import PersonalTask, Notification
+
+        today = datetime.date.today()
+        tasks = PersonalTask.objects.filter(
+            due_date__lte=today, is_done=False
+        ).select_related("user")
+
+        created = 0
+        for task in tasks:
+            title = f"Recordatorio: {task.title}"
+            when = "Hoy" if task.due_date == today else f"Venció el {task.due_date:%d/%m/%Y}"
+            link = "/dashadmin/mis-tareas/" if task.user.is_staff else "/panel/mis-tareas/"
+            if dry:
+                self.stdout.write(f"  [DRY] {task.user.username} <- {title}")
+                created += 1
+            else:
+                Notification.push(
+                    user=task.user,
+                    type=Notification.Type.PERSONAL_TASK,
+                    title=title,
+                    message=when,
+                    link=link,
+                )
+                created += 1
         return created
 
     # ------------------------------------------------------------------

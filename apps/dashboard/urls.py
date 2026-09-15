@@ -112,6 +112,10 @@ urlpatterns = [
     path("crm/notificaciones/<int:pk>/leer/", views.CrmNotificationMarkReadView.as_view(),    name="crm_notification_read"),
     path("crm/notificaciones/leer-todas/",    views.CrmNotificationMarkAllReadView.as_view(), name="crm_notifications_read_all"),
 
+    # Mis tareas (recordatorios personales)
+    path("mis-tareas/",          views.PersonalTaskListView.as_view(),   name="personal_tasks"),
+    path("mis-tareas/<int:pk>/", views.PersonalTaskUpdateView.as_view(), name="personal_task_update"),
+
     # Plantillas de mensajes
     path("plantillas/",           views.MessageTemplateListView.as_view(),   name="message_templates"),
     path("plantillas/nueva/",     views.MessageTemplateCreateView.as_view(), name="message_template_create"),

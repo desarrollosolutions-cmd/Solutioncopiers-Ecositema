@@ -162,6 +162,7 @@ class Notification(models.Model):
         TICKET_DEPARTURE   = "ticket_departure",   "Salida de sitio"
         LUNCH_BREAK        = "lunch_break",        "Almuerzo"
         CHAT_MESSAGE       = "chat_message",       "Mensaje de chat"
+        PERSONAL_TASK      = "personal_task",      "Recordatorio personal"
 
     user       = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
@@ -197,6 +198,36 @@ class Notification(models.Model):
             )
             from apps.dashboard.push import send_web_push
             send_web_push(user, title, message, link)
+
+
+class PersonalTask(models.Model):
+    """Tareas/recordatorios personales de administradores y asesores -- pendientes
+    propios con fecha, que al llegar el día generan una notificación individual
+    (ver generate_notifications). A diferencia de FollowUpTask, no está ligada
+    a un cliente."""
+    user       = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="personal_tasks"
+    )
+    title      = models.CharField("título", max_length=200)
+    notes      = models.TextField("notas", blank=True)
+    due_date   = models.DateField("fecha")
+    is_done    = models.BooleanField("completada", default=False, db_index=True)
+    done_at    = models.DateTimeField("completada el", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering            = ["is_done", "due_date"]
+        verbose_name        = "Tarea personal"
+        verbose_name_plural = "Tareas personales"
+        indexes             = [models.Index(fields=["user", "is_done", "due_date"])]
+
+    def __str__(self):
+        mark = "✓" if self.is_done else "◻"
+        return f"{mark} {self.title} — {self.user.username}"
+
+    @property
+    def is_overdue(self):
+        return not self.is_done and self.due_date < timezone.localdate()
 
 
 # ---------------------------------------------------------------------------

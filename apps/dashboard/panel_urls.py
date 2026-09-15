@@ -53,6 +53,10 @@ urlpatterns = [
     path("notificaciones/<int:pk>/leer/",     views.PanelNotificationMarkReadView.as_view(),    name="notification_read"),
     path("notificaciones/leer-todas/",        views.PanelNotificationMarkAllReadView.as_view(), name="notifications_read_all"),
 
+    # Mis tareas (recordatorios personales, solo asesoras)
+    path("mis-tareas/",          views.PanelPersonalTaskListView.as_view(),   name="personal_tasks"),
+    path("mis-tareas/<int:pk>/", views.PanelPersonalTaskUpdateView.as_view(), name="personal_task_update"),
+
     # Turno y GPS (técnicos y mensajeros desde el panel)
     path("turno/",                           views.PanelTurnoView.as_view(),             name="turno"),
     path("turno/inicio/",                    views.PanelShiftStartView.as_view(),        name="shift_start"),

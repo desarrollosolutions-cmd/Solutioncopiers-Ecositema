@@ -1,0 +1,104 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Mis tareas{% endblock %}
+{% block nav_personal_tasks %}active{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">Mis tareas</h1>
+    <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">Recordatorios y pendientes personales — te avisamos aquí cuando llegue la fecha</p>
+  </div>
+</div>
+
+<div class="da-card" style="margin-bottom:1.25rem;">
+  <div class="da-card-header">Nueva tarea</div>
+  <div class="da-card-body">
+    <form method="post" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
+      {% csrf_token %}
+      <div style="flex:2;min-width:220px;">
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Título</label>
+        <input type="text" name="title" class="da-input" placeholder="Ej: Llamar al proveedor de tóner" required style="width:100%;">
+      </div>
+      <div style="min-width:160px;">
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Fecha</label>
+        <input type="date" name="due_date" class="da-input dp-input" value="{{ today|date:'Y-m-d' }}" required style="width:100%;">
+      </div>
+      <div style="flex:2;min-width:220px;">
+        <label style="display:block;font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Notas (opcional)</label>
+        <input type="text" name="notes" class="da-input" placeholder="Detalle adicional" style="width:100%;">
+      </div>
+      <button type="submit" class="da-btn da-btn-primary">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Agregar
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="da-card" style="margin-bottom:1.25rem;">
+  <div class="da-card-header">
+    Pendientes
+    <span style="font-size:.7rem;font-weight:600;color:var(--color-text-muted);">{{ pending|length }}</span>
+  </div>
+  <div class="da-card-body" style="padding:0;">
+    {% if not pending %}
+    <div style="padding:2rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">No tienes tareas pendientes.</div>
+    {% else %}
+    {% for t in pending %}
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.875rem 1.25rem;border-bottom:1px solid var(--color-border);">
+      <form method="post" action="{% url 'dashboard:personal_task_update' t.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="toggle">
+        <button type="submit" title="Marcar como completada"
+          style="width:1.375rem;height:1.375rem;border-radius:50%;border:2px solid {% if t.is_overdue %}var(--color-danger){% else %}var(--color-border){% endif %};background:none;cursor:pointer;flex-shrink:0;padding:0;"></button>
+      </form>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.85rem;font-weight:600;color:var(--color-text-primary);">{{ t.title }}</div>
+        {% if t.notes %}<div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.15rem;">{{ t.notes }}</div>{% endif %}
+      </div>
+      <div style="font-size:.72rem;font-weight:700;color:{% if t.is_overdue %}var(--color-danger){% else %}var(--color-text-secondary){% endif %};white-space:nowrap;">
+        {% if t.is_overdue %}Venció {% endif %}{{ t.due_date|date:"d/m/Y" }}
+      </div>
+      <form method="post" action="{% url 'dashboard:personal_task_update' t.pk %}" onsubmit="return confirm('¿Eliminar esta tarea?');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+        <button type="submit" title="Eliminar" style="background:none;border:none;cursor:pointer;padding:.3rem;color:var(--color-text-muted);">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </button>
+      </form>
+    </div>
+    {% endfor %}
+    {% endif %}
+  </div>
+</div>
+
+{% if done %}
+<details class="da-card">
+  <summary class="da-card-header" style="cursor:pointer;">Completadas <span style="font-size:.7rem;font-weight:600;color:var(--color-text-muted);">{{ done|length }}</span></summary>
+  <div class="da-card-body" style="padding:0;">
+    {% for t in done %}
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--color-border);opacity:.65;">
+      <form method="post" action="{% url 'dashboard:personal_task_update' t.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="toggle">
+        <button type="submit" title="Reabrir" style="width:1.375rem;height:1.375rem;border-radius:50%;border:none;background:var(--color-success);color:#fff;cursor:pointer;flex-shrink:0;padding:0;display:flex;align-items:center;justify-content:center;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3" style="width:.7rem;height:.7rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </button>
+      </form>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.85rem;font-weight:600;color:var(--color-text-primary);text-decoration:line-through;">{{ t.title }}</div>
+      </div>
+      <div style="font-size:.72rem;color:var(--color-text-muted);white-space:nowrap;">{{ t.done_at|date:"d/m/Y" }}</div>
+      <form method="post" action="{% url 'dashboard:personal_task_update' t.pk %}" onsubmit="return confirm('¿Eliminar esta tarea?');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+        <button type="submit" title="Eliminar" style="background:none;border:none;cursor:pointer;padding:.3rem;color:var(--color-text-muted);">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+</details>
+{% endif %}
+{% endblock %}
