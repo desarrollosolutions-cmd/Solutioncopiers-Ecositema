@@ -87,13 +87,17 @@
           <span style="color:var(--color-text-muted);">Entregas completadas</span>
           <span id="stat-tasks" style="font-weight:600;">—</span>
         </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--color-text-muted);">Tickets atendidos</span>
+          <span id="stat-tickets" style="font-weight:600;">—</span>
+        </div>
       </div>
     </div>
 
-    {# Lista de tareas del día #}
+    {# Lista de actividad del día (entregas + tickets) #}
     <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:1rem;overflow:hidden;">
       <div style="padding:.875rem 1.125rem;border-bottom:1px solid var(--color-border);font-size:.8125rem;font-weight:700;">
-        Entregas del día
+        Actividad del día
       </div>
       <div id="task-list-panel" style="max-height:clamp(180px,35vh,380px);overflow-y:auto;">
         <div style="padding:2rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">Cargando…</div>
@@ -115,12 +119,29 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 fetch(ROUTE_JSON_URL)
   .then(r => r.json())
   .then(data => {
-    const points = data.points;
-    const tasks  = data.tasks;
+    const points  = data.points;
+    const tasks   = data.tasks;
+    const tickets = data.tickets || [];
+
+    // Busca el punto GPS más cercano en el tiempo a una hora "HH:MM" dada,
+    // para poder ubicar en el mapa una entrega o un ticket que no tiene
+    // coordenadas propias.
+    function findNearestPoint(time) {
+      if (!points.length || !time) return null;
+      const tMin = time.split(':').reduce((a, v, i) => a + (i === 0 ? +v * 60 : +v), 0);
+      let best = points[0], bestDiff = Infinity;
+      points.forEach(p => {
+        const pMin = p.t.split(':').reduce((a, v, i) => a + (i === 0 ? +v * 60 : +v), 0);
+        const diff = Math.abs(pMin - tMin);
+        if (diff < bestDiff) { bestDiff = diff; best = p; }
+      });
+      return best;
+    }
 
     // Actualizar stats
-    document.getElementById('stat-points').textContent = points.length || '0';
-    document.getElementById('stat-tasks').textContent  = tasks.length  || '0';
+    document.getElementById('stat-points').textContent  = points.length  || '0';
+    document.getElementById('stat-tasks').textContent    = tasks.length   || '0';
+    document.getElementById('stat-tickets').textContent  = tickets.length || '0';
     const shift = data.shift || {start: null, end: null, open: false};
     if (shift.start) {
       // Hora real marcada por el técnico al presionar Iniciar/Terminar turno.
@@ -167,24 +188,14 @@ fetch(ROUTE_JSON_URL)
       document.getElementById('stat-end').textContent   = 'Sin datos';
     }
 
-    // Marcadores de tareas completadas
+    // Marcadores de tareas (entregas/recolecciones) completadas
     tasks.forEach((t, i) => {
-      // Buscar el punto GPS más cercano en tiempo para posicionar el marker
-      // Si no hay coords del punto, skip (la tarea puede no tener lat/lng propio)
       const taskIcon = L.divIcon({
         html: `<div style="background:#F59E0B;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);">${i+1}</div>`,
         className: '', iconSize: [28, 28], iconAnchor: [14, 14]
       });
-      // Posicionar sobre el punto GPS más cercano a la hora de completación
-      if (points.length && t.time) {
-        // Encontrar punto más cercano
-        const tMin = t.time.split(':').reduce((a, v, i) => a + (i===0 ? +v*60 : +v), 0);
-        let best = points[0], bestDiff = Infinity;
-        points.forEach(p => {
-          const pMin = p.t.split(':').reduce((a, v, i) => a + (i===0 ? +v*60 : +v), 0);
-          const diff = Math.abs(pMin - tMin);
-          if (diff < bestDiff) { bestDiff = diff; best = p; }
-        });
+      const best = findNearestPoint(t.time);
+      if (best) {
         L.marker([best.lat, best.lng], { icon: taskIcon }).addTo(map)
           .bindPopup(`
             <div style="min-width:180px;font-family:Inter,sans-serif;">
@@ -198,15 +209,47 @@ fetch(ROUTE_JSON_URL)
       }
     });
 
-    // Lista de tareas en el panel
+    // Marcadores de tickets de servicio atendidos por el técnico -- antes
+    // estos ni siquiera llegaban al mapa (solo se pedían DeliveryTask, que
+    // es de mensajeros), así que un técnico nunca veía aquí sus visitas.
+    const ticketIcon = L.divIcon({
+      html: `<div style="background:#8B5CF6;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.85rem;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);">🔧</div>`,
+      className: '', iconSize: [28, 28], iconAnchor: [14, 14]
+    });
+    tickets.forEach(tk => {
+      const best = findNearestPoint(tk.time);
+      if (best) {
+        L.marker([best.lat, best.lng], { icon: ticketIcon }).addTo(map)
+          .bindPopup(`
+            <div style="min-width:200px;font-family:Inter,sans-serif;">
+              <div style="font-weight:700;font-size:.875rem;margin-bottom:.25rem;">🎫 ${tk.ticket_number}</div>
+              ${tk.client ? `<div style="font-size:.75rem;color:#666;">👤 ${tk.client}${tk.company ? ' · ' + tk.company : ''}</div>` : ''}
+              ${tk.address ? `<div style="font-size:.75rem;color:#666;">📍 ${tk.address}</div>` : ''}
+              ${tk.equipment ? `<div style="font-size:.75rem;color:#666;">🖨️ ${tk.equipment}</div>` : ''}
+              ${tk.issue_type ? `<div style="font-size:.75rem;color:#666;">🔧 ${tk.issue_type}</div>` : ''}
+              <div style="font-size:.72rem;color:#999;margin-top:.25rem;">${tk.status} · ${tk.time}</div>
+            </div>
+          `);
+      }
+    });
+
+    // Lista combinada de entregas + tickets, ordenada por hora
     const listEl = document.getElementById('task-list-panel');
-    if (tasks.length === 0) {
-      listEl.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">Sin entregas completadas este día.</div>';
+    const activity = [
+      ...tasks.map((t, i) => ({ kind: 'task', num: i + 1, time: t.time, row: t })),
+      ...tickets.map(tk => ({ kind: 'ticket', time: tk.time, row: tk })),
+    ].sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+
+    if (activity.length === 0) {
+      listEl.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">Sin actividad registrada este día.</div>';
     } else {
-      listEl.innerHTML = tasks.map((t, i) => `
+      listEl.innerHTML = activity.map(a => {
+        if (a.kind === 'task') {
+          const t = a.row;
+          return `
         <div style="padding:.75rem 1.125rem;border-bottom:1px solid var(--color-border);">
           <div style="display:flex;align-items:center;gap:.625rem;">
-            <div style="width:1.5rem;height:1.5rem;border-radius:50%;background:rgba(245,158,11,.15);color:#F59E0B;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</div>
+            <div style="width:1.5rem;height:1.5rem;border-radius:50%;background:rgba(245,158,11,.15);color:#F59E0B;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${a.num}</div>
             <div style="flex:1;min-width:0;">
               <div style="font-size:.8rem;font-weight:600;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.title}</div>
               ${t.client ? `<div style="font-size:.68rem;color:#F59E0B;margin-top:.1rem;">👤 ${t.client}</div>` : ''}
@@ -217,8 +260,26 @@ fetch(ROUTE_JSON_URL)
               ${t.invoice ? `<div style="font-size:.62rem;color:var(--color-text-muted);font-family:monospace;">${t.invoice}</div>` : ''}
             </div>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+        }
+        const tk = a.row;
+        return `
+        <div style="padding:.75rem 1.125rem;border-bottom:1px solid var(--color-border);">
+          <div style="display:flex;align-items:center;gap:.625rem;">
+            <div style="width:1.5rem;height:1.5rem;border-radius:50%;background:rgba(139,92,246,.15);color:#8B5CF6;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔧</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:.8rem;font-weight:600;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tk.ticket_number} — ${tk.client}</div>
+              ${tk.company ? `<div style="font-size:.68rem;color:#8B5CF6;margin-top:.1rem;">🏢 ${tk.company}</div>` : ''}
+              ${tk.address ? `<div style="font-size:.68rem;color:var(--color-text-muted);">📍 ${tk.address}</div>` : ''}
+              ${tk.equipment ? `<div style="font-size:.68rem;color:var(--color-text-muted);">🖨️ ${tk.equipment}</div>` : ''}
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:.68rem;font-weight:700;color:#8B5CF6;">${tk.time}</div>
+              <div style="font-size:.62rem;color:var(--color-text-muted);">${tk.status}</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
     }
 
     window.addEventListener('resize', () => map.invalidateSize());

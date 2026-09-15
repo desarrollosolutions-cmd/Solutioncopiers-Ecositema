@@ -5919,6 +5919,7 @@ class CampoRouteExportView(View):
     def get(self, request):
         import csv
         from apps.dashboard.models import FieldLocationLog, DeliveryTask, FieldUser, FieldShiftLog
+        from apps.leads.models import ServiceTicket
 
         date_str = request.GET.get("date", timezone.localdate().isoformat())
         user_pk  = request.GET.get("user", "").strip()
@@ -5930,10 +5931,18 @@ class CampoRouteExportView(View):
         logs_qs = FieldLocationLog.objects.filter(shift_date=date_str)
         tasks_qs = DeliveryTask.objects.filter(status="done", completed_at__date=date_str)
         shifts_qs = FieldShiftLog.objects.filter(shift_date=date_str)
+        # Visitas de técnicos a tickets de servicio ese día -- antes el export solo
+        # miraba DeliveryTask (que es de mensajeros), así que un técnico nunca
+        # aparecía con información de clientes/direcciones, solo sus puntos GPS.
+        tickets_qs = ServiceTicket.objects.filter(
+            Q(arrived_at__date=date_str) | Q(departed_at__date=date_str) | Q(resolved_at__date=date_str),
+            assigned_to__isnull=False,
+        )
         if user_pk:
             logs_qs = logs_qs.filter(user__pk=user_pk)
             tasks_qs = tasks_qs.filter(field_user__user__pk=user_pk)
             shifts_qs = shifts_qs.filter(user__pk=user_pk)
+            tickets_qs = tickets_qs.filter(assigned_to__pk=user_pk)
 
         logs_by_user = {}
         for log in logs_qs.order_by("recorded_at"):
@@ -5947,9 +5956,14 @@ class CampoRouteExportView(View):
         for sl in shifts_qs.order_by("started_at"):
             shifts_by_user.setdefault(sl.user_id, []).append(sl)
 
+        tickets_by_user = {}
+        for tk in tickets_qs.select_related("lead", "assigned_to").order_by("arrived_at"):
+            tickets_by_user.setdefault(tk.assigned_to_id, []).append(tk)
+
         active_users = [
             fu for fu in field_users
-            if logs_by_user.get(fu.user_id) or tasks_by_user.get(fu.user_id) or shifts_by_user.get(fu.user_id)
+            if logs_by_user.get(fu.user_id) or tasks_by_user.get(fu.user_id)
+            or shifts_by_user.get(fu.user_id) or tickets_by_user.get(fu.user_id)
         ]
 
         filename = f"ruta_{date_str}" + (f"_{active_users[0].user.username}" if user_pk and active_users else "")
@@ -5960,11 +5974,12 @@ class CampoRouteExportView(View):
 
         total_points    = sum(len(v) for v in logs_by_user.values())
         total_completed = sum(len(v) for v in tasks_by_user.values())
+        total_tickets   = sum(len(v) for v in tickets_by_user.values())
 
         # ── Resumen del día ──────────────────────────────────────────────
         writer.writerow(["RESUMEN DEL DÍA"])
-        writer.writerow(["Fecha", "Personal con actividad", "Puntos GPS", "Entregas/recolecciones completadas"])
-        writer.writerow([date_str, len(active_users), total_points, total_completed])
+        writer.writerow(["Fecha", "Personal con actividad", "Puntos GPS", "Entregas/recolecciones completadas", "Tickets atendidos"])
+        writer.writerow([date_str, len(active_users), total_points, total_completed, total_tickets])
         writer.writerow([])
 
         if not active_users:
@@ -5975,11 +5990,12 @@ class CampoRouteExportView(View):
         for fu in active_users:
             name = fu.user.get_full_name() or fu.user.username
             role = fu.get_role_display()
-            user_logs   = logs_by_user.get(fu.user_id, [])
-            user_tasks  = tasks_by_user.get(fu.user_id, [])
-            user_shifts = shifts_by_user.get(fu.user_id, [])
-            deliveries  = sum(1 for t in user_tasks if t.task_type == "entrega")
-            pickups     = sum(1 for t in user_tasks if t.task_type == "recoleccion")
+            user_logs    = logs_by_user.get(fu.user_id, [])
+            user_tasks   = tasks_by_user.get(fu.user_id, [])
+            user_shifts  = shifts_by_user.get(fu.user_id, [])
+            user_tickets = tickets_by_user.get(fu.user_id, [])
+            deliveries   = sum(1 for t in user_tasks if t.task_type == "entrega")
+            pickups      = sum(1 for t in user_tasks if t.task_type == "recoleccion")
 
             if user_shifts:
                 # Hora real marcada por el técnico al presionar Iniciar/Terminar turno.
@@ -6000,6 +6016,7 @@ class CampoRouteExportView(View):
                 "Puntos GPS", len(user_logs),
                 "Entregas", deliveries,
                 "Recolecciones", pickups,
+                "Tickets atendidos", len(user_tickets),
             ])
 
             if user_logs:
@@ -6024,6 +6041,22 @@ class CampoRouteExportView(View):
                         t.get_payment_method_display() if t.payment_method else "",
                     ])
 
+            if user_tickets:
+                writer.writerow(["Tickets de servicio atendidos"])
+                writer.writerow(["Hora llegada", "Hora salida", "Ticket", "Cliente", "Empresa", "Teléfono",
+                                  "Dirección", "Equipo", "Tipo de servicio", "Prioridad", "Estado",
+                                  "Notas de resolución", "Método de pago"])
+                for tk in user_tickets:
+                    writer.writerow([
+                        timezone.localtime(tk.arrived_at).strftime("%H:%M:%S") if tk.arrived_at else "",
+                        timezone.localtime(tk.departed_at).strftime("%H:%M:%S") if tk.departed_at else "",
+                        tk.ticket_number, tk.lead.full_name, tk.lead.company_name, tk.lead.phone,
+                        tk.address or tk.lead.address, tk.equipment_description,
+                        tk.get_issue_type_display(), tk.get_priority_display(), tk.get_status_display(),
+                        tk.resolution_notes,
+                        tk.get_payment_method_display() if tk.payment_method else "",
+                    ])
+
             writer.writerow([])  # separador entre personas
 
         return response
@@ -6033,10 +6066,11 @@ class CampoRouteExportView(View):
 class CampoRouteJsonView(View):
     def get(self, request):
         from apps.dashboard.models import FieldLocationLog, DeliveryTask, FieldUser, FieldShiftLog
+        from apps.leads.models import ServiceTicket
         user_pk  = request.GET.get("user")
         date_str = request.GET.get("date")
         if not user_pk or not date_str:
-            return JsonResponse({"points": [], "tasks": []})
+            return JsonResponse({"points": [], "tasks": [], "tickets": []})
 
         points = list(
             FieldLocationLog.objects
@@ -6070,6 +6104,33 @@ class CampoRouteJsonView(View):
         except FieldUser.DoesNotExist:
             tasks = []
 
+        # Tickets de servicio que el técnico visitó ese día -- antes el mapa solo
+        # mostraba DeliveryTask (mensajeros), así que un técnico nunca veía sus
+        # tickets con cliente/dirección/detalle, solo la línea de puntos GPS.
+        tickets_qs = ServiceTicket.objects.filter(
+            Q(arrived_at__date=date_str) | Q(departed_at__date=date_str) | Q(resolved_at__date=date_str),
+            assigned_to__pk=user_pk,
+        ).select_related("lead")
+        tickets = [
+            {
+                "pk": tk.pk, "ticket_number": tk.ticket_number,
+                "client": tk.lead.full_name, "company": tk.lead.company_name,
+                "phone": tk.lead.phone, "address": tk.address or tk.lead.address,
+                "equipment": tk.equipment_description,
+                "issue_type": tk.get_issue_type_display(),
+                "priority": tk.get_priority_display(),
+                "status": tk.get_status_display(),
+                "notes": tk.resolution_notes,
+                "payment": tk.get_payment_method_display() if tk.payment_method else "",
+                "time": (
+                    timezone.localtime(tk.arrived_at).strftime("%H:%M") if tk.arrived_at
+                    else timezone.localtime(tk.resolved_at).strftime("%H:%M") if tk.resolved_at
+                    else ""
+                ),
+            }
+            for tk in tickets_qs
+        ]
+
         return JsonResponse({
             "points": [
                 {"lat": float(p["latitude"]), "lng": float(p["longitude"]),
@@ -6083,6 +6144,7 @@ class CampoRouteJsonView(View):
                  "time": timezone.localtime(t["completed_at"]).strftime("%H:%M") if t["completed_at"] else ""}
                 for t in tasks
             ],
+            "tickets": tickets,
             "shift": shift,
         })
 
