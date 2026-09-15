@@ -1107,7 +1107,7 @@
               <div style="padding:2rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">Sin notificaciones pendientes</div>
             </template>
             <template x-for="n in notifications" :key="n.id">
-              <a :href="n.link || '#'" target="_blank" rel="noopener noreferrer"
+              <a :href="n.link || '#'"
                 @click.prevent="markOne(n.id)"
                 style="display:flex;gap:.75rem;padding:.75rem 1rem;border-bottom:1px solid var(--color-border);text-decoration:none;transition:background .15s;cursor:pointer;"
                 onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='transparent'">
@@ -1484,9 +1484,11 @@ function crmBell() {
         method: 'POST',
         headers: { 'X-CSRFToken': this._csrf(), 'X-Requested-With': 'XMLHttpRequest' }
       }).finally(() => {
-        this.notifications = this.notifications.filter(n => n.id !== id);
-        this.unread = Math.max(0, this.unread - 1);
-        if (link) window.open(link, '_blank', 'noopener,noreferrer');
+        if (link) window.location.href = link;
+        else {
+          this.notifications = this.notifications.filter(n => n.id !== id);
+          this.unread = Math.max(0, this.unread - 1);
+        }
       });
     },
 
