@@ -363,6 +363,8 @@ class DeliveryTask(models.Model):
     completed_at       = models.DateTimeField(null=True, blank=True)
     completion_notes     = models.TextField("notas de entrega", blank=True)
     completion_invoice   = models.CharField("# factura / remisión", max_length=100, blank=True)
+    completion_cash_amount     = models.DecimalField("efectivo recibido", max_digits=10, decimal_places=2, null=True, blank=True)
+    completion_transfer_amount = models.DecimalField("transferencia recibida", max_digits=10, decimal_places=2, null=True, blank=True)
     completion_photo     = models.ImageField(upload_to="delivery_proofs/%Y/%m/", null=True, blank=True)
     completion_photo_b64 = models.TextField("foto de entrega (base64, legado — usar completion_photos)", blank=True)
     completion_photos    = models.JSONField("fotos de entrega (base64)", default=list, blank=True)

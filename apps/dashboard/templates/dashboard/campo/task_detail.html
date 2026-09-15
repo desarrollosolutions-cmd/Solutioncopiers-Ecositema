@@ -101,7 +101,7 @@
         <div style="width:1.5rem;height:1.5rem;border-radius:9999px;background:rgba(16,185,129,.15);color:#10B981;display:flex;align-items:center;justify-content:center;font-size:.75rem;">✓</div>
         <div style="font-size:.8rem;font-weight:700;color:#10B981;">Tarea completada — {{ task.completed_at|date:"d/m/Y H:i" }}</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:{% if task.completion_signature or task.completion_invoice or task.completion_notes %}1.25rem{% else %}0{% endif %};">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:{% if task.completion_signature or task.completion_invoice or task.completion_notes or task.completion_cash_amount or task.completion_transfer_amount %}1.25rem{% else %}0{% endif %};">
         {% if task.completion_invoice %}
         <div>
           <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;"># Factura / Remisión</div>
@@ -112,6 +112,18 @@
         <div {% if not task.completion_invoice %}style="grid-column:1/-1;"{% endif %}>
           <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Notas de entrega</div>
           <div style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.6;">{{ task.completion_notes }}</div>
+        </div>
+        {% endif %}
+        {% if task.completion_cash_amount %}
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Efectivo recibido</div>
+          <div style="font-size:.9rem;font-weight:700;color:#10B981;">${{ task.completion_cash_amount|floatformat:0 }}</div>
+        </div>
+        {% endif %}
+        {% if task.completion_transfer_amount %}
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Transferencia recibida</div>
+          <div style="font-size:.9rem;font-weight:700;color:#10B981;">${{ task.completion_transfer_amount|floatformat:0 }}</div>
         </div>
         {% endif %}
       </div>

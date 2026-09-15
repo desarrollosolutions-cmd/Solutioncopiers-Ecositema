@@ -374,6 +374,8 @@
           {% if task.status == 'done' %}
             {{ task.completed_at|date:"d/m/Y H:i" }}
             {% if task.completion_invoice %}<br><span style="color:var(--color-text-secondary);">Fact: {{ task.completion_invoice }}</span>{% endif %}
+            {% if task.completion_cash_amount %}<br><span style="color:var(--color-text-secondary);">Efectivo: ${{ task.completion_cash_amount|floatformat:0 }}</span>{% endif %}
+            {% if task.completion_transfer_amount %}<br><span style="color:var(--color-text-secondary);">Transf: ${{ task.completion_transfer_amount|floatformat:0 }}</span>{% endif %}
             {% if task.all_completion_photos %}<br><span style="color:#10B981;">📷 {{ task.all_completion_photos|length }} foto{{ task.all_completion_photos|length|pluralize }}</span>{% endif %}
             {% if task.completion_signature %}<br><span style="color:#10B981;">✍ Firmado</span>{% endif %}
           {% else %}—{% endif %}

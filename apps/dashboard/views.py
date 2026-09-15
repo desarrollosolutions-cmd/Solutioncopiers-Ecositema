@@ -1470,7 +1470,7 @@ class ExportDeliveryTasksCSVView(View):
         writer = csv_mod.writer(resp, delimiter=";")
         writer.writerow([
             "Ruta", "Cliente / Prov", "Dirección", "Firma cliente", "Nro de factura",
-            "Efectivo", "Banco", "Crédito (CXC)", "Vendedor", "Observaciones",
+            "Efectivo", "Transferencia", "Crédito (CXC)", "Vendedor", "Observaciones",
             "Tipo", "Estado",
         ])
         for t in qs:
@@ -1479,8 +1479,8 @@ class ExportDeliveryTasksCSVView(View):
                 t.client_name, t.address,
                 "Sí" if t.completion_signature else "",
                 t.completion_invoice,
-                "X" if t.payment_method == DeliveryTask.PaymentMethod.CASH else "",
-                "X" if t.payment_method == DeliveryTask.PaymentMethod.BANK else "",
+                t.completion_cash_amount if t.completion_cash_amount else ("X" if t.payment_method == DeliveryTask.PaymentMethod.CASH else ""),
+                t.completion_transfer_amount if t.completion_transfer_amount else ("X" if t.payment_method == DeliveryTask.PaymentMethod.BANK else ""),
                 "X" if t.payment_method == DeliveryTask.PaymentMethod.CXC  else "",
                 t.field_user.user.get_full_name() or t.field_user.user.username,
                 t.completion_notes or t.description,
@@ -5570,6 +5570,19 @@ class CampoUserDetailView(View):
 # TAREAS DE ENTREGA — portal campo (completar) + admin (CRUD)
 # ===========================================================================
 
+def _parse_money(value):
+    """Convierte el monto de efectivo/transferencia que envía el mensajero al
+    completar una entrega. None si viene vacío o no es un número válido."""
+    from decimal import Decimal, InvalidOperation
+    value = (value or "").strip().replace(",", "")
+    if not value:
+        return None
+    try:
+        return Decimal(value)
+    except InvalidOperation:
+        return None
+
+
 @campo_decorator
 class CampoTaskCompleteView(View):
     """El mensajero/técnico completa una tarea desde /campo/."""
@@ -5590,6 +5603,8 @@ class CampoTaskCompleteView(View):
         task.completion_signature = request.POST.get("signature", "").strip()
         task.completion_photos    = photos
         task.completion_photo_b64 = photos[0] if photos else ""
+        task.completion_cash_amount     = _parse_money(request.POST.get("cash_amount"))
+        task.completion_transfer_amount = _parse_money(request.POST.get("transfer_amount"))
         task.status               = DeliveryTask.Status.DONE
         task.completed_at         = timezone.now()
         task.save()
@@ -6206,9 +6221,12 @@ class PanelDeliveryCompleteView(View):
             if legacy:
                 photos = [legacy]
         task.completion_notes     = request.POST.get("notes", "").strip()
+        task.completion_invoice   = request.POST.get("invoice", "").strip()
         task.completion_signature = request.POST.get("signature", "").strip()
         task.completion_photos    = photos
         task.completion_photo_b64 = photos[0] if photos else ""
+        task.completion_cash_amount     = _parse_money(request.POST.get("cash_amount"))
+        task.completion_transfer_amount = _parse_money(request.POST.get("transfer_amount"))
         task.status               = DeliveryTask.Status.DONE
         task.completed_at         = timezone.now()
         task.save()

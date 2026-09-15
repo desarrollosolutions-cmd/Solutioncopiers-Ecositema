@@ -337,6 +337,18 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
       <textarea name="notes" id="modal-notes" class="modal-input modal-textarea"
         placeholder="¿Qué se entregó? ¿Hay observaciones?"></textarea>
 
+      <label class="modal-label">Pago recibido <span style="font-weight:400;text-transform:none;">(opcional — si fue mixto, llena los dos)</span></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.875rem;">
+        <div>
+          <label style="font-size:.68rem;color:#7A6060;display:block;margin-bottom:.25rem;">Efectivo</label>
+          <input type="number" inputmode="decimal" min="0" step="0.01" id="modal-cash" class="modal-input" placeholder="$ 0" style="margin-bottom:0;">
+        </div>
+        <div>
+          <label style="font-size:.68rem;color:#7A6060;display:block;margin-bottom:.25rem;">Transferencia</label>
+          <input type="number" inputmode="decimal" min="0" step="0.01" id="modal-transfer" class="modal-input" placeholder="$ 0" style="margin-bottom:0;">
+        </div>
+      </div>
+
       <label class="modal-label">Fotos del comprobante <span style="font-weight:400;text-transform:none;">(hasta 6 — toca varias veces para agregar más)</span></label>
       <div class="photo-grid" id="campo-photo-grid"></div>
       <label class="photo-label" id="campo-photo-label" onclick="document.getElementById('campo-photo-input').click()">
@@ -656,6 +668,8 @@ function openComplete(taskId, title) {
   document.getElementById('modal-task-id').value = taskId;
   document.getElementById('modal-task-title').textContent = title;
   document.getElementById('modal-notes').value = '';
+  document.getElementById('modal-cash').value = '';
+  document.getElementById('modal-transfer').value = '';
   clearCampoPhoto();
   clearCampoSig();
   document.getElementById('confirm-text').textContent = 'Confirmar entrega';
@@ -678,6 +692,8 @@ function submitComplete(e) {
   fd.append('csrfmiddlewaretoken', CSRF);
   fd.append('task_id',  taskId);
   fd.append('notes',    document.getElementById('modal-notes').value);
+  fd.append('cash_amount',     document.getElementById('modal-cash').value);
+  fd.append('transfer_amount', document.getElementById('modal-transfer').value);
   _campoPhotos.forEach(p => fd.append('photos_b64', p));
   if (_campoSigCanvas && !_campoSigEmpty) {
     fd.append('signature', _campoSigCanvas.toDataURL('image/png'));
