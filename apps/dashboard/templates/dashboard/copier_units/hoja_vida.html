@@ -1,0 +1,135 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Hoja de vida · {{ unit.serial_number }}{% endblock %}
+
+{% block breadcrumb %}
+  <span class="da-breadcrumb-sep">/</span>
+  <a href="{% url 'dashboard:copier_units' %}">Inventario</a>
+  <span class="da-breadcrumb-sep">/</span>
+  <a href="{% url 'dashboard:copier_unit_edit' unit.pk %}">{{ unit.serial_number }}</a>
+  <span class="da-breadcrumb-sep">/</span>
+  <span class="da-breadcrumb-current">Hoja de vida</span>
+{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <div>
+    <h1 class="da-page-title">{{ unit.copier.brand }} {{ unit.copier.model_number }}</h1>
+    <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">Serial {{ unit.serial_number }} — hoja de vida completa del equipo</p>
+  </div>
+  <a href="{% url 'dashboard:copier_unit_edit' unit.pk %}" class="da-btn da-btn-secondary">← Editar unidad</a>
+</div>
+
+{# ── Resumen del equipo ── #}
+<div class="da-card" style="margin-bottom:1.25rem;">
+  <div class="da-card-header">Estado actual</div>
+  <div class="da-card-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.25rem;">
+      <div>
+        <div style="font-size:.65rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Estado</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--color-text-primary);">{{ unit.get_status_display }}</div>
+      </div>
+      <div>
+        <div style="font-size:.65rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Condición</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--color-text-primary);">{{ unit.get_condition_display }}</div>
+      </div>
+      <div>
+        <div style="font-size:.65rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Contador actual</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--color-text-primary);">{{ unit.current_meter|default:0 }} páginas</div>
+      </div>
+      <div>
+        <div style="font-size:.65rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Adquisición</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--color-text-primary);">{{ unit.acquisition_date|date:"d/m/Y"|default:"—" }}</div>
+      </div>
+      {% if current_contract %}
+      <div>
+        <div style="font-size:.65rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Cliente actual</div>
+        <div style="font-size:.9rem;font-weight:700;">
+          <a href="{% url 'dashboard:contract_detail' current_contract.pk %}" style="color:var(--color-primary);text-decoration:none;">{{ current_contract.lead.full_name }}</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% if unit.location_notes %}
+    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--color-border);font-size:.8rem;color:var(--color-text-secondary);">
+      {{ unit.location_notes }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="da-grid-sidebar">
+
+  {# ── Historial de servicio ── #}
+  <div class="da-card">
+    <div class="da-card-header">
+      Historial de servicio
+      <span style="font-size:.7rem;font-weight:600;color:var(--color-text-muted);">{{ tickets|length }}</span>
+    </div>
+    <div class="da-card-body" style="padding:0;">
+      {% if not tickets %}
+      <div style="padding:2rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">Sin tickets de servicio registrados para este equipo.</div>
+      {% else %}
+      {% for t in tickets %}
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--color-border);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin-bottom:.5rem;">
+          <div>
+            <a href="{% url 'dashboard:ticket_detail' t.pk %}" style="font-size:.85rem;font-weight:700;color:var(--color-text-primary);text-decoration:none;">{{ t.ticket_number }}</a>
+            <span style="font-size:.75rem;color:var(--color-text-muted);"> — {{ t.get_issue_type_display }}</span>
+          </div>
+          <span class="tkt-priority-badge {{ t.status }}" style="font-size:.65rem;padding:.2rem .55rem;border-radius:9999px;font-weight:700;background:color-mix(in srgb,var(--color-primary) 12%,transparent);color:var(--color-primary);">{{ t.get_status_display }}</span>
+        </div>
+        <div style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.4rem;">
+          {{ t.created_at|date:"d/m/Y H:i" }}
+          {% if t.assigned_to %} · Técnico: {{ t.assigned_to.get_full_name|default:t.assigned_to.username }}{% endif %}
+          {% if t.lead %} · Cliente: {{ t.lead.full_name }}{% endif %}
+        </div>
+        {% if t.resolution_notes %}
+        <div style="font-size:.78rem;color:var(--color-text-secondary);line-height:1.5;margin-bottom:.5rem;">{{ t.resolution_notes|truncatewords:40 }}</div>
+        {% endif %}
+        {% if t.evidence_photos %}
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+          {% for photo in t.evidence_photos %}
+          <div onclick="openPhotoLightbox(this)" role="button" tabindex="0" style="display:block;width:3.5rem;height:3.5rem;border-radius:.5rem;border:1px solid var(--color-border);overflow:hidden;cursor:pointer;">
+            <img src="{{ photo }}" alt="Evidencia" style="width:100%;height:100%;object-fit:cover;display:block;">
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Historial de contratos ── #}
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+    <div class="da-card">
+      <div class="da-card-header">
+        Contratos / clientes
+        <span style="font-size:.7rem;font-weight:600;color:var(--color-text-muted);">{{ contracts|length }}</span>
+      </div>
+      <div class="da-card-body" style="padding:0;">
+        {% if not contracts %}
+        <div style="padding:1.5rem;text-align:center;color:var(--color-text-muted);font-size:.78rem;">Este equipo no está ligado a ningún contrato.</div>
+        {% else %}
+        {% for c in contracts %}
+        <div onclick="location.href='{% url 'dashboard:contract_detail' c.pk %}'" style="padding:.875rem 1.125rem;border-bottom:1px solid var(--color-border);cursor:pointer;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;">
+            <span style="font-size:.8rem;font-weight:700;color:var(--color-text-primary);">{{ c.lead.full_name }}</span>
+            <span style="font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:9999px;
+              {% if c.status == 'active' %}background:color-mix(in srgb,var(--color-success) 13%,transparent);color:var(--color-success);
+              {% else %}background:color-mix(in srgb,var(--color-text-muted) 12%,transparent);color:var(--color-text-muted);{% endif %}">
+              {{ c.get_status_display }}
+            </span>
+          </div>
+          <div style="font-size:.7rem;color:var(--color-text-muted);margin-top:.2rem;">
+            {{ c.contract_number }} · desde {{ c.start_date|date:"d/m/Y" }}{% if c.end_date %} hasta {{ c.end_date|date:"d/m/Y" }}{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -11,7 +11,12 @@
 {% block content %}
 <div class="da-page-header">
   <h1 class="da-page-title">{% if is_edit %}Editar unidad · {{ unit.serial_number }}{% else %}Registrar unidad de equipo{% endif %}</h1>
-  <a href="{% url 'dashboard:copier_units' %}" class="da-btn da-btn-secondary">← Volver</a>
+  <div style="display:flex;gap:.625rem;">
+    {% if is_edit %}
+    <a href="{% url 'dashboard:copier_unit_hoja_vida' unit.pk %}" class="da-btn da-btn-primary">Hoja de vida</a>
+    {% endif %}
+    <a href="{% url 'dashboard:copier_units' %}" class="da-btn da-btn-secondary">← Volver</a>
+  </div>
 </div>
 
 {% if error %}

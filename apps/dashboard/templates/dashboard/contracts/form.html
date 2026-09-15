@@ -83,6 +83,7 @@
                   <span style="font-size:.72rem;font-weight:400;margin-left:.5rem;padding:.15rem .5rem;border-radius:.25rem;background:color-mix(in srgb,#10B981 10%,transparent);color:#10B981;">
                     En campo
                   </span>
+                  <a href="{% url 'dashboard:copier_unit_hoja_vida' contract.unit_id %}" style="font-size:.72rem;font-weight:600;margin-left:.5rem;color:var(--color-primary);text-decoration:none;">Ver hoja de vida →</a>
                 {% endif %}
               </label>
               <select name="unit" class="da-input" id="unit-select">

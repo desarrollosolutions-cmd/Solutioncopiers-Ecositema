@@ -133,6 +133,7 @@ urlpatterns = [
     path("equipos/",           views.CopierUnitListView.as_view(),   name="copier_units"),
     path("equipos/nuevo/",     views.CopierUnitCreateView.as_view(), name="copier_unit_create"),
     path("equipos/<int:pk>/",  views.CopierUnitEditView.as_view(),   name="copier_unit_edit"),
+    path("equipos/<int:pk>/hoja-de-vida/", views.CopierUnitHojaVidaView.as_view(), name="copier_unit_hoja_vida"),
 
     # Facturación y pagos
     path("facturacion/",                            billing_views.ARDashboardView.as_view(),        name="ar_dashboard"),

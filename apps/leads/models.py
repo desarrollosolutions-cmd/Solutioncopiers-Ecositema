@@ -330,6 +330,13 @@ class ServiceTicket(TimeStampedModel):
         null=True, blank=True, related_name="tickets",
         verbose_name=_("contrato relacionado"),
     )
+    unit = models.ForeignKey(
+        "catalog.CopierUnit", on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="service_tickets",
+        verbose_name=_("equipo (unidad física)"),
+        help_text=_("Para la hoja de vida del equipo. Si no se indica y el "
+                     "ticket tiene contrato, se toma del equipo del contrato."),
+    )
     equipment_description = models.CharField(
         _("equipo"), max_length=300, blank=True,
     )
@@ -381,6 +388,14 @@ class ServiceTicket(TimeStampedModel):
 
     def __str__(self):
         return f"{self.ticket_number} — {self.lead.full_name}"
+
+    def save(self, *args, **kwargs):
+        # Si el ticket tiene contrato pero no se indicó el equipo puntual,
+        # se toma del contrato -- así el ticket queda enganchado a la hoja
+        # de vida del equipo físico sin que haya que elegirlo aparte.
+        if self.contract_id and not self.unit_id:
+            self.unit_id = self.contract.unit_id
+        super().save(*args, **kwargs)
 
     @property
     def is_open(self):

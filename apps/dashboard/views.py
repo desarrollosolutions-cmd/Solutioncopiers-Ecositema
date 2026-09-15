@@ -5199,6 +5199,29 @@ class CopierUnitEditView(View):
             messages.error(request, f"Error: {e}")
             return render(request, self.template_name, {**self._ctx(unit), "error": str(e)})
 
+
+@da_decorator
+class CopierUnitHojaVidaView(TemplateView):
+    """Hoja de vida de un equipo físico: todos los contratos (clientes) por
+    los que ha pasado y todos los tickets de servicio que se le han hecho,
+    sin importar si cambió de cliente/contrato en el camino."""
+    template_name = "dashboard/copier_units/hoja_vida.html"
+
+    def get_context_data(self, **kwargs):
+        from apps.catalog.models import CopierUnit
+        from apps.leads.models import RentalContract, ServiceTicket
+        ctx = super().get_context_data(**kwargs)
+        unit = get_object_or_404(CopierUnit, pk=kwargs["pk"])
+        contracts = RentalContract.objects.filter(unit=unit).select_related("lead").order_by("-start_date")
+        tickets = ServiceTicket.objects.filter(unit=unit).select_related("lead", "assigned_to").order_by("-created_at")
+        ctx.update({
+            "unit": unit,
+            "contracts": contracts,
+            "tickets": tickets,
+            "current_contract": contracts.filter(status=RentalContract.Status.ACTIVE).first(),
+        })
+        return ctx
+
 # ===========================================================================
 # PORTAL DE CAMPO — /campo/  (mensajeros y tecnicos)
 # ===========================================================================
