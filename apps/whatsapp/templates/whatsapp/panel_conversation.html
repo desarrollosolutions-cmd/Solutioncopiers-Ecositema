@@ -68,7 +68,7 @@
 
     {# Mensajes #}
     <div class="wa-chat-msgs" id="msgs-container">
-      {% for msg in messages %}
+      {% for msg in wa_messages %}
       <div class="wa-msg {% if msg.direction == 'inbound' %}in{% else %}out{% endif %}">
         <div class="wa-bubble">{{ msg.body }}</div>
         <div class="wa-msg-meta">

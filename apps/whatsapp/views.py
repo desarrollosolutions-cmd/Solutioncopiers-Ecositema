@@ -119,7 +119,11 @@ class PanelWAConversationView(View):
         ctx = _panel_ctx(request)
         ctx.update({
             "conv":           conv,
-            "messages":       conv.messages.order_by("created_at"),
+            # No usar "messages" -- choca con el framework de mensajes flash
+            # de Django (ver el mismo comentario en DashWAConversationView).
+            # panel/_base.html no renderiza ese bloque hoy, así que esto no
+            # causa síntomas visibles aquí todavía, pero es la misma trampa.
+            "wa_messages":    conv.messages.order_by("created_at"),
             "labels":         ConversationLabel.objects.all(),
             "status_choices": WhatsAppConversation.Status.choices,
             "asesoras":       User.objects.filter(is_active=True, is_staff=True),
@@ -289,7 +293,14 @@ class DashWAConversationView(View):
         from django.contrib.auth.models import User
         ctx = {
             "conv":           conv,
-            "messages":       conv.messages.order_by("created_at"),
+            # OJO: no usar la clave "messages" -- choca con el framework de
+            # mensajes flash de Django que dashboard/_base.html sí renderiza
+            # (panel/_base.html no lo hace, por eso PanelWAConversationView
+            # se salva usando ese nombre). Con "messages", los mensajes de
+            # WhatsApp se muestran también como alertas del sistema y nunca
+            # se "consumen" porque no son mensajes flash reales -- quedan
+            # flotando para siempre.
+            "wa_messages":    conv.messages.order_by("created_at"),
             "labels":         ConversationLabel.objects.all(),
             "status_choices": WhatsAppConversation.Status.choices,
             "asesoras":       User.objects.filter(is_active=True, is_staff=True),
