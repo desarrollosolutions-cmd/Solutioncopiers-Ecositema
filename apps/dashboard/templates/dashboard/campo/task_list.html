@@ -429,7 +429,7 @@ function dtToggleView() {
 
 (function () {
   const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
-  let dragged = null, fromCol = null;
+  let dragged = null, fromCol = null, draggedBody = null;
 
   function updateCount(stageKey, delta) {
     const el = document.querySelector(`#dt-pipeline-board [data-count="${stageKey}"]`);
@@ -458,10 +458,27 @@ function dtToggleView() {
     }
   }
 
+  // ── Reordenar dentro de la MISMA columna (misma prioridad) -- arrastrar
+  // entre columnas cambia la prioridad (ya existía); arrastrar dentro de la
+  // misma columna reordena la secuencia de ejecución sin tocar la prioridad.
+  function persistOrder(body) {
+    const order = Array.from(body.querySelectorAll('.kb-card')).map(c => c.dataset.pk);
+    if (!order.length) return;
+    fetch('{% url "dashboard:campo_task_reorder" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ order }),
+    })
+    .then(r => r.json())
+    .then(data => showToast(data.ok ? 'Orden guardado ✓' : 'Error al guardar el orden', data.ok ? 'ok' : 'err'))
+    .catch(() => showToast('Error de red', 'err'));
+  }
+
   document.querySelectorAll('#dt-pipeline-board .kb-card').forEach(card => {
     card.addEventListener('dragstart', e => {
       dragged = card;
       fromCol = card.dataset.stage;
+      draggedBody = card.closest('.kb-col-body');
       card.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', card.dataset.pk);
@@ -470,6 +487,7 @@ function dtToggleView() {
       setTimeout(() => card.classList.remove('dragging'), 0);
       document.querySelectorAll('#dt-pipeline-board .kb-col-body').forEach(b => b.classList.remove('drag-active'));
       document.querySelectorAll('#dt-pipeline-board .kb-col').forEach(c => c.classList.remove('drag-over'));
+      dragged = null; draggedBody = null;
     });
   });
 
@@ -482,6 +500,13 @@ function dtToggleView() {
       e.dataTransfer.dropEffect = 'move';
       body.classList.add('drag-active');
       col.classList.add('drag-over');
+      if (!dragged || body !== draggedBody) return;
+      // Misma columna: reordenar en vivo según la posición del cursor.
+      const afterCard = [...body.querySelectorAll('.kb-card:not(.dragging)')].find(card => {
+        const rect = card.getBoundingClientRect();
+        return e.clientY < rect.top + rect.height / 2;
+      });
+      body.insertBefore(dragged, afterCard || null);
     });
     body.addEventListener('dragleave', e => {
       if (!body.contains(e.relatedTarget)) { body.classList.remove('drag-active'); col.classList.remove('drag-over'); }
@@ -490,7 +515,13 @@ function dtToggleView() {
       e.preventDefault();
       body.classList.remove('drag-active');
       col.classList.remove('drag-over');
-      if (!dragged || toStage === fromCol) return;
+      if (!dragged) return;
+
+      if (toStage === fromCol) {
+        // Mismo grupo de prioridad: ya se reordenó en vivo arriba, solo falta guardar.
+        persistOrder(body);
+        return;
+      }
 
       const moveUrl = dragged.dataset.moveUrl;
       const ghost = body.querySelector('.kb-drop-ghost');
@@ -512,6 +543,7 @@ function dtToggleView() {
       .catch(() => showToast('Error de red', 'err'));
 
       fromCol = toStage;
+      draggedBody = body;
     });
   });
 })();

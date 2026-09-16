@@ -5950,6 +5950,40 @@ class CampoTaskPriorityMoveView(View):
 
 
 @da_decorator
+class CampoTaskReorderView(View):
+    """POST /dashadmin/campo/tareas/reordenar/ — orden de ejecución dentro de una
+    misma columna de prioridad en el pipeline (arrastrar para reordenar sin
+    cambiar de prioridad, ver TicketReorderView para el mismo patrón)."""
+
+    def post(self, request):
+        import json
+        from apps.dashboard.models import DeliveryTask
+        try:
+            data = json.loads(request.body)
+            order_pks = data.get("order", [])
+        except Exception:
+            order_pks = []
+        if not order_pks:
+            return JsonResponse({"ok": False, "error": "Orden vacío"}, status=400)
+        tasks = {
+            t.pk: t for t in
+            DeliveryTask.objects.filter(pk__in=order_pks, status=DeliveryTask.Status.PENDING)
+        }
+        updated = []
+        for idx, raw_pk in enumerate(order_pks):
+            try:
+                task = tasks.get(int(raw_pk))
+            except (TypeError, ValueError):
+                task = None
+            if task and task.order != idx:
+                task.order = idx
+                task.save(update_fields=["order"])
+            if task:
+                updated.append(task.pk)
+        return JsonResponse({"ok": True, "updated": updated})
+
+
+@da_decorator
 class CampoTaskBulkDeleteView(View):
     """POST /dashadmin/campo/tareas/limpiar/ — borra las tareas seleccionadas (checkboxes) en la lista."""
 
