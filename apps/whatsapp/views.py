@@ -267,6 +267,72 @@ class DashWAOverviewView(View):
 
 
 # ---------------------------------------------------------------------------
+# DASHADMIN — Detalle de conversación (staff)
+# ---------------------------------------------------------------------------
+
+@da_decorator
+class DashWAConversationView(View):
+    """Igual que PanelWAConversationView, pero para staff -- el staff no puede
+    entrar a las vistas de /panel/ (ver _wa_asesora_required), así que necesita
+    su propia versión para poder abrir y responder conversaciones."""
+
+    template_name = "whatsapp/dash_conversation.html"
+
+    def get(self, request, pk):
+        conv = get_object_or_404(
+            WhatsAppConversation.objects.select_related("lead", "assigned_to")
+                                        .prefetch_related("labels", "messages__sent_by"),
+            pk=pk,
+        )
+        conv.mark_read()
+
+        from django.contrib.auth.models import User
+        ctx = {
+            "conv":           conv,
+            "messages":       conv.messages.order_by("created_at"),
+            "labels":         ConversationLabel.objects.all(),
+            "status_choices": WhatsAppConversation.Status.choices,
+            "asesoras":       User.objects.filter(is_active=True, is_staff=True),
+        }
+        return render(request, self.template_name, ctx)
+
+    def post(self, request, pk):
+        conv   = get_object_or_404(WhatsAppConversation, pk=pk)
+        action = request.POST.get("action", "reply")
+
+        if action == "reply":
+            body = request.POST.get("body", "").strip()
+            if body:
+                send_whatsapp_message(conv, body, sent_by=request.user)
+
+        elif action == "set_status":
+            new_status = request.POST.get("status", "")
+            if new_status in dict(WhatsAppConversation.Status.choices):
+                conv.status = new_status
+                conv.save(update_fields=["status"])
+
+        elif action == "assign":
+            from django.contrib.auth.models import User
+            uid = request.POST.get("assigned_to", "")
+            conv.assigned_to = User.objects.filter(pk=uid).first() if uid else None
+            conv.save(update_fields=["assigned_to"])
+
+        elif action == "set_labels":
+            label_ids = request.POST.getlist("labels")
+            conv.labels.set(ConversationLabel.objects.filter(pk__in=label_ids))
+
+        elif action == "link_lead":
+            from apps.leads.models import Lead
+            lead_id = request.POST.get("lead_id", "")
+            conv.lead = Lead.objects.filter(pk=lead_id).first() if lead_id else None
+            conv.save(update_fields=["lead"])
+
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"ok": True})
+        return redirect("wa:dash_conversation", pk=pk)
+
+
+# ---------------------------------------------------------------------------
 # DASHADMIN — Gestión de etiquetas
 # ---------------------------------------------------------------------------
 

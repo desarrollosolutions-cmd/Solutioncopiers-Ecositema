@@ -15,7 +15,8 @@ urlpatterns = [
     path("panel/simulador/",                views.WASimulatorView.as_view(),         name="simulator"),
 
     # ── Dashadmin — administración ──
-    path("dash/",                           views.DashWAOverviewView.as_view(),  name="dash_overview"),
-    path("dash/etiquetas/",                 views.DashWALabelsView.as_view(),    name="dash_labels"),
+    path("dash/",                           views.DashWAOverviewView.as_view(),      name="dash_overview"),
+    path("dash/conversacion/<int:pk>/",     views.DashWAConversationView.as_view(),  name="dash_conversation"),
+    path("dash/etiquetas/",                 views.DashWALabelsView.as_view(),        name="dash_labels"),
     path("dash/asignar/<int:pk>/",          views.DashWAAssignView.as_view(),    name="dash_assign"),
 ]

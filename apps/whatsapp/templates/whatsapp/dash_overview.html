@@ -87,7 +87,7 @@
         {% for conv in conversations %}
         <tr>
           <td>
-            <a href="{% url 'wa:panel_conversation' conv.pk %}" style="font-weight:700;color:var(--color-primary);text-decoration:none;">
+            <a href="{% url 'wa:dash_conversation' conv.pk %}" style="font-weight:700;color:var(--color-primary);text-decoration:none;">
               {{ conv.contact_name|default:conv.phone }}
             </a>
             <div style="font-size:.68rem;color:var(--color-text-muted);">{{ conv.phone }}</div>
