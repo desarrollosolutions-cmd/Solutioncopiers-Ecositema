@@ -301,6 +301,84 @@ class SolutionDetailView(SEOContextMixin, BreadcrumbMixin, JsonLDMixin, Template
         return context
 
 
+class CityHubView(JsonLDMixin, SEOContextMixin, BreadcrumbMixin, TemplateView):
+    template_name = "core/city_hub.html"
+    meta_title_default = "Cobertura Nacional | Alquiler de Fotocopiadoras Colombia"
+    meta_description_default = (
+        "Alquiler y venta de fotocopiadoras Ricoh en Medellín, el Valle de "
+        "Aburrá y cobertura a nivel nacional. Consulta el servicio "
+        "disponible en tu ciudad."
+    )
+    schema_type_default = "WebPage"
+
+    def get_breadcrumbs(self):
+        return [("Inicio", reverse("core:home")), ("Cobertura", "")]
+
+    def get_context_data(self, **kwargs):
+        from apps.core.city_data import CITY_PAGES
+        context = super().get_context_data(**kwargs)
+        context["cities"] = sorted(
+            [{"slug": slug, **data} for slug, data in CITY_PAGES.items()],
+            key=lambda c: c["order"],
+        )
+        return context
+
+
+class CityDetailView(JsonLDMixin, SEOContextMixin, BreadcrumbMixin, TemplateView):
+    template_name = "core/city_detail.html"
+    schema_type_default = "Service"
+
+    def _city(self):
+        from apps.core.city_data import CITY_PAGES
+        return CITY_PAGES.get(self.kwargs.get("slug", ""))
+
+    def get(self, request, *args, **kwargs):
+        from django.http import Http404
+        if self._city() is None:
+            raise Http404("Ciudad no encontrada")
+        return super().get(request, *args, **kwargs)
+
+    @property
+    def meta_title_default(self):
+        return self._city()["meta_title"]
+
+    @property
+    def meta_description_default(self):
+        return self._city()["meta_description"]
+
+    def get_breadcrumbs(self):
+        city = self._city()
+        return [
+            ("Inicio", reverse("core:home")),
+            ("Cobertura", reverse("core:city_hub")),
+            (city["name"], ""),
+        ]
+
+    def get_context_data(self, **kwargs):
+        from apps.core.city_data import COVERAGE_NOTES
+        context = super().get_context_data(**kwargs)
+        city = self._city()
+        context["city"] = city
+        context["coverage_note"] = COVERAGE_NOTES[city["tier"]]
+        context["cta_title"] = f"¿Listo para cotizar en {city['name']}?"
+        return context
+
+    def extra_jsonld_data(self, context):
+        city = self._city()
+        area = [{"@type": "City", "name": city["name"]}]
+        if city["tier"] == "presencial":
+            area.append({"@type": "AdministrativeArea", "name": "Antioquia"})
+        return {
+            "serviceType": "Alquiler y venta de fotocopiadoras",
+            "provider": {
+                "@type": "Organization",
+                "name": "Solution Copiers",
+                "url": self.request.build_absolute_uri("/"),
+            },
+            "areaServed": area,
+        }
+
+
 class AboutView(SEOContextMixin, BreadcrumbMixin, TemplateView):
     template_name = "core/about.html"
     meta_title_default = "Sobre Nosotros | Solution Copiers — Medellín, Colombia"

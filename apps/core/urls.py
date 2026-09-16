@@ -10,6 +10,8 @@ urlpatterns = [
     path("contacto/", views.ContactView.as_view(), name="contact"),
     path("soluciones-empresariales/", views.SolutionsHubView.as_view(), name="solutions_hub"),
     path("soluciones-empresariales/<slug:slug>/", views.SolutionDetailView.as_view(), name="solution_detail"),
+    path("cobertura/", views.CityHubView.as_view(), name="city_hub"),
+    path("cobertura/<slug:slug>/", views.CityDetailView.as_view(), name="city_detail"),
     path("politica-de-privacidad/", views.PrivacyView.as_view(), name="privacy"),
     path("terminos-y-condiciones/", views.TermsView.as_view(), name="terms"),
 

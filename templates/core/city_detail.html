@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+{# ── HERO ── #}
+<section class="section relative overflow-hidden">
+  <div class="absolute inset-0 bg-grid-pattern opacity-30"></div>
+  <div class="container-custom relative max-w-5xl">
+    <div class="silo-label hardware mb-6">{{ city.region }}</div>
+    <h1 class="font-display text-display-xl mb-6 text-balance">{{ city.h1 }}</h1>
+    <p class="text-xl text-text-secondary max-w-2xl mb-10 text-pretty">{{ city.intro }}</p>
+    <div class="flex flex-wrap gap-4">
+      <a href="{% url 'leads:wizard' %}" class="btn-primary">Cotizar en {{ city.name }}</a>
+      <a href="{% url 'core:contact' %}" class="btn-outline">Hablar con un asesor</a>
+    </div>
+  </div>
+</section>
+
+{# ── COBERTURA ── #}
+<section class="section-sm">
+  <div class="container-custom max-w-5xl">
+    <div class="card-padded border-l-4 border-l-primary">
+      <h2 class="font-display text-lg mb-2">Cómo funciona el servicio en {{ city.name }}</h2>
+      <p class="text-sm text-text-secondary">{{ coverage_note }}</p>
+    </div>
+  </div>
+</section>
+
+{% if city.zones %}
+{# ── ZONAS CERCANAS ── #}
+<section class="section-sm">
+  <div class="container-custom max-w-5xl">
+    <h2 class="font-display text-lg mb-4">Zonas cercanas que atendemos en {{ city.name }}</h2>
+    <div class="flex flex-wrap gap-2">
+      {% for zone in city.zones %}
+      <span class="badge">{{ zone }}</span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ── SERVICIOS DISPONIBLES ── #}
+<section class="section">
+  <div class="container-custom max-w-5xl">
+    <div class="mb-12 max-w-3xl">
+      <div class="silo-label hardware mb-4">Servicios disponibles en {{ city.name }}</div>
+      <h2 class="font-display text-display-md text-balance">
+        Todo lo que necesitas para tu operación documental
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <a href="{% url 'catalog:rental_list' %}" class="card-padded hover:border-primary transition group">
+        <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">Alquiler de fotocopiadoras</h3>
+        <p class="text-sm text-text-secondary">Equipos Ricoh multifuncionales con mantenimiento, tóner y soporte técnico incluidos. Sin inversión inicial.</p>
+      </a>
+      <a href="{% url 'catalog:sale_list' %}" class="card-padded hover:border-primary transition group">
+        <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">Venta de fotocopiadoras</h3>
+        <p class="text-sm text-text-secondary">Equipos nuevos y remanufacturados con garantía, para empresas que prefieren comprar en vez de alquilar.</p>
+      </a>
+      <a href="{% url 'catalog:technical_service' %}" class="card-padded hover:border-primary transition group">
+        <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">Servicio técnico</h3>
+        <p class="text-sm text-text-secondary">Mantenimiento preventivo y correctivo, repuestos originales y técnicos certificados Ricoh.</p>
+      </a>
+      <a href="{% url 'catalog:structured_cabling' %}" class="card-padded hover:border-primary transition group">
+        <h3 class="font-display text-lg mb-2 group-hover:text-primary transition">Cableado estructurado</h3>
+        <p class="text-sm text-text-secondary">Diseño, instalación y certificación de redes de datos Cat6/6A para tu oficina.</p>
+      </a>
+    </div>
+
+    <a href="{% url 'core:solutions_hub' %}" class="card-padded hover:border-primary transition group mt-6 flex items-center justify-between gap-4">
+      <div>
+        <h3 class="font-display text-lg mb-1 group-hover:text-primary transition">¿También necesitas software a la medida, apps o bases de datos?</h3>
+        <p class="text-sm text-text-secondary">Desarrollo web, aplicaciones móviles y bases de datos empresariales — sin importar tu ciudad, trabajamos de forma remota con el mismo equipo.</p>
+      </div>
+      <svg class="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+    </a>
+  </div>
+</section>
+
+{% include "components/_cta_section.html" with title=cta_title description="Te respondemos en menos de 2 horas hábiles." %}
+{% endblock %}

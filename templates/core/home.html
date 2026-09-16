@@ -85,7 +85,7 @@
       <div class="hp-trust-pills hp-fade-up" style="--d:.65s">
         <span class="hp-trust-pill">{% trans "+200 empresas atendidas" %}</span>
         <span class="hp-trust-pill">{% trans "Soporte garantizado" %}</span>
-        <span class="hp-trust-pill">{% trans "Cobertura en todo Colombia" %}</span>
+        <a href="{% url 'core:city_hub' %}" class="hp-trust-pill">{% trans "Cobertura en todo Colombia" %}</a>
       </div>
     </div>
 
@@ -964,8 +964,8 @@
           </button>
           <div class="hp-faq-body">
             <div class="hp-faq-body-inner">
-              Cubrimos todo el departamento de Antioquia con atención técnica presencial. Para otras ciudades de Colombia, ofrecemos soporte remoto y coordinamos visitas técnicas según la necesidad del proyecto.
-              <a href="{% url 'core:contact' %}" class="faq-link">Consultar cobertura →</a>
+              Cubrimos todo el Valle de Aburrá y Antioquia con atención técnica 100% presencial. Para el resto de Colombia despachamos equipos e insumos desde Medellín y coordinamos el servicio técnico en sitio con aliados locales certificados en cada ciudad.
+              <a href="{% url 'core:city_hub' %}" class="faq-link">Ver cobertura por ciudad →</a>
             </div>
           </div>
         </div>

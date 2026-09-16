@@ -75,7 +75,16 @@
             </div>
         </div>
 
-        <div class="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row gap-4 justify-between items-center text-xs text-white/50">
+        <div id="footer-coverage" class="mt-10 pt-8 border-t border-white/10 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/50">
+            <span class="text-white/70 mr-1">{% trans "Cobertura:" %}</span>
+            {% for slug, name in city_footer_links %}
+            <a href="{% url 'core:city_detail' slug=slug %}" class="hover:text-white transition">{{ name }}</a>{% if not forloop.last %}<span class="text-white/30">·</span>{% endif %}
+            {% endfor %}
+            <span class="text-white/30">·</span>
+            <a href="{% url 'core:city_hub' %}" class="hover:text-white transition">{% trans "Ver toda la cobertura" %}</a>
+        </div>
+
+        <div class="mt-6 pt-8 border-t border-white/10 flex flex-col md:flex-row gap-4 justify-between items-center text-xs text-white/50">
             <div>© {% now "Y" %} {{ site_settings.site_name }}. {% trans "Todos los derechos reservados." %}</div>
             <div class="flex gap-6">
                 <a href="{% url 'core:privacy' %}" class="hover:text-white transition">{% trans "Política de privacidad" %}</a>

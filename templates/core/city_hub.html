@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+{# ── HERO ── #}
+<section class="section">
+  <div class="container-custom max-w-5xl">
+    <div class="max-w-3xl mb-16">
+      <div class="silo-label hardware mb-4">Dónde prestamos servicio</div>
+      <h1 class="font-display text-display-xl mb-6 text-balance">
+        Cobertura en el Valle de Aburrá y a nivel nacional
+      </h1>
+      <p class="text-lg text-text-secondary text-pretty mb-8">
+        En el Valle de Aburrá prestamos servicio técnico 100% presencial. Para el resto de
+        Colombia despachamos equipos e insumos desde Medellín y coordinamos el servicio
+        técnico en sitio con aliados locales certificados.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="{% url 'leads:wizard' %}" class="btn-primary">Cotizar en mi ciudad</a>
+        <a href="{% url 'core:contact' %}" class="btn-outline">Consultar cobertura</a>
+      </div>
+    </div>
+
+    {# ── PRESENCIAL ── #}
+    <div class="mb-4">
+      <h2 class="font-display text-display-md mb-2">Atención presencial · Valle de Aburrá</h2>
+      <p class="text-sm text-text-secondary mb-8">Visitas técnicas en sitio, instalación y mantenimiento sin costos adicionales de desplazamiento.</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+      {% for city in cities %}
+      {% if city.tier == "presencial" %}
+      <a href="{% url 'core:city_detail' slug=city.slug %}" class="card-padded group block">
+        <h3 class="font-display text-xl mb-2 group-hover:text-primary transition">{{ city.name }}</h3>
+        <p class="text-sm text-text-secondary mb-4">{{ city.intro|truncatewords:22 }}</p>
+        <span class="link-underline text-sm font-medium">Ver servicio en {{ city.name }} →</span>
+      </a>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    {# ── NACIONAL ── #}
+    <div class="mb-4">
+      <h2 class="font-display text-display-md mb-2">Cobertura nacional</h2>
+      <p class="text-sm text-text-secondary mb-8">Despacho de equipos e insumos desde Medellín, con servicio técnico coordinado a través de aliados locales.</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for city in cities %}
+      {% if city.tier == "nacional" %}
+      <a href="{% url 'core:city_detail' slug=city.slug %}" class="card-padded group block">
+        <h3 class="font-display text-xl mb-2 group-hover:text-primary transition">{{ city.name }}</h3>
+        <p class="text-sm text-text-secondary mb-4">{{ city.intro|truncatewords:22 }}</p>
+        <span class="link-underline text-sm font-medium">Ver servicio en {{ city.name }} →</span>
+      </a>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+{% include "components/_cta_section.html" %}
+{% endblock %}

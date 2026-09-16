@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from apps.blog.models import Category as BlogCategory, Post
 from apps.catalog.models import CablingService, Consumable, Copier, CopierCategory
+from apps.core.city_data import CITY_PAGES
 from apps.services.models import (
     CaseStudy, DatabaseService, MobileService,
     SoftwareService, WebService,
@@ -17,6 +18,7 @@ class StaticSitemap(Sitemap):
     def items(self):
         return [
             "core:home", "core:about", "core:contact", "core:solutions_hub",
+            "core:city_hub",
             "catalog:rental_list", "catalog:sale_list",
             "catalog:technical_service", "catalog:consumables_list",
             "catalog:structured_cabling",
@@ -126,6 +128,17 @@ class BlogCategorySitemap(Sitemap):
         return BlogCategory.objects.all()
 
 
+class CityPageSitemap(Sitemap):
+    changefreq = "monthly"
+    priority = 0.75
+
+    def items(self):
+        return list(CITY_PAGES.keys())
+
+    def location(self, item):
+        return reverse("core:city_detail", kwargs={"slug": item})
+
+
 sitemaps_dict = {
     "static": StaticSitemap,
     "copiers": CopierSitemap,
@@ -139,4 +152,5 @@ sitemaps_dict = {
     "cases": CaseStudySitemap,
     "blog_posts": BlogPostSitemap,
     "blog_categories": BlogCategorySitemap,
+    "cities": CityPageSitemap,
 }
