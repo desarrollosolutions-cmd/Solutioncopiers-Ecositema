@@ -234,6 +234,16 @@ CALLMEBOT_APIKEY = env("CALLMEBOT_APIKEY", default="")
 WHATSAPP_NOTIFY_PHONE = env("WHATSAPP_NOTIFY_PHONE", default="")
 
 # ---------------------------------------------------------------------------
+# WHATSAPP CLOUD API (Meta) — CRM de conversaciones en apps/whatsapp.
+# Sin estas tres variables, el webhook sigue funcionando en "modo prototipo"
+# (recibe y guarda mensajes, pero no envía nada a Meta). Se consiguen en
+# developers.facebook.com -> tu app -> WhatsApp -> Configuración de la API.
+# ---------------------------------------------------------------------------
+WHATSAPP_TOKEN = env("WHATSAPP_TOKEN", default="")
+WHATSAPP_PHONE_ID = env("WHATSAPP_PHONE_ID", default="")
+WHATSAPP_VERIFY_TOKEN = env("WHATSAPP_VERIFY_TOKEN", default="prototipo_sc_2026")
+
+# ---------------------------------------------------------------------------
 # WEB PUSH (VAPID) — notificaciones del navegador aunque no esté abierto
 # (chat interno y cualquier otra Notification). Generar par de llaves con
 # py_vapid (Vapid02().generate_keys()) y guardarlas en .env. Si quedan vacías,

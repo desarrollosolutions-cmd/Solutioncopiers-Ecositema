@@ -66,6 +66,14 @@ services:
       - key: WOMPI_EVENTS_KEY
         sync: false
 
+      # --- WhatsApp Cloud API (CRM de conversaciones, apps/whatsapp) ---
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_ID
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+
       # --- Cloudflare R2 (almacenamiento de imágenes) ---
       - key: R2_ACCOUNT_ID
         sync: false
