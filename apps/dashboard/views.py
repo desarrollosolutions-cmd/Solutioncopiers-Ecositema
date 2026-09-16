@@ -883,7 +883,7 @@ class TicketListView(ListView):
         ctx["count_progress"]   = ServiceTicket.objects.filter(status="in_progress").count()
         ctx["count_waiting"]    = ServiceTicket.objects.filter(status="waiting_parts").count()
         ctx["count_waiting_quote"] = ServiceTicket.objects.filter(status="waiting_quote").count()
-        ctx["count_resolved"]   = ServiceTicket.objects.filter(status="resolved").count()
+        ctx["count_resolved"]   = ServiceTicket.objects.filter(status__in=("resolved", "closed")).count()
         from django.contrib.auth.models import User
         ctx["technicians"] = User.objects.filter(field_profile__role="tecnico")
 
