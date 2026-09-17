@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from apps.dashboard.views import da_decorator
 
-from .models import ConversationLabel, WhatsAppConversation, WhatsAppMessage
+from .models import ConversationLabel, QuickReply, WhatsAppConversation, WhatsAppMessage
 from .webhook import _upsert_inbound_message, send_whatsapp_message
 
 # ---------------------------------------------------------------------------
@@ -125,6 +125,7 @@ class PanelWAConversationView(View):
             # causa síntomas visibles aquí todavía, pero es la misma trampa.
             "wa_messages":    conv.messages.order_by("created_at"),
             "labels":         ConversationLabel.objects.all(),
+            "quick_replies":  QuickReply.objects.all(),
             "status_choices": WhatsAppConversation.Status.choices,
             "asesoras":       User.objects.filter(is_active=True, is_staff=True),
         })
@@ -302,6 +303,7 @@ class DashWAConversationView(View):
             # flotando para siempre.
             "wa_messages":    conv.messages.order_by("created_at"),
             "labels":         ConversationLabel.objects.all(),
+            "quick_replies":  QuickReply.objects.all(),
             "status_choices": WhatsAppConversation.Status.choices,
             "asesoras":       User.objects.filter(is_active=True, is_staff=True),
         }
@@ -374,6 +376,39 @@ class DashWALabelsView(View):
             if pk and name:
                 ConversationLabel.objects.filter(pk=pk).update(name=name, color=color)
         return redirect("wa:dash_labels")
+
+
+# ---------------------------------------------------------------------------
+# DASHADMIN — Respuestas rápidas
+# ---------------------------------------------------------------------------
+
+@da_decorator
+class DashWAQuickRepliesView(View):
+    template_name = "whatsapp/dash_quick_replies.html"
+
+    def get(self, request):
+        return render(request, self.template_name, {
+            "quick_replies": QuickReply.objects.all(),
+        })
+
+    def post(self, request):
+        action = request.POST.get("action", "create")
+        if action == "create":
+            title = request.POST.get("title", "").strip()
+            body  = request.POST.get("body", "").strip()
+            if title and body:
+                last_order = QuickReply.objects.count()
+                QuickReply.objects.create(title=title, body=body, order=last_order, created_by=request.user)
+        elif action == "delete":
+            pk = request.POST.get("pk")
+            QuickReply.objects.filter(pk=pk).delete()
+        elif action == "edit":
+            pk    = request.POST.get("pk")
+            title = request.POST.get("title", "").strip()
+            body  = request.POST.get("body", "").strip()
+            if pk and title and body:
+                QuickReply.objects.filter(pk=pk).update(title=title, body=body)
+        return redirect("wa:dash_quick_replies")
 
 
 # ---------------------------------------------------------------------------

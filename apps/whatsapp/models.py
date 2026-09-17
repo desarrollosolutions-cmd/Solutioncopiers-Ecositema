@@ -29,6 +29,29 @@ class ConversationLabel(TimeStampedModel):
         return self.name
 
 
+class QuickReply(TimeStampedModel):
+    """Respuesta rápida reutilizable para agilizar la atención en WhatsApp."""
+
+    title      = models.CharField(_("título"), max_length=60,
+                                  help_text="Texto corto del botón, ej: Horario de atención")
+    body       = models.TextField(_("mensaje"),
+                                  help_text="Texto que se inserta en la respuesta al hacer clic")
+    order      = models.PositiveIntegerField(_("orden"), default=0, db_index=True)
+    created_by = models.ForeignKey(
+        "auth.User", on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="wa_quick_replies",
+        verbose_name=_("creada por"),
+    )
+
+    class Meta:
+        verbose_name        = _("Respuesta rápida")
+        verbose_name_plural = _("Respuestas rápidas")
+        ordering            = ["order", "title"]
+
+    def __str__(self):
+        return self.title
+
+
 class WhatsAppConversation(TimeStampedModel):
     """Una conversación de WhatsApp vinculada a un Lead y una asesora."""
 

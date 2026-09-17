@@ -1,0 +1,60 @@
+{% extends "dashboard/_base.html" %}
+{% block title %}Respuestas rápidas WhatsApp{% endblock %}
+
+{% block content %}
+<div class="da-page-header">
+  <h1 class="da-page-title">Respuestas rápidas</h1>
+  <a href="{% url 'wa:dash_overview' %}" class="da-btn da-btn-secondary">← WhatsApp CRM</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 360px;gap:1.25rem;max-width:900px;">
+
+  {# Lista de respuestas rápidas #}
+  <div class="da-card">
+    <div class="da-card-header">Respuestas activas ({{ quick_replies|length }})</div>
+    <div class="da-card-body" style="padding:0;">
+      {% for qr in quick_replies %}
+      <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.75rem 1rem;border-bottom:1px solid var(--color-border);">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.8125rem;font-weight:700;color:var(--color-text-primary);">{{ qr.title }}</div>
+          <div style="font-size:.72rem;color:var(--color-text-muted);margin-top:.15rem;">{{ qr.body|truncatewords:20 }}</div>
+        </div>
+        <form method="post" style="flex-shrink:0;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" name="pk" value="{{ qr.pk }}">
+          <button type="submit" class="da-btn da-btn-secondary da-btn-sm"
+            onclick="return confirm('¿Eliminar respuesta «{{ qr.title }}»?')"
+            style="color:var(--color-danger);border-color:var(--color-danger);">✕</button>
+        </form>
+      </div>
+      {% empty %}
+      <div style="padding:2.5rem;text-align:center;color:var(--color-text-muted);font-size:.8rem;">
+        Sin respuestas rápidas. Crea la primera.
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Formulario nueva respuesta #}
+  <div class="da-card" style="align-self:start;position:sticky;top:5rem;">
+    <div class="da-card-header">Nueva respuesta rápida</div>
+    <div class="da-card-body">
+      <form method="post" style="display:flex;flex-direction:column;gap:.875rem;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create">
+        <div class="da-field">
+          <label>Título *</label>
+          <input type="text" name="title" class="da-input" placeholder="Ej: Horario de atención" maxlength="60" required>
+        </div>
+        <div class="da-field">
+          <label>Mensaje *</label>
+          <textarea name="body" class="da-input" rows="4" placeholder="Texto que se va a insertar al responder..." required></textarea>
+        </div>
+        <button type="submit" class="da-btn da-btn-primary" style="justify-content:center;">Crear respuesta</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

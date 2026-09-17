@@ -18,5 +18,6 @@ urlpatterns = [
     path("dash/",                           views.DashWAOverviewView.as_view(),      name="dash_overview"),
     path("dash/conversacion/<int:pk>/",     views.DashWAConversationView.as_view(),  name="dash_conversation"),
     path("dash/etiquetas/",                 views.DashWALabelsView.as_view(),        name="dash_labels"),
+    path("dash/respuestas-rapidas/",        views.DashWAQuickRepliesView.as_view(),  name="dash_quick_replies"),
     path("dash/asignar/<int:pk>/",          views.DashWAAssignView.as_view(),    name="dash_assign"),
 ]

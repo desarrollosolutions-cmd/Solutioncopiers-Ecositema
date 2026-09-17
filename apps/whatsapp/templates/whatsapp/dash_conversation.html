@@ -16,6 +16,9 @@
 .wa-msg.out .wa-bubble  { background:#25D366; color:#fff; border-bottom-right-radius:.2rem; }
 .wa-msg-meta    { font-size:.6rem; color:var(--color-text-muted); padding:0 .25rem; }
 .wa-msg.out .wa-msg-meta { text-align:right; }
+.wa-qr-row      { display:flex; gap:.4rem; overflow-x:auto; padding:.625rem 1.25rem 0; background:var(--color-surface); }
+.wa-qr-btn      { flex-shrink:0; white-space:nowrap; padding:.3rem .7rem; border-radius:9999px; border:1.5px solid var(--color-border); background:var(--color-bg-alt); font-size:.7rem; font-weight:600; color:var(--color-text-secondary); cursor:pointer; transition:.12s; }
+.wa-qr-btn:hover { border-color:var(--color-primary); color:var(--color-primary); }
 .wa-reply-box   { padding:.875rem 1.25rem; border-top:1px solid var(--color-border); background:var(--color-surface); display:flex; gap:.625rem; align-items:flex-end; }
 .wa-reply-input { flex:1; resize:none; border:1.5px solid var(--color-border); border-radius:.75rem; padding:.625rem .875rem; font-size:.8125rem; background:var(--color-bg-alt); color:var(--color-text-primary); outline:none; font-family:inherit; line-height:1.5; max-height:8rem; transition:border-color .15s; }
 .wa-reply-input:focus { border-color:var(--color-primary); }
@@ -83,6 +86,15 @@
       <div style="text-align:center;color:var(--color-text-muted);font-size:.8rem;padding:2rem;">Sin mensajes aún</div>
       {% endfor %}
     </div>
+
+    {# Respuestas rápidas #}
+    {% if quick_replies %}
+    <div class="wa-qr-row">
+      {% for qr in quick_replies %}
+      <button type="button" class="wa-qr-btn" data-body="{{ qr.body }}" onclick="insertQuickReply(this)">{{ qr.title }}</button>
+      {% endfor %}
+    </div>
+    {% endif %}
 
     {# Caja de respuesta #}
     <form method="post" class="wa-reply-box" id="reply-form">
@@ -187,6 +199,15 @@ if (ta) {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 128) + 'px';
   });
+}
+
+// Respuestas rápidas: insertar el texto en el campo de respuesta
+function insertQuickReply(btn) {
+  const field = document.getElementById('reply-body');
+  if (!field) return;
+  field.value = btn.dataset.body;
+  field.focus();
+  field.dispatchEvent(new Event('input'));
 }
 </script>
 {% endblock %}
