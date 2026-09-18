@@ -13,7 +13,15 @@
     </div>
     <h1 class="da-page-title">WhatsApp CRM</h1>
   </div>
-  <div style="display:flex;gap:.625rem;">
+  <div style="display:flex;gap:.625rem;align-items:center;">
+    <form method="post" style="display:flex;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="toggle_ai">
+      <button type="submit" class="da-btn {% if ai_enabled %}da-btn-primary{% else %}da-btn-secondary{% endif %}"
+        title="{% if ai_enabled %}Apagar el asistente IA -- vuelve a atención 100% manual{% else %}Encender el asistente IA -- sugiere borradores, la asesora siempre revisa antes de enviar{% endif %}">
+        🤖 Asistente IA: {% if ai_enabled %}Activo{% else %}Apagado{% endif %}
+      </button>
+    </form>
     <a href="{% url 'wa:dash_quick_replies' %}" class="da-btn da-btn-secondary">Respuestas rápidas</a>
     <a href="{% url 'wa:dash_labels' %}" class="da-btn da-btn-secondary">Gestionar etiquetas</a>
   </div>

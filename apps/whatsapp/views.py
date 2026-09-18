@@ -11,8 +11,48 @@ from django.views.decorators.csrf import csrf_exempt
 
 from apps.dashboard.views import da_decorator
 
-from .models import ConversationLabel, QuickReply, WhatsAppConversation, WhatsAppMessage
+from .models import ConversationLabel, QuickReply, WhatsAppConversation, WhatsAppMessage, WhatsAppSettings
 from .webhook import _upsert_inbound_message, send_whatsapp_message
+
+# ---------------------------------------------------------------------------
+# Asistente IA -- sugiere borradores de respuesta, nunca envía solo.
+# Reutiliza el mismo system prompt del asistente público (apps/core/views.py)
+# para no duplicar la descripción del negocio en dos lugares.
+# ---------------------------------------------------------------------------
+
+def _get_system_wa_suggest() -> str:
+    from apps.core.views import _SYSTEM_PUBLIC
+    return _SYSTEM_PUBLIC + (
+        "\n\n=== CONTEXTO ADICIONAL ===\n"
+        "Estás redactando un BORRADOR de respuesta de WhatsApp para un cliente que ya "
+        "está conversando con nosotros -- una asesora lo va a revisar y puede editarlo "
+        "antes de enviarlo, así que sé útil y directo. Muy conciso (1-3 frases cortas), "
+        "sin usar markdown ni encabezados -- es un mensaje de chat, no una página web."
+    )
+
+
+def _build_ai_suggestion(conv) -> dict:
+    """Genera un borrador de respuesta con IA para la conversación dada.
+    Nunca envía nada -- solo devuelve texto para que la asesora lo revise."""
+    if not WhatsAppSettings.load().ai_assist_enabled:
+        return {"ok": False, "error": "El asistente IA está apagado."}
+
+    msgs = list(conv.messages.order_by("created_at"))
+    if not msgs or msgs[-1].direction != WhatsAppMessage.Direction.INBOUND:
+        return {"ok": False, "error": "No hay un mensaje nuevo del cliente para responder."}
+
+    history = [
+        {
+            "role": "user" if m.direction == WhatsAppMessage.Direction.INBOUND else "assistant",
+            "content": m.body,
+        }
+        for m in msgs[:-1]
+    ]
+    user_message = msgs[-1].body
+
+    from apps.dashboard.views import _call_ai
+    draft = _call_ai(_get_system_wa_suggest(), history, user_message)
+    return {"ok": True, "draft": draft}
 
 # ---------------------------------------------------------------------------
 # Helpers de acceso
@@ -128,12 +168,16 @@ class PanelWAConversationView(View):
             "quick_replies":  QuickReply.objects.all(),
             "status_choices": WhatsAppConversation.Status.choices,
             "asesoras":       User.objects.filter(is_active=True, is_staff=True),
+            "ai_enabled":     WhatsAppSettings.load().ai_assist_enabled,
         })
         return render(request, self.template_name, ctx)
 
     def post(self, request, pk):
         conv   = get_object_or_404(WhatsAppConversation, pk=pk)
         action = request.POST.get("action", "reply")
+
+        if action == "suggest":
+            return JsonResponse(_build_ai_suggestion(conv))
 
         if action == "reply":
             body = request.POST.get("body", "").strip()
@@ -268,7 +312,15 @@ class DashWAOverviewView(View):
             "current_label":  label_id,
             "current_asesora": asesora,
             "current_q":      q,
+            "ai_enabled":     WhatsAppSettings.load().ai_assist_enabled,
         })
+
+    def post(self, request):
+        if request.POST.get("action") == "toggle_ai":
+            settings_obj = WhatsAppSettings.load()
+            settings_obj.ai_assist_enabled = not settings_obj.ai_assist_enabled
+            settings_obj.save(update_fields=["ai_assist_enabled"])
+        return redirect("wa:dash_overview")
 
 
 # ---------------------------------------------------------------------------
@@ -306,12 +358,16 @@ class DashWAConversationView(View):
             "quick_replies":  QuickReply.objects.all(),
             "status_choices": WhatsAppConversation.Status.choices,
             "asesoras":       User.objects.filter(is_active=True, is_staff=True),
+            "ai_enabled":     WhatsAppSettings.load().ai_assist_enabled,
         }
         return render(request, self.template_name, ctx)
 
     def post(self, request, pk):
         conv   = get_object_or_404(WhatsAppConversation, pk=pk)
         action = request.POST.get("action", "reply")
+
+        if action == "suggest":
+            return JsonResponse(_build_ai_suggestion(conv))
 
         if action == "reply":
             body = request.POST.get("body", "").strip()

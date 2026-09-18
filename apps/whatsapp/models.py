@@ -52,6 +52,31 @@ class QuickReply(TimeStampedModel):
         return self.title
 
 
+class WhatsAppSettings(TimeStampedModel):
+    """Configuración global del CRM de WhatsApp (singleton, pk=1)."""
+
+    ai_assist_enabled = models.BooleanField(
+        _("asistente IA activo"), default=False,
+        help_text="Si está activo, aparece el botón «Sugerir respuesta» en las conversaciones.",
+    )
+
+    class Meta:
+        verbose_name        = _("Configuración WhatsApp")
+        verbose_name_plural = _("Configuración WhatsApp")
+
+    def __str__(self):
+        return "Configuración WhatsApp"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
 class WhatsAppConversation(TimeStampedModel):
     """Una conversación de WhatsApp vinculada a un Lead y una asesora."""
 
