@@ -4410,11 +4410,13 @@ def _call_ai(system_prompt: str, history: list, user_message: str) -> str:
             resp = _req.post(
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-                json={"model": "llama-3.3-70b-versatile", "messages": messages, "max_tokens": 1024, "temperature": 0.6},
+                json={"model": "openai/gpt-oss-120b", "messages": messages, "max_tokens": 1024, "temperature": 0.6},
                 timeout=30,
             )
             if resp.status_code == 401:
                 return "❌ Clave GROQ_API_KEY inválida. Verifica el valor en .env"
+            if resp.status_code == 404:
+                return "❌ El modelo de Groq configurado ya no existe. Revisa https://console.groq.com/docs/models para el nombre vigente."
             if resp.status_code == 429:
                 return "⏳ Límite de solicitudes de Groq alcanzado. Intenta en unos segundos."
             resp.raise_for_status()
