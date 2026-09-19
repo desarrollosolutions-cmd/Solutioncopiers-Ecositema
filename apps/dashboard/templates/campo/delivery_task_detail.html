@@ -61,6 +61,9 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .photo-thumb{position:relative;width:4.5rem;height:4.5rem;border-radius:.625rem;overflow:hidden;flex-shrink:0;}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
 .photo-thumb button{position:absolute;top:.15rem;right:.15rem;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:9999px;width:1.375rem;height:1.375rem;cursor:pointer;font-size:.65rem;font-weight:700;line-height:1;}
+.attach-chip{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .625rem;background:#100808;border:1.5px solid #3A2020;border-radius:.625rem;font-size:.72rem;color:#C0A8A8;max-width:100%;text-decoration:none;}
+.attach-chip .attach-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:9rem;}
+.attach-chip button{background:none;border:none;color:#C0A8A8;cursor:pointer;font-size:.85rem;font-weight:700;flex-shrink:0;padding:0;line-height:1;}
 .sig-wrap{background:#100808;border:1.5px solid #3A2020;border-radius:.75rem;overflow:hidden;margin-bottom:.875rem;position:relative;}
 .sig-canvas{width:100%;height:140px;touch-action:none;display:block;}
 .sig-clear{position:absolute;top:.4rem;right:.4rem;background:rgba(0,0,0,.5);border:none;color:#C0A8A8;font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:.375rem;cursor:pointer;}
@@ -194,6 +197,15 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
     </div>
     {% endif %}
 
+    {% if task.attachments %}
+    <div class="section-title">Documentos adjuntos</div>
+    <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.875rem;">
+      {% for file in task.attachments %}
+      <a class="attach-chip" href="{{ file.data }}" download="{{ file.name }}">📎 <span class="attach-name">{{ file.name }}</span></a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     {% if task.completion_signature %}
     <div class="section-title">Firma del receptor</div>
     <div class="sig-preview"><img src="{{ task.completion_signature }}" alt="Firma"></div>
@@ -230,6 +242,16 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
         </label>
         <input type="file" id="task-photo-input" accept="image/*"
           style="display:none;" onchange="onTaskPhoto(this)">
+
+        <label class="form-label">Documentos adjuntos <span style="font-weight:400;text-transform:none;">(PDF, Word, Excel — opcional, hasta 3)</span></label>
+        <div class="photo-grid" id="task-attach-grid"></div>
+        <label class="photo-label" id="task-attach-label" onclick="document.getElementById('task-attach-input').click()">
+          <span>📎</span>
+          <span id="task-attach-txt">Toca para adjuntar un documento</span>
+        </label>
+        <input type="file" id="task-attach-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+          style="display:none;" onchange="onTaskAttachment(this)">
+
         <div style="text-align:center;margin:-.5rem 0 .875rem;">
           <button type="button" onclick="showPermHelp()"
             style="background:none;border:none;color:#7A6060;font-size:.68rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.25rem;">
@@ -341,6 +363,51 @@ function removeTaskPhoto(idx) {
   renderTaskPhotos();
 }
 
+// ── Documentos adjuntos (no fotos -- PDF, Word, etc.) ──
+const TASK_MAX_ATTACH = 3;
+const TASK_MAX_ATTACH_BYTES = 2 * 1024 * 1024; // 2MB -- ver nota en _parse_attachments (views.py)
+let _taskAttachments = [];
+
+function renderTaskAttachments() {
+  const grid = document.getElementById('task-attach-grid');
+  grid.innerHTML = _taskAttachments.map((f, i) =>
+    `<span class="attach-chip">📎 <span class="attach-name">${f.name}</span><button type="button" onclick="removeTaskAttachment(${i})">✕</button></span>`
+  ).join('');
+  const label = document.getElementById('task-attach-label');
+  const txt   = document.getElementById('task-attach-txt');
+  if (_taskAttachments.length >= TASK_MAX_ATTACH) {
+    label.style.display = 'none';
+  } else {
+    label.style.display = '';
+    txt.textContent = _taskAttachments.length
+      ? `Adjuntar otro documento (${_taskAttachments.length}/${TASK_MAX_ATTACH})`
+      : 'Toca para adjuntar un documento';
+  }
+}
+
+function onTaskAttachment(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > TASK_MAX_ATTACH_BYTES) {
+    showToast('El archivo pesa más de 2MB, elige uno más liviano', false);
+    input.value = '';
+    return;
+  }
+  if (_taskAttachments.length >= TASK_MAX_ATTACH) { input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = evt => {
+    _taskAttachments.push({ name: file.name, type: file.type, data: evt.target.result });
+    renderTaskAttachments();
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removeTaskAttachment(idx) {
+  _taskAttachments.splice(idx, 1);
+  renderTaskAttachments();
+}
+
 // ── Canvas firma ──
 let _sigCanvas, _sigCtx, _drawing = false, _sigEmpty = true;
 
@@ -385,6 +452,13 @@ if (document.getElementById('sig-canvas')) {
       input.type = 'hidden';
       input.name = 'photos_b64';
       input.value = p;
+      form.appendChild(input);
+    });
+    _taskAttachments.forEach(function (f) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'attachments_json';
+      input.value = JSON.stringify(f);
       form.appendChild(input);
     });
     if (_sigCanvas && !_sigEmpty) {

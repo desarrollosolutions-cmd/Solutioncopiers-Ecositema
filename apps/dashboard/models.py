@@ -405,6 +405,10 @@ class DeliveryTask(models.Model):
     completion_photo_b64 = models.TextField("foto de entrega (base64, legado — usar completion_photos)", blank=True)
     completion_photos    = models.JSONField("fotos de entrega (base64)", default=list, blank=True)
     completion_signature = models.TextField("firma del receptor", blank=True)
+    attachments = models.JSONField(
+        "archivos adjuntos", default=list, blank=True,
+        help_text="Lista de {name, type, data} -- documentos que no son fotos (PDF, Word, etc.)",
+    )
 
     class Meta:
         ordering            = ["order", "created_at"]

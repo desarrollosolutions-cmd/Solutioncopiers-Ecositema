@@ -107,6 +107,18 @@
             </div>
           </div>
           {% endif %}
+          {% if task.attachments %}
+          <div style="margin-top:.75rem;">
+            <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.5rem;">Documentos adjuntos</div>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+              {% for file in task.attachments %}
+              <a href="{{ file.data }}" download="{{ file.name }}" style="display:inline-flex;align-items:center;gap:.375rem;padding:.5rem .625rem;background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.625rem;font-size:.75rem;color:var(--color-text-secondary);text-decoration:none;max-width:10rem;">
+                📎 <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ file.name }}</span>
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
           {% if task.completion_signature %}
           <div style="margin-top:.75rem;">
             <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.5rem;">Firma del receptor</div>
@@ -166,6 +178,16 @@
                 ¿No te deja usar la cámara o el micrófono?
               </button>
             </div>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">Documentos adjuntos <span style="font-weight:400;text-transform:none;">(PDF, Word, Excel — opcional, hasta 3)</span></label>
+            <div id="pn-attach-grid" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem;"></div>
+            <label id="pn-attach-label" style="display:flex;align-items:center;gap:.625rem;padding:.625rem .875rem;border:1.5px dashed var(--color-border);border-radius:.625rem;cursor:pointer;background:var(--color-bg-alt);">
+              <span style="font-size:1.25rem;">📎</span>
+              <span id="pn-attach-label-txt" style="font-size:.8rem;color:var(--color-text-muted);">Toca para adjuntar un documento</span>
+              <input type="file" id="pn-attach-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" style="display:none;" onchange="onDtaskAttachment(this)">
+            </label>
           </div>
 
           <div class="pn-field">
@@ -268,6 +290,54 @@
     renderDtaskPhotos();
   };
 
+  /* ── Documentos adjuntos (no fotos -- PDF, Word, etc.) ── */
+  const DTASK_MAX_ATTACH = 3;
+  const DTASK_MAX_ATTACH_BYTES = 2 * 1024 * 1024; // 2MB -- ver nota en _parse_attachments (views.py)
+  let _dtaskAttachments = [];
+
+  function renderDtaskAttachments() {
+    const grid = document.getElementById('pn-attach-grid');
+    grid.innerHTML = _dtaskAttachments.map((f, i) =>
+      `<span style="display:inline-flex;align-items:center;gap:.375rem;padding:.5rem .625rem;background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:.625rem;font-size:.75rem;color:var(--color-text-secondary);max-width:10rem;">
+         📎 <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</span>
+         <button type="button" onclick="removeDtaskAttachment(${i})" style="background:none;border:none;color:var(--color-text-muted);cursor:pointer;font-weight:700;flex-shrink:0;">✕</button>
+       </span>`
+    ).join('');
+    const label = document.getElementById('pn-attach-label');
+    const txt   = document.getElementById('pn-attach-label-txt');
+    if (_dtaskAttachments.length >= DTASK_MAX_ATTACH) {
+      label.style.display = 'none';
+    } else {
+      label.style.display = '';
+      txt.textContent = _dtaskAttachments.length
+        ? `Adjuntar otro documento (${_dtaskAttachments.length}/${DTASK_MAX_ATTACH})`
+        : 'Toca para adjuntar un documento';
+    }
+  }
+
+  window.onDtaskAttachment = function (input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > DTASK_MAX_ATTACH_BYTES) {
+      alert('El archivo pesa más de 2MB, elige uno más liviano');
+      input.value = '';
+      return;
+    }
+    if (_dtaskAttachments.length >= DTASK_MAX_ATTACH) { input.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      _dtaskAttachments.push({ name: file.name, type: file.type, data: e.target.result });
+      renderDtaskAttachments();
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  };
+
+  window.removeDtaskAttachment = function (idx) {
+    _dtaskAttachments.splice(idx, 1);
+    renderDtaskAttachments();
+  };
+
   /* ── Firma canvas ── */
   let _sigCanvas, _sigCtx, _sigDrawing = false;
 
@@ -318,6 +388,11 @@
       _dtaskPhotos.forEach(function (p) {
         const input = document.createElement('input');
         input.type = 'hidden'; input.name = 'photos_b64'; input.value = p;
+        form.appendChild(input);
+      });
+      _dtaskAttachments.forEach(function (f) {
+        const input = document.createElement('input');
+        input.type = 'hidden'; input.name = 'attachments_json'; input.value = JSON.stringify(f);
         form.appendChild(input);
       });
       if (!isSigEmpty()) {

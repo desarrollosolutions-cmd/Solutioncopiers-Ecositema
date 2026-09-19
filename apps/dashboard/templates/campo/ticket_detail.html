@@ -69,6 +69,9 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .photo-thumb{position:relative;width:4.5rem;height:4.5rem;border-radius:.625rem;overflow:hidden;flex-shrink:0;}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
 .photo-thumb button{position:absolute;top:.15rem;right:.15rem;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:9999px;width:1.375rem;height:1.375rem;cursor:pointer;font-size:.65rem;font-weight:700;line-height:1;}
+.attach-chip{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .625rem;background:#100808;border:1.5px solid #3A2020;border-radius:.625rem;font-size:.72rem;color:#C0A8A8;max-width:100%;text-decoration:none;}
+.attach-chip .attach-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:9rem;}
+.attach-chip button{background:none;border:none;color:#C0A8A8;cursor:pointer;font-size:.85rem;font-weight:700;flex-shrink:0;padding:0;line-height:1;}
 </style>
 </head>
 <body>
@@ -189,6 +192,15 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
   </div>
   {% endif %}
 
+  {% if ticket.attachments %}
+  <div class="section-title">Documentos adjuntos</div>
+  <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.875rem;">
+    {% for file in ticket.attachments %}
+    <a class="attach-chip" href="{{ file.data }}" download="{{ file.name }}">📎 <span class="attach-name">{{ file.name }}</span></a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   {# Llegada / salida del sitio #}
   {% if ticket.status != "closed" %}
   <div class="action-card">
@@ -249,6 +261,15 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
       </label>
       <input type="file" id="ticket-photo-input" accept="image/*"
         style="display:none;" onchange="onTicketPhoto(this)">
+
+      <label class="form-label">Documentos adjuntos <span style="font-weight:400;text-transform:none;">(PDF, Word, Excel — opcional, hasta 3)</span></label>
+      <div class="photo-grid" id="ticket-attach-grid"></div>
+      <label class="photo-label" id="ticket-attach-label" onclick="document.getElementById('ticket-attach-input').click()">
+        <span>📎</span>
+        <span id="ticket-attach-txt">Toca para adjuntar un documento</span>
+      </label>
+      <input type="file" id="ticket-attach-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+        style="display:none;" onchange="onTicketAttachment(this)">
 
       <div class="btn-grid">
         {% if ticket.status == "open" %}
@@ -339,6 +360,13 @@ function submitStatus(status) {
     input.value = p;
     form.appendChild(input);
   });
+  _ticketAttachments.forEach(function (f) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'attachments_json';
+    input.value = JSON.stringify(f);
+    form.appendChild(input);
+  });
   form.submit();
 }
 
@@ -393,6 +421,51 @@ function onTicketPhoto(input) {
 function removeTicketPhoto(idx) {
   _ticketPhotos.splice(idx, 1);
   renderTicketPhotos();
+}
+
+// ── Documentos adjuntos (no fotos -- PDF, Word, etc.) ──
+const TICKET_MAX_ATTACH = 3;
+const TICKET_MAX_ATTACH_BYTES = 2 * 1024 * 1024; // 2MB -- ver nota en _parse_attachments (views.py)
+let _ticketAttachments = [];
+
+function renderTicketAttachments() {
+  const grid = document.getElementById('ticket-attach-grid');
+  grid.innerHTML = _ticketAttachments.map((f, i) =>
+    `<span class="attach-chip">📎 <span class="attach-name">${f.name}</span><button type="button" onclick="removeTicketAttachment(${i})">✕</button></span>`
+  ).join('');
+  const label = document.getElementById('ticket-attach-label');
+  const txt   = document.getElementById('ticket-attach-txt');
+  if (_ticketAttachments.length >= TICKET_MAX_ATTACH) {
+    label.style.display = 'none';
+  } else {
+    label.style.display = '';
+    txt.textContent = _ticketAttachments.length
+      ? `Adjuntar otro documento (${_ticketAttachments.length}/${TICKET_MAX_ATTACH})`
+      : 'Toca para adjuntar un documento';
+  }
+}
+
+function onTicketAttachment(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > TICKET_MAX_ATTACH_BYTES) {
+    showToast('El archivo pesa más de 2MB, elige uno más liviano', false);
+    input.value = '';
+    return;
+  }
+  if (_ticketAttachments.length >= TICKET_MAX_ATTACH) { input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = evt => {
+    _ticketAttachments.push({ name: file.name, type: file.type, data: evt.target.result });
+    renderTicketAttachments();
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removeTicketAttachment(idx) {
+  _ticketAttachments.splice(idx, 1);
+  renderTicketAttachments();
 }
 
 {% if request.method == 'POST' %}

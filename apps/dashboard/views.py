@@ -3042,6 +3042,10 @@ class PanelTicketDetailView(View):
         if new_photos:
             ticket.evidence_photos = list(ticket.evidence_photos) + new_photos
 
+        new_attachments = _parse_attachments(request)
+        if new_attachments:
+            ticket.attachments = list(ticket.attachments) + new_attachments
+
         if ticket.status in ("resolved", "closed") and not ticket.resolved_at:
             ticket.resolved_at = timezone.now()
 
@@ -5367,17 +5371,12 @@ class CampoTurnoView(View):
         ).order_by("_ord", "order", "priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
+        # Solo pendientes -- una vez completada (o cancelada) una tarea, no debe
+        # seguir apareciendo aquí y acumulando pantalla indefinidamente.
         delivery_tasks = (
             DeliveryTask.objects
-            .filter(field_user=field_user)
-            .exclude(status="cancelled")
-            .annotate(_ord=Case(
-                When(status="pending", then=Value(0)),
-                When(status="done",    then=Value(1)),
-                default=Value(2),
-                output_field=IntegerField(),
-            ))
-            .order_by("_ord", "order", "created_at")[:30]
+            .filter(field_user=field_user, status=DeliveryTask.Status.PENDING)
+            .order_by("order", "created_at")[:30]
         )
 
         from apps.dashboard.models import MessengerCashBase
@@ -5785,6 +5784,44 @@ def _parse_money(value):
         return None
 
 
+MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024  # 2MB por archivo (antes de base64)
+# OJO: settings.DATA_UPLOAD_MAX_MEMORY_SIZE es 8MB para TODA la petición (no
+# por campo) -- ver el comentario en solution_copiers/settings/base.py. Si el
+# total (fotos + adjuntos + notas) pasa ese techo, Django rechaza la petición
+# completa con 400 ANTES de que este código corra, perdiendo también las
+# fotos/notas válidas. Por eso el límite por archivo aquí se deja bien por
+# debajo de 8MB -- no es un capricho, es el margen para que quepan también
+# las fotos (hasta 6) y el resto del formulario en la misma petición.
+MAX_ATTACHMENTS_PER_SUBMIT = 3
+
+
+def _parse_attachments(request):
+    """Parsea los documentos adjuntos (no fotos) que llegan como JSON en
+    'attachments_json' -- un input oculto por archivo, igual que photos_b64
+    pero con nombre/tipo porque no son solo imágenes que se puedan mostrar
+    directo. Descarta en silencio cualquier entrada corrupta o que exceda
+    el tamaño máximo -- un adjunto malo no debe tumbar el guardado del
+    resto del formulario (notas, fotos, cambio de estado, etc.)."""
+    import json
+    out = []
+    for raw in request.POST.getlist("attachments_json")[:MAX_ATTACHMENTS_PER_SUBMIT]:
+        try:
+            item = json.loads(raw)
+            name      = str(item.get("name", "")).strip()[:200]
+            file_type = str(item.get("type", "")).strip()[:100]
+            data      = item.get("data", "")
+            if not name or not isinstance(data, str) or not data.startswith("data:"):
+                continue
+            # base64 infla el tamaño original ~33% -- se compara contra eso
+            # en vez de decodificar (más barato, y basta como cota superior).
+            if len(data) > MAX_ATTACHMENT_BYTES * 4 // 3:
+                continue
+            out.append({"name": name, "type": file_type, "data": data})
+        except (ValueError, TypeError, AttributeError):
+            continue
+    return out
+
+
 @campo_decorator
 class CampoDeliveryTaskDetailView(View):
     """El mensajero/técnico ve todos los detalles de una tarea de entrega/
@@ -5816,6 +5853,7 @@ class CampoDeliveryTaskDetailView(View):
         task.completion_signature = request.POST.get("signature", "").strip()
         task.completion_photos    = photos
         task.completion_photo_b64 = photos[0] if photos else ""
+        task.attachments          = _parse_attachments(request)
         task.completion_cash_amount     = _parse_money(request.POST.get("cash_amount"))
         task.completion_transfer_amount = _parse_money(request.POST.get("transfer_amount"))
         task.status               = DeliveryTask.Status.DONE
@@ -6432,7 +6470,11 @@ class CampoTicketDetailView(View):
         if new_photos:
             ticket.evidence_photos = list(ticket.evidence_photos) + new_photos
 
-        ticket.save(update_fields=["status", "resolution_notes", "resolved_at", "evidence_photos"])
+        new_attachments = _parse_attachments(request)
+        if new_attachments:
+            ticket.attachments = list(ticket.attachments) + new_attachments
+
+        ticket.save(update_fields=["status", "resolution_notes", "resolved_at", "evidence_photos", "attachments"])
 
         if status_changed:
             from apps.dashboard.models import Notification
@@ -6530,17 +6572,11 @@ class PanelTurnoView(View):
         ).order_by("_ord", "order", "priority", "created_at")[:20]
 
         from apps.dashboard.models import DeliveryTask
+        # Solo pendientes -- ver el mismo comentario en CampoTurnoView.
         delivery_tasks = (
             DeliveryTask.objects
-            .filter(field_user=field_user)
-            .exclude(status="cancelled")
-            .annotate(_ord=Case(
-                When(status="pending", then=Value(0)),
-                When(status="done",    then=Value(1)),
-                default=Value(2),
-                output_field=IntegerField(),
-            ))
-            .order_by("_ord", "order", "created_at")[:30]
+            .filter(field_user=field_user, status=DeliveryTask.Status.PENDING)
+            .order_by("order", "created_at")[:30]
         )
 
         ctx = _panel_base_ctx(request)
@@ -6586,6 +6622,7 @@ class PanelDeliveryTaskDetailView(View):
         task.completion_signature = request.POST.get("signature", "").strip()
         task.completion_photos    = photos
         task.completion_photo_b64 = photos[0] if photos else ""
+        task.attachments          = _parse_attachments(request)
         task.completion_cash_amount     = _parse_money(request.POST.get("cash_amount"))
         task.completion_transfer_amount = _parse_money(request.POST.get("transfer_amount"))
         task.status               = DeliveryTask.Status.DONE
