@@ -7,7 +7,8 @@
   <div>
     <h1 class="da-page-title">Mensajería en tiempo real</h1>
     <p style="font-size:.8rem;color:var(--color-text-muted);margin-top:.25rem;">
-      <span id="counter">{{ on_shift }}</span> persona(s) en turno activo · actualiza cada 30 seg
+      <span id="counter">{{ on_shift }}</span> persona(s) en turno activo · actualiza cada 15 seg
+      <span id="pending-gps-note" style="display:none;"> · <span id="pending-gps-count"></span> esperando señal GPS</span>
     </p>
   </div>
   <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
@@ -117,6 +118,13 @@ function refreshMap() {
     .then(r => r.json())
     .then(data => {
       document.getElementById('counter').textContent = data.count;
+      const pendingNote = document.getElementById('pending-gps-note');
+      if (data.pending_gps > 0) {
+        document.getElementById('pending-gps-count').textContent = data.pending_gps;
+        pendingNote.style.display = '';
+      } else {
+        pendingNote.style.display = 'none';
+      }
 
       // Limpiar marcadores fuera del turno
       Object.keys(markers).forEach(uid => {

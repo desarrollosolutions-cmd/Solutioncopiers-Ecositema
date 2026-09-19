@@ -310,8 +310,13 @@ class FieldUserLocation(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
         related_name="field_location"
     )
-    latitude    = models.DecimalField(max_digits=10, decimal_places=7)
-    longitude   = models.DecimalField(max_digits=10, decimal_places=7)
+    # Nulos hasta que llegue la primera lectura real de GPS del celular -- antes
+    # se usaba (0, 0) como valor temporal al iniciar turno, pero esas coordenadas
+    # son un punto real en el mar frente a África ("Null Island"), y si el GPS
+    # tardaba en responder, el mapa mostraba a la persona ahí en vez de mostrar
+    # que su ubicación todavía no se conocía.
+    latitude    = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    longitude   = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
     accuracy    = models.FloatField(null=True, blank=True)
     is_on_shift = models.BooleanField(default=False, db_index=True)
     is_on_lunch = models.BooleanField("en almuerzo", default=False, db_index=True)

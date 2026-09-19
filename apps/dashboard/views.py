@@ -5519,9 +5519,14 @@ class CampoShiftStartView(View):
 
     def post(self, request):
         from apps.dashboard.models import FieldUserLocation
+        # No se pone lat/lng en 0,0 aquí -- eso es un punto real en el mar (frente
+        # a África) y aparecía en el mapa como ubicación real mientras el celular
+        # todavía no mandaba la primera lectura de GPS. Se deja como esté (null
+        # si es la primera vez) hasta que CampoUbicacionUpdateView reciba un dato
+        # real del navegador.
         FieldUserLocation.objects.update_or_create(
             user=request.user,
-            defaults={"is_on_shift": True, "latitude": 0, "longitude": 0},
+            defaults={"is_on_shift": True},
         )
         _open_shift_log(request.user)
         return redirect("campo:turno")
@@ -5624,7 +5629,16 @@ class CampoLocationsJsonView(View):
         if role in (FieldUser.Role.MENSAJERO, FieldUser.Role.TECNICO):
             locations = locations.filter(user__field_profile__role=role)
         data = []
+        pending_gps = 0
         for loc in locations:
+            # Todavía sin la primera lectura real de GPS -- no lo mandamos al mapa
+            # (antes se rellenaba con 0,0 y aparecía flotando en el mar frente a
+            # África). Se cuenta aparte para que el admin sepa que hay alguien en
+            # turno cuya ubicación aún no ha llegado, en vez de que desaparezca
+            # sin explicación.
+            if loc.latitude is None or loc.longitude is None:
+                pending_gps += 1
+                continue
             fp = getattr(loc.user, "field_profile", None)
             data.append({
                 "id":         loc.user.pk,
@@ -5640,7 +5654,7 @@ class CampoLocationsJsonView(View):
                 "updated_at": loc.updated_at.isoformat(),
                 "ago":        timesince(loc.updated_at),
             })
-        return JsonResponse({"locations": data, "count": len(data)})
+        return JsonResponse({"locations": data, "count": len(data), "pending_gps": pending_gps})
 
 
 @da_decorator
@@ -6596,9 +6610,10 @@ class PanelShiftStartView(View):
             request.user.field_profile
         except Exception:
             return redirect("panel:turno")
+        # Ver el comentario en CampoShiftStartView -- no forzar lat/lng a 0,0 aquí.
         FieldUserLocation.objects.update_or_create(
             user=request.user,
-            defaults={"is_on_shift": True, "latitude": 0, "longitude": 0},
+            defaults={"is_on_shift": True},
         )
         _open_shift_log(request.user)
         return redirect("panel:turno")

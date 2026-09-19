@@ -124,7 +124,7 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
       </form>
     </div>
     <div id="gps-coords-row" style="font-size:.68rem;color:#7A6060;margin-top:.875rem;{% if not location or not location.is_on_shift %}display:none;{% endif %}">
-      <span id="gps-coords">{% if location %}Lat {{ location.latitude }}, Lng {{ location.longitude }}{% endif %}</span>
+      <span id="gps-coords">{% if location and location.latitude is not None %}Lat {{ location.latitude }}, Lng {{ location.longitude }}{% elif location %}Buscando ubicación GPS…{% endif %}</span>
       <span style="margin-left:.5rem;color:#7A6060;" id="gps-accuracy"></span>
     </div>
     <div id="lunch-banner" class="lunch-banner" style="margin-top:.875rem;{% if not location or not location.is_on_lunch %}display:none;{% endif %}">
