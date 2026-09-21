@@ -256,12 +256,12 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
       {% csrf_token %}
       <input type="hidden" name="status" id="status-input" value="">
 
+      <label class="form-label">N° de factura (opcional)</label>
+      <input type="text" name="invoice_number" class="form-input" placeholder="Ej: FV-2026-0143" value="{{ ticket.invoice_number }}">
+
       <label class="form-label">Notas de trabajo (opcional)</label>
       <textarea name="resolution_notes" class="form-textarea"
         placeholder="Describe lo que hiciste, piezas instaladas, estado del equipo…">{{ ticket.resolution_notes }}</textarea>
-
-      <label class="form-label">N° de factura (opcional)</label>
-      <input type="text" name="invoice_number" class="form-input" placeholder="Ej: FV-2026-0143" value="{{ ticket.invoice_number }}">
 
       <label class="form-label">Evidencia fotográfica <span style="font-weight:400;text-transform:none;">(cómo queda el servicio — hasta 6 fotos)</span></label>
       <div class="photo-grid" id="ticket-photo-grid"></div>

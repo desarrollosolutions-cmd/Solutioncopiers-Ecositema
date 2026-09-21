@@ -144,6 +144,11 @@
             </select>
           </div>
 
+          <div class="pn-field">
+            <label class="pn-label">N° de factura <span style="font-weight:400;text-transform:none;">(opcional)</span></label>
+            <input type="text" name="invoice_number" class="pn-input" placeholder="Ej: FV-2026-0143" value="{{ ticket.invoice_number|default:'' }}">
+          </div>
+
           {% if can_assign %}
           <div class="pn-field">
             <label class="pn-label">Prioridad</label>
@@ -174,11 +179,6 @@
           <div class="pn-field">
             <label class="pn-label">Notas de resolución</label>
             <textarea name="resolution_notes" class="pn-input" rows="3" placeholder="Describe lo que hiciste, piezas instaladas, estado del equipo…" style="resize:vertical;">{{ ticket.resolution_notes|default:"" }}</textarea>
-          </div>
-
-          <div class="pn-field">
-            <label class="pn-label">N° de factura <span style="font-weight:400;text-transform:none;">(opcional)</span></label>
-            <input type="text" name="invoice_number" class="pn-input" placeholder="Ej: FV-2026-0143" value="{{ ticket.invoice_number|default:'' }}">
           </div>
 
           <div class="pn-field">
