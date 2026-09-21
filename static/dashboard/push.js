@@ -30,6 +30,23 @@
     return m ? m[1] : '';
   }
 
+  // El banner es position:fixed al fondo de la pantalla -- sin esto, en
+  // páginas largas (formularios que se apilan en una sola columna en
+  // celular) queda tapando botones al final de la página (ej. "Crear
+  // ticket"), que se ven pero no reciben el toque porque el banner está
+  // encima con z-index alto. Se le reserva el espacio real empujando el
+  // contenido hacia arriba, y se libera al quitar el banner.
+  function reserveSpaceFor(bar) {
+    var prevPadding = document.body.style.paddingBottom;
+    function apply() { document.body.style.paddingBottom = bar.offsetHeight + 'px'; }
+    apply();
+    window.addEventListener('resize', apply);
+    return function release() {
+      window.removeEventListener('resize', apply);
+      document.body.style.paddingBottom = prevPadding;
+    };
+  }
+
   function subscribe(vapidPublicKey, registration) {
     return registration.pushManager.getSubscription().then(function (existing) {
       if (existing) return existing;
@@ -72,12 +89,15 @@
       '<button type="button" id="sc-push-dismiss" style="background:none;border:none;color:var(--color-text-muted,#7A6060);' +
         'font-size:1rem;cursor:pointer;padding:.25rem .5rem;line-height:1;">✕</button>';
     document.body.appendChild(bar);
+    var release = reserveSpaceFor(bar);
 
     document.getElementById('sc-push-dismiss').addEventListener('click', function () {
       localStorage.setItem(DISMISS_KEY, String(Date.now()));
+      release();
       bar.remove();
     });
     document.getElementById('sc-push-enable').addEventListener('click', function () {
+      release();
       bar.remove();
       onEnable();
     });
@@ -101,8 +121,10 @@
       '<button type="button" id="sc-push-dismiss" style="background:none;border:none;color:var(--color-text-muted,#7A6060);' +
         'font-size:1rem;cursor:pointer;padding:.25rem .5rem;line-height:1;">✕</button>';
     document.body.appendChild(bar);
+    var release = reserveSpaceFor(bar);
     document.getElementById('sc-push-dismiss').addEventListener('click', function () {
       localStorage.setItem(DISMISS_KEY, String(Date.now()));
+      release();
       bar.remove();
     });
   }
