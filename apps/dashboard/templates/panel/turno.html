@@ -540,6 +540,26 @@ function sendLocation() {
 }
 sendLocation();
 setInterval(sendLocation, 15000);
+
+// Mantener pantalla encendida en turno (evita que el celular se bloquee
+// solo y corte el envío de ubicación) + resync inmediato al volver a la
+// app si se cambió a otra o se bloqueó la pantalla -- ver mismo patrón
+// en campo/turno.html.
+let wakeLock = null;
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    requestWakeLock();
+    sendLocation();
+  }
+});
+requestWakeLock();
 {% endif %}
 
 /* ── Alarma de fin de almuerzo ── */

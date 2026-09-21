@@ -395,6 +395,35 @@ function startGPS() {
   );
 }
 
+// ── Mantener pantalla encendida en turno ──
+// El navegador pausa watchPosition en cuanto el celular se bloquea solo --
+// esto evita que se bloquee mientras la app está en primer plano. No cubre
+// cambiar a otra app (WhatsApp, llamadas, etc.); para eso está el resync
+// de abajo al volver.
+let wakeLock = null;
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator) || !isOnShift) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch (e) {}
+}
+
+// El wake lock y watchPosition se sueltan solos cuando la pantalla se
+// bloquea o se cambia de app -- al volver a esta pantalla, se retoman
+// ambos y se pide una posición fresca de inmediato en vez de esperar
+// al próximo tick de watchPosition (que puede tardar).
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && isOnShift) {
+    requestWakeLock();
+    navigator.geolocation.getCurrentPosition(
+      pos => sendLocation(pos),
+      () => {},
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+  }
+});
+
 // Iniciar/terminar turno y almuerzo ahora son envíos de formulario normales
 // (ver botones arriba) que redirigen y recargan la pantalla completa, en vez
 // de mutar el DOM por partes — así se evita el patrón de varios cambios
@@ -470,7 +499,7 @@ function stopLunchTimer() {
 }
 
 // Iniciar GPS si ya estaba en turno al cargar
-if (isOnShift) startGPS();
+if (isOnShift) { startGPS(); requestWakeLock(); }
 // Retomar el conteo de almuerzo si ya estaba en curso al cargar la página
 if (isOnLunch && lunchStartedAt) startLunchTimer(lunchStartedAt);
 
