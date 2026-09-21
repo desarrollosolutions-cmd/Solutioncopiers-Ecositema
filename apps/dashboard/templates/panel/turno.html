@@ -560,6 +560,12 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 requestWakeLock();
+
+// En zonas de señal débil el envío puede fallar en silencio -- el GPS
+// sigue funcionando y la persona sigue moviéndose, pero el dato nunca
+// llega al servidor hasta el próximo ciclo. En cuanto vuelve la señal,
+// se manda una posición fresca de inmediato.
+window.addEventListener('online', sendLocation);
 {% endif %}
 
 /* ── Alarma de fin de almuerzo ── */

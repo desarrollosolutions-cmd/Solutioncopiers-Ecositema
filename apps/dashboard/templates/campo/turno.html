@@ -424,6 +424,21 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+// En zonas de señal débil (laderas, zonas rurales) el POST de sendLocation
+// puede fallar en silencio (ver el .catch vacío arriba) -- el GPS del
+// celular sigue funcionando y la persona sigue moviéndose, pero el dato
+// nunca llega al servidor hasta el próximo tick. En cuanto el navegador
+// detecta que volvió la señal, se manda una posición fresca de inmediato.
+window.addEventListener('online', () => {
+  if (isOnShift) {
+    navigator.geolocation.getCurrentPosition(
+      pos => sendLocation(pos),
+      () => {},
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+  }
+});
+
 // Iniciar/terminar turno y almuerzo ahora son envíos de formulario normales
 // (ver botones arriba) que redirigen y recargan la pantalla completa, en vez
 // de mutar el DOM por partes — así se evita el patrón de varios cambios
