@@ -123,6 +123,7 @@ class EmployeeActivity(models.Model):
         VIEW_CONTRACT    = "view_contract",    "Ver contrato"
         VIEW_CONSUMABLES = "view_consumables", "Ver insumos"
         SEARCH_CONSUMABLES = "search_consumables", "Buscar insumos"
+        DELETE_WA_CHAT   = "delete_wa_chat",   "Borrar chat de WhatsApp"
 
     user        = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,

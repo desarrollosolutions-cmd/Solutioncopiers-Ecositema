@@ -197,6 +197,18 @@
       </div>
     </div>
 
+    {# Borrar chat -- irreversible, por eso va aparte y pide confirmación #}
+    <div class="wa-info-sect">
+      <div class="wa-info-title" style="color:#EF4444;">Zona de peligro</div>
+      <form method="post" onsubmit="return confirm('¿Borrar este chat para siempre? Se eliminan todos los mensajes con {{ conv.contact_name|default:conv.phone|escapejs }}. Esto no se puede deshacer.');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+        <button type="submit" class="wa-status-btn" style="border-color:#EF4444;color:#EF4444;">
+          🗑 Borrar chat
+        </button>
+      </form>
+    </div>
+
   </div>
 </div>
 

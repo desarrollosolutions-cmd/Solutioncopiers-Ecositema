@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from apps.dashboard.views import da_decorator
+from apps.dashboard.views import _log_activity, da_decorator
 
 from .models import ConversationLabel, QuickReply, WhatsAppConversation, WhatsAppMessage, WhatsAppSettings
 from .webhook import _upsert_inbound_message, send_whatsapp_message
@@ -532,6 +532,14 @@ class DashWAConversationView(View):
             lead_id = request.POST.get("lead_id", "")
             conv.lead = Lead.objects.filter(pk=lead_id).first() if lead_id else None
             conv.save(update_fields=["lead"])
+
+        elif action == "delete":
+            # Borrado permanente -- la plantilla pide confirmación antes de
+            # enviar el formulario. Cascada borra también los mensajes.
+            label = conv.contact_name or conv.phone
+            _log_activity(request, "delete_wa_chat", f"Chat de WhatsApp borrado: {label} ({conv.phone})", related_pk=pk)
+            conv.delete()
+            return redirect("wa:dash_overview")
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": True})
