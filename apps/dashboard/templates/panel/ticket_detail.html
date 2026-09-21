@@ -77,6 +77,12 @@
           <div style="font-size:.8125rem;color:var(--color-text-secondary);line-height:1.6;white-space:pre-wrap;">{{ ticket.resolution_notes }}</div>
         </div>
         {% endif %}
+        {% if ticket.invoice_number %}
+        <div style="padding:.75rem;background:color-mix(in srgb,#10B981 8%,var(--color-bg-alt));border:1px solid color-mix(in srgb,#10B981 25%,var(--color-border));border-radius:.625rem;margin-top:.75rem;">
+          <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#10B981;margin-bottom:.375rem;">N° de factura</div>
+          <div style="font-size:.8125rem;color:var(--color-text-secondary);line-height:1.6;">{{ ticket.invoice_number }}</div>
+        </div>
+        {% endif %}
         {% if ticket.evidence_photos %}
         <div style="margin-top:.75rem;">
           <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.5rem;">Evidencia fotográfica</div>
@@ -168,6 +174,11 @@
           <div class="pn-field">
             <label class="pn-label">Notas de resolución</label>
             <textarea name="resolution_notes" class="pn-input" rows="3" placeholder="Describe lo que hiciste, piezas instaladas, estado del equipo…" style="resize:vertical;">{{ ticket.resolution_notes|default:"" }}</textarea>
+          </div>
+
+          <div class="pn-field">
+            <label class="pn-label">N° de factura <span style="font-weight:400;text-transform:none;">(opcional)</span></label>
+            <input type="text" name="invoice_number" class="pn-input" placeholder="Ej: FV-2026-0143" value="{{ ticket.invoice_number|default:'' }}">
           </div>
 
           <div class="pn-field">

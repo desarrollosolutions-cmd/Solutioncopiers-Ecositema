@@ -40,6 +40,8 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 .form-label{font-size:.7rem;font-weight:600;color:#C0A8A8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;display:block;}
 .form-textarea{width:100%;padding:.75rem .875rem;background:#100808;border:1.5px solid #3A2020;border-radius:.75rem;color:#F5EDEB;font-size:.875rem;font-family:inherit;outline:none;resize:vertical;min-height:80px;transition:border-color .18s;margin-bottom:1rem;}
 .form-textarea:focus{border-color:#C4121A;}
+.form-input{width:100%;padding:.75rem .875rem;background:#100808;border:1.5px solid #3A2020;border-radius:.75rem;color:#F5EDEB;font-size:.875rem;font-family:inherit;outline:none;transition:border-color .18s;margin-bottom:1rem;}
+.form-input:focus{border-color:#C4121A;}
 .btn-grid{display:grid;gap:.5rem;margin-top:.25rem;}
 .btn{width:100%;padding:.8rem;border-radius:.75rem;border:none;font-size:.8125rem;font-weight:700;cursor:pointer;transition:transform .15s,opacity .18s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.4rem;}
 .btn:active{transform:scale(.97);}
@@ -182,6 +184,11 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
   <div class="text-block" style="border-color:rgba(16,185,129,.25);">{{ ticket.resolution_notes|linebreaksbr }}</div>
   {% endif %}
 
+  {% if ticket.invoice_number %}
+  <div class="section-title">N° de factura</div>
+  <div class="text-block" style="border-color:rgba(16,185,129,.25);">{{ ticket.invoice_number }}</div>
+  {% endif %}
+
   {# Evidencia fotográfica ya guardada #}
   {% if ticket.evidence_photos %}
   <div class="section-title">Evidencia fotográfica</div>
@@ -252,6 +259,9 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
       <label class="form-label">Notas de trabajo (opcional)</label>
       <textarea name="resolution_notes" class="form-textarea"
         placeholder="Describe lo que hiciste, piezas instaladas, estado del equipo…">{{ ticket.resolution_notes }}</textarea>
+
+      <label class="form-label">N° de factura (opcional)</label>
+      <input type="text" name="invoice_number" class="form-input" placeholder="Ej: FV-2026-0143" value="{{ ticket.invoice_number }}">
 
       <label class="form-label">Evidencia fotográfica <span style="font-weight:400;text-transform:none;">(cómo queda el servicio — hasta 6 fotos)</span></label>
       <div class="photo-grid" id="ticket-photo-grid"></div>

@@ -361,6 +361,7 @@ class ServiceTicket(TimeStampedModel):
     description = models.TextField(_("descripción del problema"))
     address = models.CharField(_("dirección de visita"), max_length=300, blank=True)
     resolution_notes = models.TextField(_("notas de resolución"), blank=True)
+    invoice_number = models.CharField(_("número de factura"), max_length=100, blank=True)
     evidence_photos = models.JSONField(_("fotos de evidencia (base64)"), default=list, blank=True)
     attachments = models.JSONField(
         _("archivos adjuntos"), default=list, blank=True,

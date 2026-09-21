@@ -970,6 +970,7 @@ class TicketCreateView(View):
                 description         = request.POST.get("description", ""),
                 address             = request.POST.get("address", ""),
                 resolution_notes    = request.POST.get("resolution_notes", ""),
+                invoice_number      = request.POST.get("invoice_number", ""),
                 assigned_to         = assigned,
                 scheduled_for       = request.POST.get("scheduled_for") or None,
             )
@@ -1043,6 +1044,7 @@ class TicketDetailView(View):
             ticket.description        = request.POST.get("description", "")
             ticket.address            = request.POST.get("address", ticket.address)
             ticket.resolution_notes   = request.POST.get("resolution_notes", "")
+            ticket.invoice_number     = request.POST.get("invoice_number", "")
             ticket.scheduled_for      = request.POST.get("scheduled_for") or None
             if ticket.status == "resolved" and old_status != "resolved":
                 ticket.resolved_at = tz.now()
@@ -3037,6 +3039,7 @@ class PanelTicketDetailView(View):
                 f"a \"{labels.get(new_status, new_status)}\" directamente.",
             )
         ticket.resolution_notes = request.POST.get("resolution_notes", ticket.resolution_notes)
+        ticket.invoice_number = request.POST.get("invoice_number", ticket.invoice_number)
 
         new_photos = [p.strip() for p in request.POST.getlist("photos_b64") if p.strip()]
         if new_photos:
@@ -6447,6 +6450,7 @@ class CampoTicketDetailView(View):
 
         new_status = request.POST.get("status", "").strip()
         notes      = request.POST.get("resolution_notes", "").strip()
+        invoice    = request.POST.get("invoice_number", "").strip()
         new_photos = [p.strip() for p in request.POST.getlist("photos_b64") if p.strip()]
 
         valid_transitions = {
@@ -6467,6 +6471,9 @@ class CampoTicketDetailView(View):
         if notes:
             ticket.resolution_notes = notes
 
+        if invoice:
+            ticket.invoice_number = invoice
+
         if new_photos:
             ticket.evidence_photos = list(ticket.evidence_photos) + new_photos
 
@@ -6474,7 +6481,7 @@ class CampoTicketDetailView(View):
         if new_attachments:
             ticket.attachments = list(ticket.attachments) + new_attachments
 
-        ticket.save(update_fields=["status", "resolution_notes", "resolved_at", "evidence_photos", "attachments"])
+        ticket.save(update_fields=["status", "resolution_notes", "invoice_number", "resolved_at", "evidence_photos", "attachments"])
 
         if status_changed:
             from apps.dashboard.models import Notification

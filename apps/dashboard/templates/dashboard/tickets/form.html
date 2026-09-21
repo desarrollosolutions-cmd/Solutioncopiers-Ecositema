@@ -112,6 +112,10 @@
               <label>Notas de resolución / trabajo realizado</label>
               <textarea name="resolution_notes" class="da-input" rows="5" placeholder="Describe qué se hizo, repuestos usados, estado final del equipo…" style="resize:vertical;">{% if is_edit %}{{ ticket.resolution_notes }}{% endif %}</textarea>
             </div>
+            <div class="da-field">
+              <label>N° de factura <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+              <input type="text" name="invoice_number" value="{% if is_edit %}{{ ticket.invoice_number }}{% endif %}" class="da-input" placeholder="Ej: FV-2026-0143">
+            </div>
             {% if is_edit and ticket.evidence_photos %}
             <div>
               <div style="font-size:.68rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">
