@@ -318,6 +318,8 @@ class ServiceTicket(TimeStampedModel):
     class PaymentMethod(models.TextChoices):
         CXC  = "cxc",      _("CXC")
         CASH = "efectivo", _("Efectivo")
+        BANK = "banco",    _("Banco")
+        ADDI = "addi",     _("Addi")
         NA   = "na",       _("N/A")
 
     ticket_number = models.CharField(_("número de ticket"), max_length=30, unique=True)
