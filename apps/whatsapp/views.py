@@ -1,6 +1,7 @@
 """Vistas del módulo WhatsApp CRM."""
 from __future__ import annotations
 
+import re
 from functools import wraps
 
 from django.http import JsonResponse
@@ -20,15 +21,129 @@ from .webhook import _upsert_inbound_message, send_whatsapp_message
 # para no duplicar la descripción del negocio en dos lugares.
 # ---------------------------------------------------------------------------
 
-def _get_system_wa_suggest() -> str:
+# Palabras muy comunes en el chat que no sirven para buscar en el catálogo
+# (saludos, cortesías, verbos genéricos) -- se descartan para no traer
+# resultados basura al buscar por las palabras sueltas del mensaje.
+_CATALOG_STOPWORDS = {
+    "hola", "buenas", "buenos", "dias", "tardes", "noches", "gracias", "porfa",
+    "porfavor", "favor", "necesito", "quiero", "quisiera", "cuanto", "cuesta",
+    "cuestan", "vale", "valen", "precio", "precios", "tienen", "tiene", "hay",
+    "para", "con", "una", "unos", "unas", "los", "las", "del", "que", "por",
+    "como", "esta", "este", "estos", "estas", "eso", "esa", "ese", "pero",
+    "también", "tambien", "sobre", "cual", "cuales", "donde", "cuando",
+    "ustedes", "consulta", "pregunta", "saber", "quería", "queria", "manana",
+    "mañana", "hoy", "ayer", "solution", "copiers",
+}
+
+
+# Palabras de tipo de repuesto en español -> valores reales de
+# Consumable.ConsumableType, para poder acotar por tipo cuando el cliente
+# lo menciona (ej. "tóner para mi 2554") en vez de traer TODOS los repuestos
+# compatibles con ese equipo (alimentadores, bandas, cilindros...).
+_CATALOG_TYPE_MAP = {
+    "toner": ["toner_bn", "toner_color"], "tóner": ["toner_bn", "toner_color"],
+    "tinta": ["ink"],
+    "tambor": ["drum"], "cilindro": ["drum"], "drum": ["drum"],
+    "fusor": ["fuser"],
+    "revelador": ["developer"], "desarrollador": ["developer"],
+    "rodillo": ["roller"],
+    "cuchilla": ["blade"],
+    "chip": ["chip"],
+}
+
+
+def _search_catalog_context(text: str) -> str:
+    """Busca en el catálogo real (consumibles y equipos) por las palabras
+    sueltas del mensaje del cliente, para que el asistente pueda dar
+    precios y datos concretos en vez de desviar siempre al formulario.
+    Devuelve un bloque de texto para el prompt, o "" si no hubo coincidencias."""
+    from django.db.models import Q
+    from apps.catalog.models import Consumable, Copier
+
+    words = [
+        w for w in re.findall(r"[a-záéíóúñ0-9]+", text.lower())
+        if len(w) >= 3 and w not in _CATALOG_STOPWORDS
+    ]
+    if not words:
+        return ""
+
+    # Las referencias/modelos (traen al menos un dígito, ej. "2554", "mp2554",
+    # "c2000") son mucho más precisas que palabras sueltas genéricas del rubro
+    # ("kit", "alimentador", "original") que aparecen en decenas de productos
+    # distintos y traerían resultados basura. Si el mensaje trae algún número
+    # de modelo/referencia, se busca con esos -- y si además menciona un tipo
+    # de repuesto conocido (tóner, rodillo, cilindro...), se cruzan ambos para
+    # no enterrar lo que realmente preguntó bajo otros repuestos del mismo
+    # equipo que ordenan antes alfabéticamente.
+    specific = [w for w in words if any(ch.isdigit() for ch in w)]
+    type_codes = sorted({code for w in words for code in _CATALOG_TYPE_MAP.get(w, [])})
+
+    if specific:
+        q_model = Q()
+        for w in specific[:8]:
+            q_model |= Q(name__icontains=w) | Q(part_number__icontains=w) | Q(compatible_models__model_number__icontains=w)
+        if type_codes:
+            consumables = list(
+                Consumable.published.filter(q_model, consumable_type__in=type_codes).distinct()[:8]
+            )
+            if not consumables:  # el tipo no cruzó con el modelo -- no forzar, mostrar igual lo del modelo
+                consumables = list(Consumable.published.filter(q_model).distinct()[:8])
+        else:
+            consumables = list(Consumable.published.filter(q_model).distinct()[:8])
+
+        q2 = Q()
+        for w in specific[:8]:
+            q2 |= Q(name__icontains=w) | Q(model_number__icontains=w)
+        copiers = list(Copier.published.filter(q2).distinct()[:4])
+    else:
+        q_generic = Q()
+        for w in words[:8]:
+            q_generic |= Q(name__icontains=w) | Q(part_number__icontains=w)
+        if type_codes:
+            q_generic |= Q(consumable_type__in=type_codes)
+        consumables = list(Consumable.published.filter(q_generic).distinct()[:8])
+        copiers = []
+
+    if not consumables and not copiers:
+        return ""
+
+    lines = ["=== CATÁLOGO -- coincidencias reales para este mensaje ==="]
+    if consumables:
+        lines.append("Repuestos/consumibles:")
+        for c in consumables:
+            if c.price_on_request or not c.price:
+                price_txt = "precio bajo solicitud -- cotizar con ventas"
+            else:
+                price_txt = f"${c.price:,.0f} COP"
+            stock_txt = "en stock" if c.in_stock and c.stock_quantity > 0 else "sin stock disponible ahora"
+            ref = f" (ref. {c.part_number})" if c.part_number else ""
+            lines.append(f"- {c.name}{ref} — {price_txt} — {stock_txt}")
+    if copiers:
+        lines.append("Equipos relacionados (el alquiler siempre se cotiza según volumen de copias, no tiene precio fijo):")
+        for cp in copiers:
+            disp = "alquiler y venta" if cp.available_for_rental and cp.available_for_sale else ("alquiler" if cp.available_for_rental else "venta")
+            lines.append(f"- {cp.brand} {cp.model_number} — {cp.name} — disponible para {disp}")
+    return "\n".join(lines)
+
+
+def _get_system_wa_suggest(catalog_context: str = "") -> str:
     from apps.core.views import _SYSTEM_PUBLIC
-    return _SYSTEM_PUBLIC + (
+    system = _SYSTEM_PUBLIC + (
         "\n\n=== CONTEXTO ADICIONAL ===\n"
         "Estás redactando un BORRADOR de respuesta de WhatsApp para un cliente que ya "
         "está conversando con nosotros -- una asesora lo va a revisar y puede editarlo "
         "antes de enviarlo, así que sé útil y directo. Muy conciso (1-3 frases cortas), "
         "sin usar markdown ni encabezados -- es un mensaje de chat, no una página web."
     )
+    if catalog_context:
+        system += "\n\n" + catalog_context + (
+            "\n\nEstos precios y datos son REALES, de nuestra base de datos actual -- "
+            "si son relevantes a lo que pregunta el cliente, dalos con confianza y "
+            "concretos (el precio exacto en COP, si hay stock), sin desviar al "
+            "formulario. La regla de no inventar precios sigue aplicando SOLO para lo "
+            "que no aparezca en esta lista."
+        )
+    return system
 
 
 def _build_ai_suggestion(conv) -> dict:
@@ -50,8 +165,16 @@ def _build_ai_suggestion(conv) -> dict:
     ]
     user_message = msgs[-1].body
 
+    # Se busca en el catálogo con este mensaje + los últimos inbound previos,
+    # por si el cliente mencionó el equipo/repuesto un mensaje antes de
+    # preguntar el precio ("necesito un tóner para mi Ricoh 2554" / "¿cuánto vale?").
+    recent_inbound = " ".join(
+        m.body for m in msgs[-4:] if m.direction == WhatsAppMessage.Direction.INBOUND
+    )
+    catalog_context = _search_catalog_context(recent_inbound)
+
     from apps.dashboard.views import _call_ai
-    draft = _call_ai(_get_system_wa_suggest(), history, user_message)
+    draft = _call_ai(_get_system_wa_suggest(catalog_context), history, user_message)
     return {"ok": True, "draft": draft}
 
 # ---------------------------------------------------------------------------
