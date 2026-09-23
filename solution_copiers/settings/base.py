@@ -243,6 +243,15 @@ WHATSAPP_TOKEN = env("WHATSAPP_TOKEN", default="")
 WHATSAPP_PHONE_ID = env("WHATSAPP_PHONE_ID", default="")
 WHATSAPP_VERIFY_TOKEN = env("WHATSAPP_VERIFY_TOKEN", default="prototipo_sc_2026")
 
+# Embedded Signup -- para conectar un número ya existente en la app de
+# WhatsApp Business (Coexistence) sin perder la app, desde el propio CRM.
+# META_APP_ID no es secreto (va directo en el HTML del botón de Meta), pero
+# META_APP_SECRET sí -- se usa solo en el servidor para canjear el código
+# que devuelve el flujo por un token de acceso real.
+META_APP_ID = env("META_APP_ID", default="")
+META_APP_SECRET = env("META_APP_SECRET", default="")
+WHATSAPP_EMBEDDED_SIGNUP_CONFIG_ID = env("WHATSAPP_EMBEDDED_SIGNUP_CONFIG_ID", default="")
+
 # ---------------------------------------------------------------------------
 # WEB PUSH (VAPID) — notificaciones del navegador aunque no esté abierto
 # (chat interno y cualquier otra Notification). Generar par de llaves con

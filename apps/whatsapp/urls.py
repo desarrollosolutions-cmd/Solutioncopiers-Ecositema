@@ -20,4 +20,6 @@ urlpatterns = [
     path("dash/etiquetas/",                 views.DashWALabelsView.as_view(),        name="dash_labels"),
     path("dash/respuestas-rapidas/",        views.DashWAQuickRepliesView.as_view(),  name="dash_quick_replies"),
     path("dash/asignar/<int:pk>/",          views.DashWAAssignView.as_view(),    name="dash_assign"),
+    path("dash/conectar/",                  views.DashWAEmbeddedSignupView.as_view(), name="dash_embedded_signup"),
+    path("dash/conectar/canjear/",          views.DashWAExchangeCodeView.as_view(),   name="dash_exchange_code"),
 ]

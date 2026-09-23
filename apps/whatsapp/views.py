@@ -638,3 +638,85 @@ class DashWAAssignView(View):
         conv.assigned_to = User.objects.filter(pk=uid).first() if uid else None
         conv.save(update_fields=["assigned_to"])
         return JsonResponse({"ok": True})
+
+
+# ---------------------------------------------------------------------------
+# Embedded Signup -- conectar un número (ya sea nuevo o uno que ya está en la
+# app de WhatsApp Business, vía Coexistence) directamente desde el CRM, con
+# el botón oficial de Meta. No aplica nada automáticamente a producción --
+# solo muestra el resultado (WABA ID, phone_number_id, token) para que el
+# admin lo revise antes de activarlo (ver WHATSAPP_TOKEN/WHATSAPP_PHONE_ID).
+# ---------------------------------------------------------------------------
+
+@da_decorator
+class DashWAEmbeddedSignupView(View):
+    template_name = "whatsapp/dash_embedded_signup.html"
+
+    def get(self, request):
+        from django.conf import settings
+        return render(request, self.template_name, {
+            "meta_app_id": settings.META_APP_ID,
+            "config_id":   settings.WHATSAPP_EMBEDDED_SIGNUP_CONFIG_ID,
+        })
+
+
+@da_decorator
+class DashWAExchangeCodeView(View):
+    """POST -- canjea el código de un solo uso (30 seg de vida) que devuelve
+    el flujo de Embedded Signup por un token de acceso real, vía la Graph
+    API de Meta. No persiste nada -- solo lo muestra en pantalla."""
+
+    def post(self, request):
+        import json
+        import urllib.request
+        import urllib.parse
+        import urllib.error
+        from django.conf import settings
+
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            return JsonResponse({"ok": False, "error": "Datos inválidos"}, status=400)
+
+        code = str(data.get("code", "")).strip()
+        if not code:
+            return JsonResponse({"ok": False, "error": "Falta el código"}, status=400)
+
+        if not settings.META_APP_ID or not settings.META_APP_SECRET:
+            return JsonResponse({
+                "ok": False,
+                "error": "Falta configurar META_APP_ID / META_APP_SECRET en el servidor.",
+            }, status=500)
+
+        params = urllib.parse.urlencode({
+            "client_id":     settings.META_APP_ID,
+            "client_secret": settings.META_APP_SECRET,
+            "code":          code,
+        })
+        req = urllib.request.Request(
+            f"https://graph.facebook.com/v25.0/oauth/access_token?{params}",
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                payload = json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            try:
+                payload = json.loads(e.read())
+            except Exception:
+                payload = {}
+            msg = payload.get("error", {}).get("message", f"Meta respondió con error {e.code}.")
+            return JsonResponse({"ok": False, "error": msg}, status=400)
+        except Exception as e:
+            return JsonResponse({"ok": False, "error": f"Error de red al canjear el código: {e}"}, status=502)
+
+        if "access_token" not in payload:
+            msg = payload.get("error", {}).get("message", "Meta no devolvió un token de acceso.")
+            return JsonResponse({"ok": False, "error": msg}, status=400)
+
+        return JsonResponse({
+            "ok": True,
+            "access_token":    payload["access_token"],
+            "waba_id":         data.get("waba_id", ""),
+            "phone_number_id": data.get("phone_number_id", ""),
+        })
