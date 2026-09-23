@@ -35,6 +35,7 @@
 .kb-card-tag { font-size:.62rem; font-weight:600; padding:.125rem .4rem; border-radius:.25rem; background:color-mix(in srgb,var(--color-primary) 10%,transparent); color:var(--color-primary); }
 .kb-card-date { font-size:.65rem; color:var(--color-text-muted); }
 .kb-card-route { padding-left:2.25rem; }
+.kb-order-input { width:2.75rem; padding:.2rem .35rem; border:1px solid var(--color-border); border-radius:.35rem; background:var(--color-surface); color:var(--color-text-primary); font-size:.68rem; font-weight:600; }
 .kb-card-pos { position:absolute; top:.75rem; left:.75rem; width:1.375rem; height:1.375rem; border-radius:50%; background:var(--color-primary); color:#fff; font-size:.68rem; font-weight:800; display:flex; align-items:center; justify-content:center; }
 .kb-drop-ghost { height:3px; border-radius:2px; background:var(--kb-col-color,var(--color-primary)); opacity:.6; margin:0 .25rem; display:none; }
 .kb-col-body.drag-active .kb-drop-ghost { display:block; }
@@ -264,6 +265,11 @@
           <div class="kb-card-footer">
             <span class="kb-card-tag">{{ t.get_priority_display }}</span>
             <span class="kb-card-date">{{ t.due_date|date:"d/m/Y"|default:"Sin fecha" }}</span>
+            <span style="display:flex;align-items:center;gap:.3rem;margin-left:auto;" draggable="false" onclick="event.stopPropagation()">
+              <label style="font-size:.6rem;font-weight:600;color:var(--color-text-muted);">Orden</label>
+              <input type="number" min="0" class="kb-order-input" value="{{ t.order }}"
+                data-order-url="{% url 'dashboard:campo_task_set_order' t.pk %}">
+            </span>
           </div>
         </div>
         {% empty %}
@@ -670,6 +676,21 @@ function dtShowView(view) {
       e.preventDefault();
       body.classList.remove('drag-active');
       col.classList.remove('drag-over');
+    });
+  });
+
+  document.querySelectorAll('#dt-route-board .kb-order-input').forEach(input => {
+    input.addEventListener('change', () => {
+      const value = parseInt(input.value, 10);
+      if (isNaN(value) || value < 0) { showToast('Orden inválido', 'err'); return; }
+      fetch(input.dataset.orderUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ order: value }),
+      })
+      .then(r => r.json())
+      .then(data => showToast(data.ok ? `Orden → #${data.order}` : 'Error al guardar el orden', data.ok ? 'ok' : 'err'))
+      .catch(() => showToast('Error de red', 'err'));
     });
   });
 })();

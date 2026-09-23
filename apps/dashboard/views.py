@@ -6090,6 +6090,30 @@ class CampoTaskReorderView(View):
 
 
 @da_decorator
+class CampoTaskSetOrderView(View):
+    """POST /dashadmin/campo/tareas/<pk>/orden/ — numerar directamente el orden de una tarea desde el pipeline."""
+
+    def post(self, request, pk):
+        import json
+        from apps.dashboard.models import DeliveryTask
+        try:
+            data = json.loads(request.body)
+            value = data.get("order", None)
+        except Exception:
+            value = request.POST.get("order")
+        try:
+            value = int(value)
+            if value < 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            return JsonResponse({"ok": False, "error": "Orden inválido"}, status=400)
+        task = get_object_or_404(DeliveryTask, pk=pk)
+        task.order = value
+        task.save(update_fields=["order"])
+        return JsonResponse({"ok": True, "pk": pk, "order": value})
+
+
+@da_decorator
 class CampoTaskDetailView(View):
     template_name = "dashboard/campo/task_detail.html"
 
