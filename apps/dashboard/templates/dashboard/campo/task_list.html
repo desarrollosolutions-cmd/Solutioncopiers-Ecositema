@@ -22,6 +22,7 @@
 .kb-col-head { padding:.875rem 1rem .75rem; border-bottom:1px solid var(--color-border); display:flex; align-items:center; gap:.625rem; border-radius:.875rem .875rem 0 0; background:color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 5%,var(--color-surface)); }
 .kb-col-title { font-size:.8125rem; font-weight:700; color:var(--color-text-primary); flex:1; }
 .kb-col-count { font-size:.65rem; font-weight:700; padding:.15rem .5rem; border-radius:9999px; background:color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 14%,transparent); color:var(--kb-col-color,var(--color-primary)); min-width:1.5rem; text-align:center; }
+.kb-col-avatar { width:1.75rem; height:1.75rem; border-radius:50%; background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:.7rem; font-weight:800; flex-shrink:0; }
 .kb-col-body { padding:.625rem; flex:1; display:flex; flex-direction:column; gap:.5rem; min-height:80px; }
 .kb-col-body.drag-active { background:color-mix(in srgb,var(--kb-col-color,var(--color-primary)) 4%,transparent); border-radius:0 0 .875rem .875rem; }
 .kb-card { background:var(--color-bg); border:1px solid var(--color-border); border-radius:.625rem; padding:.75rem; cursor:grab; transition:transform .18s,box-shadow .18s,border-color .18s,opacity .18s; position:relative; overflow:hidden; user-select:none; }
@@ -33,6 +34,8 @@
 .kb-card-footer { display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-top:.375rem; }
 .kb-card-tag { font-size:.62rem; font-weight:600; padding:.125rem .4rem; border-radius:.25rem; background:color-mix(in srgb,var(--color-primary) 10%,transparent); color:var(--color-primary); }
 .kb-card-date { font-size:.65rem; color:var(--color-text-muted); }
+.kb-card-route { padding-left:2.25rem; }
+.kb-card-pos { position:absolute; top:.75rem; left:.75rem; width:1.375rem; height:1.375rem; border-radius:50%; background:var(--color-primary); color:#fff; font-size:.68rem; font-weight:800; display:flex; align-items:center; justify-content:center; }
 .kb-drop-ghost { height:3px; border-radius:2px; background:var(--kb-col-color,var(--color-primary)); opacity:.6; margin:0 .25rem; display:none; }
 .kb-col-body.drag-active .kb-drop-ghost { display:block; }
 .kb-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem 1rem; color:var(--color-text-muted); font-size:.78rem; border:1.5px dashed var(--color-border); border-radius:.5rem; margin:.25rem; pointer-events:none; }
@@ -194,9 +197,13 @@
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H8a2 2 0 01-2-2V5a2 2 0 012-2h6l6 6v11a2 2 0 01-2 2z"/></svg>
     Exportar Excel
   </a>
-  <button type="button" class="da-btn da-btn-secondary" onclick="dtToggleView()" id="dt-view-toggle">
+  <button type="button" class="da-btn da-btn-secondary" onclick="dtShowView('priority')" id="dt-view-toggle">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v18M3 9h18"/></svg>
     Vista pipeline
+  </button>
+  <button type="button" class="da-btn da-btn-secondary" onclick="dtShowView('route')" id="dt-route-toggle">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.875rem;height:.875rem;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    Ruta por mensajero
   </button>
 </form>
 
@@ -230,6 +237,45 @@
     {% endfor %}
   </div>
   <div id="dt-toast"></div>
+</div>
+
+<div id="dt-route-view" style="display:none;">
+  <div style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.75rem;display:flex;align-items:center;gap:.35rem;">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.8rem;height:.8rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8h16M4 16h16"/></svg>
+    Una columna por mensajero/técnico — arrastra una tarea para reordenar su ruta. La #1 es la próxima que debe atender.
+  </div>
+  <div class="pipeline-board" id="dt-route-board">
+    {% for stage in mensajero_stages %}
+    <div class="kb-col" data-stage="{{ stage.key }}">
+      <div class="kb-col-head">
+        <div class="kb-col-avatar">{{ stage.label|first|upper }}</div>
+        <span class="kb-col-title">{{ stage.label }}</span>
+        <span class="kb-col-count" data-count="{{ stage.key }}">{{ stage.count }}</span>
+      </div>
+      <div class="kb-col-body" data-body="{{ stage.key }}">
+        <div class="kb-drop-ghost"></div>
+        {% for t in stage.tasks %}
+        <div class="kb-card kb-card-route" draggable="true" data-pk="{{ t.pk }}" data-stage="{{ stage.key }}"
+             onclick="if(!this.classList.contains('dragging')) window.location='{% url 'dashboard:campo_task_detail' t.pk %}'">
+          <span class="kb-card-pos">{{ forloop.counter }}</span>
+          <div class="kb-card-name">{{ t.title }}</div>
+          <div class="kb-card-meta">{{ t.get_task_type_display }}{% if t.client_name %} · {{ t.client_name }}{% endif %}</div>
+          {% if t.address %}<div class="kb-card-date">📍 {{ t.address }}</div>{% endif %}
+          <div class="kb-card-footer">
+            <span class="kb-card-tag">{{ t.get_priority_display }}</span>
+            <span class="kb-card-date">{{ t.due_date|date:"d/m/Y"|default:"Sin fecha" }}</span>
+          </div>
+        </div>
+        {% empty %}
+        <div class="kb-empty">Sin tareas pendientes</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="kb-empty" style="flex:1;">No hay tareas pendientes asignadas todavía.</div>
+    {% endfor %}
+  </div>
+  <div id="dt-route-toast"></div>
 </div>
 
 {% if filter_user and pending_queue %}
@@ -417,14 +463,16 @@ function dtConfirmBulkDelete() {
   return confirm(`¿Eliminar permanentemente ${n} tarea(s) seleccionada(s)? Esta acción no se puede deshacer.`);
 }
 
-function dtToggleView() {
-  const list = document.getElementById('dt-list-view');
-  const pipeline = document.getElementById('dt-pipeline-view');
-  const btn = document.getElementById('dt-view-toggle');
-  const showingPipeline = pipeline.style.display !== 'none';
-  pipeline.style.display = showingPipeline ? 'none' : 'block';
-  list.style.display     = showingPipeline ? 'block' : 'none';
-  btn.lastChild.textContent = showingPipeline ? ' Vista pipeline' : ' Vista lista';
+let dtCurrentView = 'list';
+function dtShowView(view) {
+  // Tres vistas mutuamente excluyentes -- clic de nuevo en el mismo botón vuelve a la lista.
+  const next = (dtCurrentView === view) ? 'list' : view;
+  dtCurrentView = next;
+  document.getElementById('dt-list-view').style.display     = next === 'list'     ? 'block' : 'none';
+  document.getElementById('dt-pipeline-view').style.display = next === 'priority' ? 'block' : 'none';
+  document.getElementById('dt-route-view').style.display    = next === 'route'    ? 'block' : 'none';
+  document.getElementById('dt-view-toggle').lastChild.textContent  = next === 'priority' ? ' Vista lista' : ' Vista pipeline';
+  document.getElementById('dt-route-toggle').lastChild.textContent = next === 'route'    ? ' Vista lista' : ' Ruta por mensajero';
 }
 
 (function () {
@@ -544,6 +592,84 @@ function dtToggleView() {
 
       fromCol = toStage;
       draggedBody = body;
+    });
+  });
+})();
+</script>
+
+<script>
+(function () {
+  const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+  let dragged = null, draggedBody = null;
+
+  function showToast(msg, type) {
+    const t = document.getElementById('dt-route-toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.style.color = type === 'err' ? 'var(--color-danger)' : 'var(--color-text-muted)';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.textContent = ''; }, 3000);
+  }
+
+  function renumber(body) {
+    body.querySelectorAll('.kb-card-pos').forEach((pos, i) => { pos.textContent = i + 1; });
+  }
+
+  function persistOrder(body) {
+    const order = Array.from(body.querySelectorAll('.kb-card')).map(c => c.dataset.pk);
+    if (!order.length) return;
+    fetch('{% url "dashboard:campo_task_reorder" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ order }),
+    })
+    .then(r => r.json())
+    .then(data => showToast(data.ok ? 'Orden guardado ✓' : 'Error al guardar el orden', data.ok ? 'ok' : 'err'))
+    .catch(() => showToast('Error de red', 'err'));
+  }
+
+  document.querySelectorAll('#dt-route-board .kb-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      dragged = card;
+      draggedBody = card.closest('.kb-col-body');
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.dataset.pk);
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      document.querySelectorAll('#dt-route-board .kb-col-body').forEach(b => b.classList.remove('drag-active'));
+      document.querySelectorAll('#dt-route-board .kb-col').forEach(c => c.classList.remove('drag-over'));
+      if (draggedBody) { renumber(draggedBody); persistOrder(draggedBody); }
+      dragged = null; draggedBody = null;
+    });
+  });
+
+  // El orden solo se reordena dentro de la misma columna (mismo mensajero) --
+  // reasignar una tarea a otro mensajero se hace desde el detalle de la tarea.
+  document.querySelectorAll('#dt-route-board .kb-col-body').forEach(body => {
+    const col = body.closest('.kb-col');
+
+    body.addEventListener('dragover', e => {
+      if (!dragged || draggedBody !== body) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      body.classList.add('drag-active');
+      col.classList.add('drag-over');
+      const afterCard = [...body.querySelectorAll('.kb-card:not(.dragging)')].find(card => {
+        const rect = card.getBoundingClientRect();
+        return e.clientY < rect.top + rect.height / 2;
+      });
+      body.insertBefore(dragged, afterCard || null);
+    });
+    body.addEventListener('dragleave', e => {
+      if (!body.contains(e.relatedTarget)) { body.classList.remove('drag-active'); col.classList.remove('drag-over'); }
+    });
+    body.addEventListener('drop', e => {
+      if (draggedBody !== body) return;
+      e.preventDefault();
+      body.classList.remove('drag-active');
+      col.classList.remove('drag-over');
     });
   });
 })();

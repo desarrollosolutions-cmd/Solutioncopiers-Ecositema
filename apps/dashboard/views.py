@@ -5932,6 +5932,32 @@ class CampoTaskListView(View):
             stage["tasks"] = stage_tasks
             stage["count"] = len(stage_tasks)
 
+        # ── Ruta por mensajero (una columna por mensajero/técnico, ordenable por
+        # drag & drop -- mismo patrón que tecnico_stages en TicketListView) ──
+        route_qs = (
+            DeliveryTask.objects.select_related("field_user__user")
+            .filter(status=DeliveryTask.Status.PENDING)
+            .order_by("order", "created_at")
+        )
+        all_pending = list(route_qs[:500])
+        mensajero_groups = {}
+        for t in all_pending:
+            fu = t.field_user
+            mensajero_groups.setdefault(fu.pk, {"field_user": fu, "tasks": []})["tasks"].append(t)
+        mensajero_stages = [
+            {
+                "key":   f"fu-{fu_pk}",
+                "label": data["field_user"].user.get_full_name() or data["field_user"].user.username,
+                "field_user": data["field_user"],
+                "tasks": data["tasks"],
+                "count": len(data["tasks"]),
+            }
+            for fu_pk, data in sorted(
+                mensajero_groups.items(),
+                key=lambda kv: (kv[1]["field_user"].user.get_full_name() or kv[1]["field_user"].user.username).lower(),
+            )
+        ]
+
         return render(request, self.template_name, {
             "tasks":          task_list,
             "field_users":    FieldUser.objects.select_related("user").order_by("user__first_name"),
@@ -5946,6 +5972,7 @@ class CampoTaskListView(View):
             "payment_choices": DeliveryTask.PaymentMethod.choices,
             "pending_queue":  pending_queue,
             "priority_stages": PRIORITY_META,
+            "mensajero_stages": mensajero_stages,
             "filtered_count": filtered_count,
         })
 
@@ -6004,40 +6031,6 @@ class CampoTaskPriorityMoveView(View):
             "label": valid[new_priority],
             "old_priority": old_priority,
         })
-
-
-@da_decorator
-class CampoTaskReorderView(View):
-    """POST /dashadmin/campo/tareas/reordenar/ — orden de ejecución dentro de una
-    misma columna de prioridad en el pipeline (arrastrar para reordenar sin
-    cambiar de prioridad, ver TicketReorderView para el mismo patrón)."""
-
-    def post(self, request):
-        import json
-        from apps.dashboard.models import DeliveryTask
-        try:
-            data = json.loads(request.body)
-            order_pks = data.get("order", [])
-        except Exception:
-            order_pks = []
-        if not order_pks:
-            return JsonResponse({"ok": False, "error": "Orden vacío"}, status=400)
-        tasks = {
-            t.pk: t for t in
-            DeliveryTask.objects.filter(pk__in=order_pks, status=DeliveryTask.Status.PENDING)
-        }
-        updated = []
-        for idx, raw_pk in enumerate(order_pks):
-            try:
-                task = tasks.get(int(raw_pk))
-            except (TypeError, ValueError):
-                task = None
-            if task and task.order != idx:
-                task.order = idx
-                task.save(update_fields=["order"])
-            if task:
-                updated.append(task.pk)
-        return JsonResponse({"ok": True, "updated": updated})
 
 
 @da_decorator
