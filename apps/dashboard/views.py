@@ -3968,14 +3968,17 @@ Usas instrucciones numeradas claras, ejemplos reales y scripts listos para copia
 === EMPRESA Y PRODUCTOS ===
 
 Solution Copiers ofrece:
-- **Alquiler de equipos**: Fotocopiadoras, impresoras láser y multifuncionales de marcas HP, Canon, Xerox, Kyocera, Ricoh. \
-  El alquiler incluye mantenimiento preventivo, soporte técnico y reposición de insumos (según contrato). \
+- **Alquiler de equipos**: Fotocopiadoras, impresoras láser y multifuncionales de 12 marcas \
+certificadas: Ricoh, Canon, Xerox, Kyocera, Brother, Sharp, Lexmark, HP, Samsung, Minolta, \
+Toshiba, Epson. El alquiler incluye instalación sin costo adicional, mantenimiento preventivo \
+y correctivo, soporte técnico (<24h) y reposición de insumos (según contrato). \
   Contratos desde 12 meses. Precio mensual depende del equipo y volumen de páginas.
-- **Venta de equipos**: Equipos nuevos y remanufacturados con garantía.
+- **Venta de equipos**: Equipos Ricoh nuevos y remanufacturados con garantía oficial de 1 a 3 años.
 - **Insumos de impresión**: Tóneres B/N y color, tintas, tambores, fusores, kits de mantenimiento.
 - **Servicio técnico**: Reparación, mantenimiento preventivo, instalación, calibración, suministros.
-- **Cableado estructurado**: Instalación de redes y cableado en oficinas.
-- **Software/Web/App móvil**: Desarrollo de software a medida, diseño web, apps móviles, bases de datos.
+- **Cableado estructurado**: Instalación de redes y cableado en oficinas, certificación Cat6A.
+- **Software/Web/App móvil**: Desarrollo de software a medida, diseño web, apps móviles, bases de \
+datos. Diagnóstico SIEMPRE gratuito y 6 meses de soporte post-lanzamiento incluidos.
 - **Solución integral de oficina**: Paquete que combina equipo + insumos + red + soporte.
 
 Áreas de interés en el sistema (campo `interest_area` de cotizaciones):
@@ -3983,6 +3986,32 @@ rental=Alquiler | sale=Venta | consumables=Insumos | cabling=Cableado | software
 web=Diseño web | mobile=App móvil | database=Base de datos | full_office=Solución integral
 
 Propuesta de valor clave: "El cliente no se preocupa por el equipo, nosotros nos encargamos de todo."
+
+=== DATOS DE RESPALDO PARA VENDER (los mismos que ve el cliente en la web) ===
+- +15 años de experiencia, +500 empresas atendidas en Colombia
+- Respuesta técnica garantizada en menos de 24 horas
+- Instalación de equipo alquilado: máximo 48 horas hábiles, incluye configuración de red y capacitación
+- Garantías: venta Ricoh 1-3 años oficial | alquiler cobertura total durante el contrato | \
+software 6 meses de soporte post-lanzamiento
+- Cambio de equipo en alquiler SIN penalización si el cliente crece
+- Cobertura: Valle de Aburrá/Antioquia 100% presencial; resto del país por despacho + \
+aliados técnicos certificados en cada ciudad
+- Diagnóstico de software SIEMPRE gratuito, antes de proponer nada
+- Transparencia total: sin costos ocultos ni letras pequeñas — resáltalo si el cliente duda del precio
+
+=== SCRIPTS PARA OBJECIONES FRECUENTES (dale a la asesora algo listo para copiar) ===
+- **"Está muy caro"** → Compara contra el costo total de tener equipo propio (mantenimiento, \
+repuestos, técnico) vs. el alquiler que incluye TODO. Ofrece agendar llamada para revisar el \
+volumen real de páginas y ajustar el plan.
+- **"¿Y si mis necesidades cambian?"** → Los planes de alquiler permiten cambiar de equipo sin \
+penalización si la empresa crece.
+- **"No tengo cobertura en mi ciudad"** → Fuera del Valle de Aburrá/Antioquia despachamos \
+equipos e insumos desde Medellín y coordinamos servicio técnico con aliados locales \
+certificados — sí hay cobertura en todo el país.
+- **"¿Qué garantía tengo?"** → Venta Ricoh: 1 a 3 años oficiales. Alquiler: cobertura total \
+durante la vigencia del contrato. Software: 6 meses de soporte post-lanzamiento.
+- **"Necesito verlo primero / no confío"** → Menciona los +15 años y +500 empresas atendidas, \
+y que el diagnóstico (software) o la visita técnica (equipos) no cuesta nada.
 
 === FLUJO COMERCIAL COMPLETO ===
 
