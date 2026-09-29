@@ -4,10 +4,7 @@ from __future__ import annotations
 import json
 import logging
 
-from django.conf import settings
-from django.core.mail import send_mail
 from django.http import JsonResponse
-from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -20,7 +17,7 @@ from .forms import (
     CablingDetailsForm, ContactDetailsForm,
     InterestAreaForm, RentalDetailsForm, SoftwareDetailsForm,
 )
-from .services import LeadCreator, QuoteCalculator, send_whatsapp_quote_notification
+from .services import LeadCreator, QuoteCalculator
 
 logger = logging.getLogger(__name__)
 
@@ -138,8 +135,14 @@ class QuoteSubmitView(View):
                 {"ok": False, "error": "Sesión vacía o expirada"}, status=400,
             )
 
+        contact_data = session_data.get("step_3", {})
+        if not contact_data.get("email"):
+            return JsonResponse(
+                {"ok": False, "error": "Faltan tus datos de contacto. Vuelve al paso 3."},
+                status=400,
+            )
+
         try:
-            contact_data = session_data.get("step_3", {})
             quote_data = {
                 "interest_area": session_data.get("interest_area"),
                 "client_message": session_data.get("step_2", {}).get(
@@ -156,9 +159,9 @@ class QuoteSubmitView(View):
                 quote_data=quote_data,
                 wizard_data=wizard_data,
             )
-
-            self._notify_sales_team(quote)
-            send_whatsapp_quote_notification(quote)  # WhatsApp automático
+            # La notificación por email/WhatsApp al equipo de ventas la envía
+            # la señal post_save en apps/leads/signals.py (cubre todas las
+            # cotizaciones, no solo las del wizard) — no duplicar aquí.
             request.session.pop(WIZARD_SESSION_KEY, None)
 
             return JsonResponse({
@@ -173,21 +176,6 @@ class QuoteSubmitView(View):
                 {"ok": False, "error": "Error interno. Intenta de nuevo."},
                 status=500,
             )
-
-    @staticmethod
-    def _notify_sales_team(quote):
-        try:
-            subject = f"[Nueva Cotización] {quote.lead.full_name} — {quote.get_interest_area_display()}"
-            body = render_to_string("leads/emails/sales_notification.txt", {"quote": quote})
-            send_mail(
-                subject=subject,
-                message=body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[settings.LEADS_NOTIFICATION_EMAIL],
-                fail_silently=True,
-            )
-        except Exception as exc:
-            logger.warning("No se pudo enviar email: %s", exc)
 
 
 class ThankYouView(SEOContextMixin, TemplateView):
