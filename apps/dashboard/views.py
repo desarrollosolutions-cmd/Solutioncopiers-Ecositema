@@ -5931,12 +5931,17 @@ def _filter_delivery_tasks_qs(params, qs):
     fu_pk    = params.get("user")
     status   = params.get("status")
     date_str = params.get("date")
+    q        = (params.get("q") or "").strip()
     if fu_pk:
         qs = qs.filter(field_user__pk=fu_pk)
     if status:
         qs = qs.filter(status=status)
     if date_str:
         qs = qs.filter(due_date=date_str)
+    if q:
+        qs = qs.filter(
+            Q(client_name__icontains=q) | Q(title__icontains=q) | Q(address__icontains=q)
+        )
     return qs
 
 
@@ -5953,8 +5958,9 @@ class CampoTaskListView(View):
         fu_pk    = request.GET.get("user")
         status   = request.GET.get("status")
         date_str = request.GET.get("date")
+        q        = (request.GET.get("q") or "").strip()
 
-        if not (fu_pk or status or date_str):
+        if not (fu_pk or status or date_str or q):
             # Vista por defecto: solo lo de hoy o lo que siga pendiente (de cualquier día).
             # Para ver el historial completo, el admin puede filtrar por fecha/estado.
             qs = qs.filter(Q(due_date=timezone.localdate()) | Q(status=DeliveryTask.Status.PENDING))
@@ -6017,6 +6023,7 @@ class CampoTaskListView(View):
             "filter_user":    fu_pk,
             "filter_status":  status,
             "filter_date":    date_str or "",
+            "filter_q":       q,
             "today":          timezone.localdate().isoformat(),
             "status_choices": DeliveryTask.Status.choices,
             "task_type_choices": DeliveryTask.TaskType.choices,

@@ -168,13 +168,14 @@
 </script>
 
 {# ── Filtros ── #}
-{% if not filter_user and not filter_status and not filter_date %}
+{% if not filter_user and not filter_status and not filter_date and not filter_q %}
 <div style="font-size:.72rem;color:var(--color-text-muted);margin-bottom:.625rem;display:flex;align-items:center;gap:.35rem;">
   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width:.8rem;height:.8rem;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
   Mostrando tareas de hoy y las que siguen pendientes. Usa los filtros para ver otras fechas o el historial completo.
 </div>
 {% endif %}
 <form method="get" style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:flex-end;">
+  <input type="text" name="q" class="da-input" style="width:220px;max-width:100%;" placeholder="Buscar cliente…" value="{{ filter_q }}">
   <select name="user" class="da-input" style="width:200px;max-width:100%;">
     <option value="">Todos los mensajeros</option>
     {% for fu in field_users %}
@@ -191,7 +192,7 @@
   </select>
   <input type="date" name="date" class="da-input dp-input" data-occupied-url="{% url 'dashboard:scheduled_dates_json' %}" style="width:160px;max-width:100%;" value="{{ filter_date }}">
   <button type="submit" class="da-btn da-btn-primary">Filtrar</button>
-  {% if filter_user or filter_status or filter_date %}
+  {% if filter_user or filter_status or filter_date or filter_q %}
   <a href="{% url 'dashboard:campo_tasks' %}" class="da-btn da-btn-secondary">Limpiar</a>
   {% endif %}
   <a href="{% url 'dashboard:export_delivery_tasks' %}?{{ request.GET.urlencode }}" class="da-btn da-btn-secondary" style="margin-left:auto;">
