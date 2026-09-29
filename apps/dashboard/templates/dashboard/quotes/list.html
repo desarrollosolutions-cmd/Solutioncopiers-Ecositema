@@ -32,17 +32,25 @@
   {% endif %}
 </form>
 
+<form id="qt-bulk-form" method="post" action="{% url 'dashboard:quotes_bulk_delete' %}" onsubmit="return qtConfirmBulkDelete();">
+{% csrf_token %}
+<div id="qt-bulk-bar" style="display:none;align-items:center;gap:.875rem;padding:.75rem 1.125rem;margin-bottom:1rem;border-radius:.625rem;background:color-mix(in srgb,var(--color-danger) 8%,transparent);border:1px solid color-mix(in srgb,var(--color-danger) 25%,transparent);">
+  <span style="font-size:.8125rem;font-weight:600;color:var(--color-danger);"><span id="qt-bulk-count">0</span> cotización(es) seleccionada(s)</span>
+  <button type="submit" class="da-btn da-btn-sm" style="background:var(--color-danger);color:#fff;border:none;">Eliminar seleccionadas</button>
+</div>
+
 <div class="da-table-wrap">
   <div class="da-table-header">
     <span class="da-table-title">{{ paginator.count }} cotización{{ paginator.count|pluralize:"es" }}</span>
   </div>
   <table class="da-table">
     <thead>
-      <tr><th>Cliente</th><th>Empresa</th><th>Teléfono</th><th>Servicio</th><th>Estimado</th><th>Estado</th><th>Fecha</th><th></th></tr>
+      <tr><th style="width:2rem;"><input type="checkbox" id="qt-check-all" onclick="qtToggleAll(this)"></th><th>Cliente</th><th>Empresa</th><th>Teléfono</th><th>Servicio</th><th>Estimado</th><th>Estado</th><th>Fecha</th><th></th></tr>
     </thead>
     <tbody>
       {% for q in quotes %}
       <tr>
+        <td><input type="checkbox" class="qt-row-check" name="selected" value="{{ q.pk }}" onclick="qtUpdateBulkBar()"></td>
         <td><div class="da-name">{{ q.lead.full_name }}</div><div style="font-size:.72rem;color:var(--color-text-muted);">{{ q.lead.email }}</div></td>
         <td>{{ q.lead.company_name|default:"—" }}</td>
         <td><a href="tel:{{ q.lead.phone }}">{{ q.lead.phone }}</a></td>
@@ -53,7 +61,7 @@
         <td><a href="{% url 'dashboard:quote_detail' q.pk %}" class="da-btn da-btn-secondary da-btn-sm">Ver</a></td>
       </tr>
       {% empty %}
-      <tr><td colspan="8" style="text-align:center;padding:3rem;color:var(--color-text-muted);">Sin cotizaciones que coincidan</td></tr>
+      <tr><td colspan="9" style="text-align:center;padding:3rem;color:var(--color-text-muted);">Sin cotizaciones que coincidan</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -70,4 +78,25 @@
   </div>
   {% endif %}
 </div>
+</form>
+
+<script>
+function qtUpdateBulkBar() {
+  const checked = document.querySelectorAll('.qt-row-check:checked');
+  const bar = document.getElementById('qt-bulk-bar');
+  document.getElementById('qt-bulk-count').textContent = checked.length;
+  bar.style.display = checked.length > 0 ? 'flex' : 'none';
+}
+
+function qtToggleAll(master) {
+  document.querySelectorAll('.qt-row-check').forEach(cb => cb.checked = master.checked);
+  qtUpdateBulkBar();
+}
+
+function qtConfirmBulkDelete() {
+  const n = document.querySelectorAll('.qt-row-check:checked').length;
+  if (n === 0) return false;
+  return confirm(`¿Eliminar permanentemente ${n} cotización(es) seleccionada(s)? Esta acción no se puede deshacer.`);
+}
+</script>
 {% endblock %}

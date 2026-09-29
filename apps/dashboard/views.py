@@ -1780,6 +1780,30 @@ class QuotePipelineMoveView(View):
         })
 
 
+@da_decorator
+class QuoteBulkDeleteView(View):
+    """POST /dashadmin/cotizaciones/limpiar/ — borra las cotizaciones seleccionadas (checkboxes) en la lista."""
+
+    def post(self, request):
+        from apps.leads.models import Quote
+        from django.contrib import messages
+        pks = request.POST.getlist("selected")
+        if not pks:
+            messages.error(request, "Selecciona al menos una cotización para eliminar.")
+            return redirect("dashboard:quotes")
+        qs = Quote.objects.filter(pk__in=pks).select_related("lead")
+        names = [q.lead.full_name for q in qs]
+        count = qs.count()
+        qs.delete()
+        _log_activity(
+            request, "bulk_delete_quotes",
+            f"Eliminó {count} cotización(es) en lote: {', '.join(names[:20])}"
+            + (f" (+{count - 20} más)" if count > 20 else ""),
+        )
+        messages.success(request, f"Se eliminaron {count} cotización(es).")
+        return redirect("dashboard:quotes")
+
+
 # ---------------------------------------------------------------------------
 # CONSUMIBLES
 # ---------------------------------------------------------------------------

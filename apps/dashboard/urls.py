@@ -50,6 +50,7 @@ urlpatterns = [
 
     # Cotizaciones
     path("cotizaciones/",                    views.QuoteListView.as_view(),          name="quotes"),
+    path("cotizaciones/limpiar/",            views.QuoteBulkDeleteView.as_view(),    name="quotes_bulk_delete"),
     path("cotizaciones/pipeline/",           views.PipelineView.as_view(),           name="pipeline"),
     path("cotizaciones/<int:pk>/",           views.QuoteDetailView.as_view(),        name="quote_detail"),
     path("cotizaciones/<int:pk>/estado/",    views.QuoteStatusUpdateView.as_view(),  name="quote_status"),
