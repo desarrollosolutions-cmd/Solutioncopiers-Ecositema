@@ -11,7 +11,16 @@
 {% block content %}
 <div class="da-page-header">
   <h1 class="da-page-title">{% if is_edit %}Contrato {{ contract.contract_number }}{% else %}Nuevo contrato de alquiler{% endif %}</h1>
-  <a href="{% url 'dashboard:contracts' %}" class="da-btn da-btn-secondary">← Volver</a>
+  <div style="display:flex;gap:.625rem;">
+    {% if is_edit %}
+    <form method="post" action="{% url 'dashboard:contract_delete' contract.pk %}"
+      onsubmit="return confirm('¿Eliminar permanentemente el contrato {{ contract.contract_number }}? Esta acción no se puede deshacer.');">
+      {% csrf_token %}
+      <button type="submit" class="da-btn" style="background:var(--color-danger);color:#fff;border:none;">Eliminar contrato</button>
+    </form>
+    {% endif %}
+    <a href="{% url 'dashboard:contracts' %}" class="da-btn da-btn-secondary">← Volver</a>
+  </div>
 </div>
 
 {% if error %}
@@ -85,6 +94,7 @@
                   </span>
                   <a href="{% url 'dashboard:copier_unit_hoja_vida' contract.unit_id %}" style="font-size:.72rem;font-weight:600;margin-left:.5rem;color:var(--color-primary);text-decoration:none;">Ver hoja de vida →</a>
                 {% endif %}
+                <a href="{% url 'dashboard:copier_unit_create' %}" target="_blank" rel="noopener" style="font-size:.72rem;font-weight:600;margin-left:.5rem;color:var(--color-primary);text-decoration:none;">+ Registrar equipo nuevo →</a>
               </label>
               <select name="unit" class="da-input" id="unit-select">
                 <option value="">— Sin unidad asignada —</option>
@@ -97,7 +107,16 @@
                 </option>
                 {% endfor %}
               </select>
-              <span style="font-size:.68rem;color:var(--color-text-muted);">Al seleccionar, la unidad pasa automáticamente a estado "En campo"</span>
+              {% if not unit_list %}
+              <span style="font-size:.68rem;color:var(--color-text-muted);">
+                Aún no tienes equipos registrados en el inventario (sección "Fotocopiadoras" → Equipos).
+                Usa <strong>"+ Registrar equipo nuevo"</strong> arriba para darlo de alta con su serial,
+                o completa el campo <strong>"Descripción completa del equipo"</strong> de abajo a mano
+                mientras tanto — el contrato se puede crear sin vincular una unidad del inventario.
+              </span>
+              {% else %}
+              <span style="font-size:.68rem;color:var(--color-text-muted);">Al seleccionar, la unidad pasa automáticamente a estado "En campo". Si el equipo que buscas no aparece, usa "+ Registrar equipo nuevo".</span>
+              {% endif %}
             </div>
 
             <div class="da-field">

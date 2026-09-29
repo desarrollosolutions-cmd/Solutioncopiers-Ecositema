@@ -28,6 +28,7 @@ urlpatterns = [
     path("contratos/",           views.ContractListView.as_view(),   name="contracts"),
     path("contratos/nuevo/",     views.ContractCreateView.as_view(), name="contract_create"),
     path("contratos/<int:pk>/",  views.ContractDetailView.as_view(), name="contract_detail"),
+    path("contratos/<int:pk>/eliminar/", views.ContractDeleteView.as_view(), name="contract_delete"),
 
     # Clientes
     path("clientes/autocomplete/",                  views.ClientAutocompleteView.as_view(), name="client_autocomplete"),

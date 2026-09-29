@@ -129,8 +129,13 @@
             {{ c.get_status_display }}
           </span>
         </td>
-        <td>
+        <td style="white-space:nowrap;">
           <a href="{% url 'dashboard:contract_detail' c.pk %}" class="da-btn da-btn-secondary da-btn-sm">Editar</a>
+          <form method="post" action="{% url 'dashboard:contract_delete' c.pk %}" style="display:inline;"
+            onsubmit="return confirm('¿Eliminar permanentemente el contrato {{ c.contract_number }}? Esta acción no se puede deshacer.');">
+            {% csrf_token %}
+            <button type="submit" class="da-btn da-btn-sm" style="background:var(--color-danger);color:#fff;border:none;">Eliminar</button>
+          </form>
         </td>
       </tr>
       {% empty %}

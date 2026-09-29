@@ -638,6 +638,34 @@ class ContractCreateView(View):
 
 
 @da_decorator
+class ContractDeleteView(View):
+    """POST /dashadmin/contratos/<pk>/eliminar/ — borra un contrato de alquiler."""
+
+    def post(self, request, pk):
+        from apps.leads.models import RentalContract
+        from apps.catalog.models import CopierUnit
+        from django.contrib import messages
+
+        contract = get_object_or_404(RentalContract, pk=pk)
+        contract_number = contract.contract_number
+        unit_id = contract.unit_id
+        contract.delete()
+
+        # Libera la unidad física si no queda otro contrato activo apuntándole
+        # (mismo criterio que RentalContract.save() usa al cancelar/vencer)
+        if unit_id:
+            other_active = RentalContract.objects.filter(
+                unit_id=unit_id, status=RentalContract.Status.ACTIVE
+            ).exists()
+            if not other_active:
+                CopierUnit.objects.filter(pk=unit_id).update(status=CopierUnit.UnitStatus.AVAILABLE)
+
+        _log_activity(request, "delete_contract", f"Eliminó el contrato {contract_number}")
+        messages.success(request, f"Contrato {contract_number} eliminado.")
+        return redirect("dashboard:contracts")
+
+
+@da_decorator
 class ContractDetailView(View):
     template_name = "dashboard/contracts/form.html"
 
