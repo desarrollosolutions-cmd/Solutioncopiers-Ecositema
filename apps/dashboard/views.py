@@ -5537,7 +5537,9 @@ class PanelTurnoMapView(View):
 
 @campo_decorator
 class CampoUbicacionUpdateView(View):
-    LOG_INTERVAL_SECONDS = 120  # guardar punto de ruta cada 2 minutos
+    # Un punto por minuto: con 2 min, en moto quedaba ~1 km entre puntos y el
+    # recorrido se dibujaba como líneas rectas cortando por encima de manzanas.
+    LOG_INTERVAL_SECONDS = 60
 
     def post(self, request):
         from apps.dashboard.models import FieldUserLocation, FieldLocationLog
@@ -6835,7 +6837,9 @@ class PanelLunchEndView(View):
 
 @panel_decorator
 class PanelUbicacionView(View):
-    LOG_INTERVAL_SECONDS = 120  # guardar punto de ruta cada 2 minutos
+    # Un punto por minuto: con 2 min, en moto quedaba ~1 km entre puntos y el
+    # recorrido se dibujaba como líneas rectas cortando por encima de manzanas.
+    LOG_INTERVAL_SECONDS = 60
 
     def post(self, request):
         from apps.dashboard.models import FieldUserLocation, FieldLocationLog

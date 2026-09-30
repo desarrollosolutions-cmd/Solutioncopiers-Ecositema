@@ -111,7 +111,7 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
             {% if location and location.is_on_shift %}En turno — GPS activo{% else %}Sin turno activo{% endif %}
           </div>
           <div class="tsw-sub" id="shift-sub">
-            {% if location and location.is_on_shift %}Ubicación enviando cada 30 seg{% else %}Activa el interruptor para iniciar{% endif %}
+            {% if location and location.is_on_shift %}Ubicación enviando cada 20 seg{% else %}Activa el interruptor para iniciar{% endif %}
           </div>
         </div>
       </div>
@@ -306,6 +306,9 @@ body{min-height:100vh;background:#100808;font-family:'Inter',system-ui,sans-seri
 <script>
 const CSRF = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
 let watchId = null;
+let heartbeatId = null;
+let lastSentAt = null;
+const GPS_HEARTBEAT_MS = 20000;
 let isOnShift = {{ location.is_on_shift|yesno:"true,false" }};
 let isOnLunch = {{ location.is_on_lunch|yesno:"true,false" }};
 let batteryLevel = null;
@@ -366,6 +369,7 @@ function updateGpsPill(state, coords) {
 
 function sendLocation(pos) {
   const { latitude: lat, longitude: lng, accuracy: acc } = pos.coords;
+  lastSentAt = Date.now();
   updateGpsPill('ok', { lat, lng, acc });
   const fd = new FormData();
   fd.append('csrfmiddlewaretoken', CSRF);
@@ -386,13 +390,29 @@ function startGPS() {
     () => {},
     { enableHighAccuracy: false, timeout: 4000, maximumAge: 30000 }
   );
-  // Luego watchPosition de alta precisión (continuo — ya cubre el seguimiento,
-  // sin necesidad de un setInterval adicional que duplique lecturas de GPS)
+  // watchPosition avisa apenas el GPS detecta movimiento real
   watchId = navigator.geolocation.watchPosition(
     pos => sendLocation(pos),
     () => updateGpsPill('error'),
     { enableHighAccuracy: true, timeout: 30000, maximumAge: 10000 }
   );
+  // Heartbeat de respaldo: watchPosition NO es confiable como única fuente --
+  // el navegador decide cuándo considera que hubo "cambio suficiente" y en
+  // trayectos constantes puede quedarse callado varios minutos, con lo que el
+  // mapa solo se movía cuando el usuario navegaba dentro de la app (cada
+  // recarga dispara el getCurrentPosition de arriba). Esto garantiza un punto
+  // cada GPS_HEARTBEAT_MS aunque watchPosition no dispare.
+  if (heartbeatId) clearInterval(heartbeatId);
+  heartbeatId = setInterval(() => {
+    if (!isOnShift) return;
+    // Si watchPosition ya reportó hace poco, no duplicamos la lectura
+    if (lastSentAt && Date.now() - lastSentAt < GPS_HEARTBEAT_MS - 5000) return;
+    navigator.geolocation.getCurrentPosition(
+      pos => sendLocation(pos),
+      () => {},
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  }, GPS_HEARTBEAT_MS);
 }
 
 // ── Mantener pantalla encendida en turno ──
