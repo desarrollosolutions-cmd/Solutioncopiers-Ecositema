@@ -26,7 +26,7 @@
     // vive en localStorage: si ese perfil usa un equipo compartido, el
     // siguiente usuario no debe heredar una paleta que no puede cambiar.
     window.DA_THEMES_BASE = ['dark', 'light'];
-    window.DA_THEMES_EXTRA = ['midnight', 'forest', 'amethyst', 'ocean', 'slate', 'sand'];
+    window.DA_THEMES_EXTRA = ['midnight', 'forest', 'amethyst', 'ocean', 'slate', 'metal', 'sand'];
     window.DA_CAN_PICK_THEME = {% if request.user.username == "estebanadmin" %}true{% else %}false{% endif %};
     (function(){
       var allowed = window.DA_CAN_PICK_THEME
@@ -238,6 +238,44 @@
 
       --shadow-card:          0 1px 3px rgba(0,0,0,.55), 0 4px 20px rgba(0,0,0,.40);
       --shadow-card-hover:    0 4px 8px rgba(0,0,0,.6), 0 16px 40px rgba(245,158,11,.22);
+    }
+
+    /* ── Metálico (acero pulido + acento dorado) ── */
+    [data-theme="metal"] {
+      --color-primary:        #C9A227;
+      --color-primary-dark:   #8A6D12;
+      --color-primary-light:  #E3C35A;
+      --color-accent:         #B8C4CC;
+      --color-accent-dark:    #8A959D;
+
+      --color-bg:             #0C1013;
+      --color-bg-alt:         #151A1F;
+      --color-surface:        #1E252B;
+
+      --color-text-primary:   #EEF2F5;
+      --color-text-secondary: #B4C0C9;
+      --color-text-muted:     #7B8791;
+
+      /* Borde claro a propósito: simula el filo brillante del metal */
+      --color-border:         #3B464F;
+
+      --color-success:        #10B981;
+      --color-warning:        #F59E0B;
+      --color-danger:         #EF4444;
+
+      --shadow-card:          0 1px 3px rgba(0,0,0,.6), 0 4px 20px rgba(0,0,0,.45);
+      --shadow-card-hover:    0 4px 8px rgba(0,0,0,.65), 0 16px 40px rgba(201,162,39,.20);
+    }
+    /* El degradado va aparte y NO en un token: los tokens se combinan con
+       color-mix() en varios sitios y ahí un gradiente rompería la regla. */
+    [data-theme="metal"] body {
+      background: linear-gradient(160deg, #161C21 0%, #0C1013 55%, #182026 100%);
+      background-attachment: fixed;
+    }
+    [data-theme="metal"] .da-card,
+    [data-theme="metal"] .da-table-wrap,
+    [data-theme="metal"] .da-stat {
+      background-image: linear-gradient(180deg, rgba(255,255,255,.045) 0%, rgba(255,255,255,0) 60%);
     }
 
     /* ── Arena (claro cálido) ── */
@@ -1334,6 +1372,7 @@
         { key:'amethyst', label:'Amatista',     swatch:'#0D0716', light:false },
         { key:'ocean',    label:'Océano',       swatch:'#04121A', light:false },
         { key:'slate',    label:'Grafito',      swatch:'#0B0D0F', light:false },
+        { key:'metal',    label:'Metálico',     swatch:'linear-gradient(135deg,#8E9AA3 0%,#D7DEE3 45%,#6E7A85 100%)', light:false },
         { key:'light',    label:'Claro',        swatch:'#FBF5F5', light:true  },
         { key:'sand',     label:'Arena',        swatch:'#FAF6F0', light:true  }
       ];
