@@ -17,4 +17,7 @@ urlpatterns = [
 
     # Asistente virtual público
     path("asistente/chat/", views.PublicAssistantView.as_view(), name="assistant_chat"),
+
+    # Métricas agregadas del hero (sin datos de clientes ni de personal)
+    path("estado-operacion/", views.HomeLiveStatsAPI.as_view(), name="live_stats"),
 ]

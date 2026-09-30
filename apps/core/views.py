@@ -1,6 +1,7 @@
 """Vistas del módulo Core."""
 from __future__ import annotations
 
+import logging
 import random
 
 from django.contrib import messages
@@ -12,6 +13,58 @@ from django.views.generic import FormView, TemplateView
 
 from apps.core.mixins import BreadcrumbMixin, JsonLDMixin, SEOContextMixin
 from apps.core.models import Testimonial
+
+logger = logging.getLogger(__name__)
+
+
+LIVE_STATS_CACHE_KEY = "home_live_stats"
+LIVE_STATS_TTL = 60
+
+
+def home_live_stats():
+    """Métricas agregadas del CRM para el hero del home.
+
+    Solo conteos: nada identificable de clientes ni del personal de campo.
+    Se cachean porque el home es la página más visitada del sitio y estos
+    números no necesitan ser exactos al segundo.
+    """
+    from django.core.cache import cache
+
+    cached = cache.get(LIVE_STATS_CACHE_KEY)
+    if cached is not None:
+        return cached
+
+    from apps.dashboard.models import FieldUserLocation
+    from apps.leads.models import RentalContract
+
+    # Se eligen métricas acumuladas, no de ventana corta: con el volumen real
+    # del negocio, "tickets resueltos esta semana" daba 0 y "entregas este mes"
+    # daba 1 -- cifras verdaderas que en un hero comunican lo contrario de lo
+    # que son. Empresas y equipos vigentes son sólidos y igual de verificables.
+    activos = RentalContract.objects.filter(status=RentalContract.Status.ACTIVE)
+
+    try:
+        stats = {
+            "empresas_activas": activos.values("lead_id").distinct().count(),
+            "equipos_operando": activos.count(),
+            "tecnicos_en_ruta": FieldUserLocation.objects.filter(is_on_shift=True).count(),
+        }
+    except Exception:
+        # El hero no vale un 500 en la página más importante del sitio: si el
+        # CRM falla, la sección se degrada sola en vez de tumbar el home.
+        logger.exception("No se pudieron calcular las métricas del hero")
+        return {"empresas_activas": 0, "equipos_operando": 0, "tecnicos_en_ruta": 0}
+
+    cache.set(LIVE_STATS_CACHE_KEY, stats, LIVE_STATS_TTL)
+    return stats
+
+
+class HomeLiveStatsAPI(View):
+    """GET /estado-operacion/ — las mismas métricas del hero, para refrescarlas
+    sin recargar la página."""
+
+    def get(self, request):
+        return JsonResponse({"ok": True, **home_live_stats()})
 
 
 class HomeView(SEOContextMixin, JsonLDMixin, TemplateView):
@@ -79,6 +132,10 @@ class HomeView(SEOContextMixin, JsonLDMixin, TemplateView):
 
         context["technologies"] = Technology.objects.all().order_by("category", "order")[:12]
         context["latest_posts"] = Post.published.select_related("category")[:3]
+
+        # Render inicial de las métricas del hero: van en el HTML para que se
+        # vean de una y las lea el buscador; el JS solo las refresca después.
+        context["live_stats"] = home_live_stats()
 
         return context
 
