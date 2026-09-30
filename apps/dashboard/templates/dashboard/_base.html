@@ -21,8 +21,19 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SC Admin">
   <script>
+    // Las paletas alternativas solo las puede elegir el perfil autorizado.
+    // Se valida también aquí (y no solo al pintar el selector) porque el tema
+    // vive en localStorage: si ese perfil usa un equipo compartido, el
+    // siguiente usuario no debe heredar una paleta que no puede cambiar.
+    window.DA_THEMES_BASE = ['dark', 'light'];
+    window.DA_THEMES_EXTRA = ['midnight', 'forest', 'amethyst', 'ocean', 'slate', 'sand'];
+    window.DA_CAN_PICK_THEME = {% if request.user.username == "estebanadmin" %}true{% else %}false{% endif %};
     (function(){
+      var allowed = window.DA_CAN_PICK_THEME
+        ? window.DA_THEMES_BASE.concat(window.DA_THEMES_EXTRA)
+        : window.DA_THEMES_BASE;
       var t = localStorage.getItem('da-theme') || 'dark';
+      if (allowed.indexOf(t) === -1) { t = 'dark'; }
       document.documentElement.setAttribute('data-theme', t);
     })();
   </script>
@@ -34,10 +45,7 @@
 
     /* ── MODO OSCURO (predeterminado) — "Rojo oscuro premium" ── */
     :root,
-    [data-theme="dark"],
-    [data-theme="midnight"],
-    [data-theme="forest"],
-    [data-theme="amethyst"] {
+    [data-theme="dark"] {
       /* Acento principal — Rojo intenso / Vinotinto (marca) */
       --color-primary:        #C4121A;
       --color-primary-dark:   #5A0B0B;
@@ -92,6 +100,170 @@
 
       --shadow-card:          0 1px 3px rgba(196,18,26,.08), 0 4px 16px rgba(196,18,26,.06);
       --shadow-card-hover:    0 4px 12px rgba(196,18,26,.14), 0 16px 40px rgba(196,18,26,.10);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PALETAS ALTERNATIVAS DE FONDO
+       Antes midnight/forest/amethyst existían de nombre pero compartían
+       el selector de "dark", así que se veían idénticas al rojo. Ahora
+       cada una tiene tonos propios. Solo el perfil autorizado puede
+       elegirlas (ver el selector de paleta en la barra superior).
+    ═══════════════════════════════════════════════════════════════ */
+
+    /* ── Azul noche ── */
+    [data-theme="midnight"] {
+      --color-primary:        #3B82F6;
+      --color-primary-dark:   #1D4ED8;
+      --color-primary-light:  #60A5FA;
+      --color-accent:         #38BDF8;
+      --color-accent-dark:    #0284C7;
+
+      --color-bg:             #070B14;
+      --color-bg-alt:         #0D1322;
+      --color-surface:        #131B2E;
+
+      --color-text-primary:   #E8EDF7;
+      --color-text-secondary: #A3B1CC;
+      --color-text-muted:     #6B7A99;
+
+      --color-border:         #223050;
+
+      --color-success:        #10B981;
+      --color-warning:        #F59E0B;
+      --color-danger:         #EF4444;
+
+      --shadow-card:          0 1px 3px rgba(0,0,0,.55), 0 4px 20px rgba(0,0,0,.40);
+      --shadow-card-hover:    0 4px 8px rgba(0,0,0,.6), 0 16px 40px rgba(59,130,246,.25);
+    }
+
+    /* ── Verde bosque ── */
+    [data-theme="forest"] {
+      --color-primary:        #10B981;
+      --color-primary-dark:   #047857;
+      --color-primary-light:  #34D399;
+      --color-accent:         #A3E635;
+      --color-accent-dark:    #65A30D;
+
+      --color-bg:             #06110D;
+      --color-bg-alt:         #0C1C16;
+      --color-surface:        #11261E;
+
+      --color-text-primary:   #E6F3EC;
+      --color-text-secondary: #A2C2B2;
+      --color-text-muted:     #67887A;
+
+      --color-border:         #1E3B30;
+
+      --color-success:        #22C55E;
+      --color-warning:        #F59E0B;
+      --color-danger:         #EF4444;
+
+      --shadow-card:          0 1px 3px rgba(0,0,0,.55), 0 4px 20px rgba(0,0,0,.40);
+      --shadow-card-hover:    0 4px 8px rgba(0,0,0,.6), 0 16px 40px rgba(16,185,129,.25);
+    }
+
+    /* ── Amatista ── */
+    [data-theme="amethyst"] {
+      --color-primary:        #A855F7;
+      --color-primary-dark:   #7E22CE;
+      --color-primary-light:  #C084FC;
+      --color-accent:         #F472B6;
+      --color-accent-dark:    #DB2777;
+
+      --color-bg:             #0D0716;
+      --color-bg-alt:         #160D24;
+      --color-surface:        #1E1330;
+
+      --color-text-primary:   #F1E9FA;
+      --color-text-secondary: #BFAAD6;
+      --color-text-muted:     #8570A3;
+
+      --color-border:         #33204F;
+
+      --color-success:        #10B981;
+      --color-warning:        #F59E0B;
+      --color-danger:         #EF4444;
+
+      --shadow-card:          0 1px 3px rgba(0,0,0,.55), 0 4px 20px rgba(0,0,0,.40);
+      --shadow-card-hover:    0 4px 8px rgba(0,0,0,.6), 0 16px 40px rgba(168,85,247,.25);
+    }
+
+    /* ── Océano ── */
+    [data-theme="ocean"] {
+      --color-primary:        #06B6D4;
+      --color-primary-dark:   #0E7490;
+      --color-primary-light:  #22D3EE;
+      --color-accent:         #2DD4BF;
+      --color-accent-dark:    #0D9488;
+
+      --color-bg:             #04121A;
+      --color-bg-alt:         #081E2A;
+      --color-surface:        #0C2836;
+
+      --color-text-primary:   #E4F4F8;
+      --color-text-secondary: #9CC0CC;
+      --color-text-muted:     #628794;
+
+      --color-border:         #12475C;
+
+      --color-success:        #10B981;
+      --color-warning:        #F59E0B;
+      --color-danger:         #EF4444;
+
+      --shadow-card:          0 1px 3px rgba(0,0,0,.55), 0 4px 20px rgba(0,0,0,.40);
+      --shadow-card-hover:    0 4px 8px rgba(0,0,0,.6), 0 16px 40px rgba(6,182,212,.25);
+    }
+
+    /* ── Grafito (neutro, acento ámbar) ── */
+    [data-theme="slate"] {
+      --color-primary:        #F59E0B;
+      --color-primary-dark:   #B45309;
+      --color-primary-light:  #FBBF24;
+      --color-accent:         #94A3B8;
+      --color-accent-dark:    #64748B;
+
+      --color-bg:             #0B0D0F;
+      --color-bg-alt:         #14171A;
+      --color-surface:        #1B1F23;
+
+      --color-text-primary:   #ECEFF2;
+      --color-text-secondary: #AAB4BE;
+      --color-text-muted:     #6F7A85;
+
+      --color-border:         #2B3239;
+
+      --color-success:        #10B981;
+      --color-warning:        #F59E0B;
+      --color-danger:         #EF4444;
+
+      --shadow-card:          0 1px 3px rgba(0,0,0,.55), 0 4px 20px rgba(0,0,0,.40);
+      --shadow-card-hover:    0 4px 8px rgba(0,0,0,.6), 0 16px 40px rgba(245,158,11,.22);
+    }
+
+    /* ── Arena (claro cálido) ── */
+    [data-theme="sand"] {
+      --color-primary:        #B45309;
+      --color-primary-dark:   #7C2D12;
+      --color-primary-light:  #D97706;
+      --color-accent:         #0F766E;
+      --color-accent-dark:    #115E59;
+
+      --color-bg:             #FAF6F0;
+      --color-bg-alt:         #F2EADF;
+      --color-surface:        #FFFFFF;
+
+      --color-text-primary:   #1F1710;
+      --color-text-secondary: #6B5B4A;
+      --color-text-muted:     #9A8874;
+
+      --color-border:         #E7DACA;
+
+      --color-success:        #059669;
+      --color-warning:        #D97706;
+      --color-danger:         #DC2626;
+
+      --shadow-card:          0 1px 3px rgba(120,80,30,.08), 0 4px 16px rgba(120,80,30,.06);
+      --shadow-card-hover:    0 4px 12px rgba(120,80,30,.14), 0 16px 40px rgba(120,80,30,.10);
     }
 
     /* ═══════════════════════════════════════════════════════════════
@@ -1133,23 +1305,109 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
         </svg>
       </button>
+
+      {% if request.user.username == "estebanadmin" %}
+      {# ── Selector de paleta (solo perfil autorizado) ── #}
+      <div style="position:relative;">
+        <button id="da-palette-btn" class="da-topbar-btn" title="Paleta de colores">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828L11 19.172M7 17h.01"/>
+          </svg>
+        </button>
+        <div id="da-palette-menu" style="display:none;position:absolute;right:0;top:calc(100% + .5rem);width:230px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:.75rem;box-shadow:var(--shadow-card-hover);z-index:300;overflow:hidden;">
+          <div style="padding:.625rem .875rem;border-bottom:1px solid var(--color-border);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);">
+            Paleta de fondo
+          </div>
+          <div id="da-palette-list" style="padding:.375rem;max-height:20rem;overflow-y:auto;"></div>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </header>
 
   <script>
     (function(){
+      var PALETTES = [
+        { key:'dark',     label:'Rojo oscuro',  swatch:'#100808', light:false },
+        { key:'midnight', label:'Azul noche',   swatch:'#070B14', light:false },
+        { key:'forest',   label:'Verde bosque', swatch:'#06110D', light:false },
+        { key:'amethyst', label:'Amatista',     swatch:'#0D0716', light:false },
+        { key:'ocean',    label:'Océano',       swatch:'#04121A', light:false },
+        { key:'slate',    label:'Grafito',      swatch:'#0B0D0F', light:false },
+        { key:'light',    label:'Claro',        swatch:'#FBF5F5', light:true  },
+        { key:'sand',     label:'Arena',        swatch:'#FAF6F0', light:true  }
+      ];
+      var LIGHT_KEYS = PALETTES.filter(function(p){ return p.light; }).map(function(p){ return p.key; });
+
+      function isAllowed(t){
+        if (window.DA_CAN_PICK_THEME) return true;
+        return window.DA_THEMES_BASE.indexOf(t) !== -1;
+      }
+
       function applyTheme(t){
+        if (!isAllowed(t)) { t = 'dark'; }
         document.documentElement.setAttribute('data-theme', t);
         localStorage.setItem('da-theme', t);
+        // El botón de sol/luna muestra la acción contraria a la paleta actual
+        var isLight = LIGHT_KEYS.indexOf(t) !== -1;
         var sun  = document.getElementById('da-icon-sun');
         var moon = document.getElementById('da-icon-moon');
-        if(sun)  sun.style.display  = t === 'dark'  ? 'block' : 'none';
-        if(moon) moon.style.display = t === 'light' ? 'block' : 'none';
+        if(sun)  sun.style.display  = isLight ? 'none'  : 'block';
+        if(moon) moon.style.display = isLight ? 'block' : 'none';
+        markActive(t);
       }
+
+      function markActive(t){
+        var opts = document.querySelectorAll('.da-palette-opt');
+        for (var i = 0; i < opts.length; i++){
+          var on = opts[i].getAttribute('data-theme-key') === t;
+          opts[i].style.background = on ? 'color-mix(in srgb,var(--color-primary) 12%,transparent)' : 'transparent';
+          opts[i].style.color      = on ? 'var(--color-text-primary)' : 'var(--color-text-secondary)';
+          var chk = opts[i].querySelector('.da-palette-check');
+          if (chk) chk.style.display = on ? 'inline' : 'none';
+        }
+      }
+
+      var list = document.getElementById('da-palette-list');
+      if (list && window.DA_CAN_PICK_THEME){
+        PALETTES.forEach(function(p){
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'da-palette-opt';
+          b.setAttribute('data-theme-key', p.key);
+          b.style.cssText = 'width:100%;display:flex;align-items:center;gap:.625rem;padding:.5rem .625rem;border:none;border-radius:.5rem;background:transparent;color:var(--color-text-secondary);font-size:.8125rem;font-weight:600;cursor:pointer;text-align:left;';
+          b.innerHTML =
+            '<span style="width:1.125rem;height:1.125rem;border-radius:50%;flex-shrink:0;border:1px solid rgba(128,128,128,.35);background:' + p.swatch + ';"></span>' +
+            '<span style="flex:1;">' + p.label + '</span>' +
+            '<span class="da-palette-check" style="display:none;color:var(--color-primary);font-weight:800;">&#10003;</span>';
+          b.addEventListener('click', function(){
+            applyTheme(p.key);
+            document.getElementById('da-palette-menu').style.display = 'none';
+          });
+          list.appendChild(b);
+        });
+      }
+
+      var pBtn  = document.getElementById('da-palette-btn');
+      var pMenu = document.getElementById('da-palette-menu');
+      if (pBtn && pMenu){
+        pBtn.addEventListener('click', function(e){
+          e.stopPropagation();
+          pMenu.style.display = pMenu.style.display === 'none' ? 'block' : 'none';
+        });
+        document.addEventListener('click', function(e){
+          if (!pMenu.contains(e.target) && e.target !== pBtn) pMenu.style.display = 'none';
+        });
+      }
+
       applyTheme(localStorage.getItem('da-theme') || 'dark');
+
+      // El botón sol/luna alterna entre la paleta actual y su opuesta en
+      // claridad, sin sacar al usuario de la paleta que eligió.
       var btn = document.getElementById('da-theme-toggle');
       if(btn) btn.addEventListener('click', function(){
-        applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        var cur = document.documentElement.getAttribute('data-theme');
+        applyTheme(LIGHT_KEYS.indexOf(cur) !== -1 ? 'dark' : 'light');
       });
     })();
   </script>
